@@ -71,7 +71,8 @@ export function OTPField({ value, onChange, onComplete, length = 6, error, autoF
         autoComplete="one-time-code"
         maxLength={length}
         caretHidden
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, fontFamily: fontFamily('sans') }}
+        // 16px so iOS Safari doesn't zoom when the hidden input takes focus.
+        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, fontSize: 16, fontFamily: fontFamily('sans') }}
       />
       {error ? (
         <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

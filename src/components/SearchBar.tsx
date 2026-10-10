@@ -17,7 +17,10 @@ type Props = {
   autoFocus?: boolean;
 };
 
-/** SearchBar — 44px, magnifier left, clear button when filled. */
+/**
+ * SearchBar — 44px, magnifier left, clear button when filled.
+ * Input text is 16px: iOS Safari zooms the page into any input below 16px.
+ */
 export function SearchBar({ value, onChangeText, placeholder = 'Search', onFilterPress, variant = 'header', onSubmit, autoFocus }: Props) {
   const { c } = useTheme();
   return (
@@ -49,7 +52,7 @@ export function SearchBar({ value, onChangeText, placeholder = 'Search', onFilte
           selectionColor={c.primary}
           accessibilityLabel={placeholder}
           style={[
-            { flex: 1, padding: 0, fontFamily: fontFamily('sans', value ? 600 : 400), fontSize: 15, color: c.textHeadline },
+            { flex: 1, padding: 0, fontFamily: fontFamily('sans', value ? 600 : 400), fontSize: 16, color: c.textHeadline, minWidth: 0 },
             { outlineStyle: 'none' } as object,
           ]}
         />
