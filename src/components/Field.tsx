@@ -12,6 +12,8 @@ type Props = Omit<TextInputProps, 'style' | 'editable'> & {
   required?: boolean;
   error?: string;
   disabled?: boolean;
+  /** Read-only value shown in the normal style (e.g. phone taken from sign-in). */
+  locked?: boolean;
   /** true when the field sits inside a white card or sheet: `input` fill, no visible border. */
   onSurface?: boolean;
   rightIcon?: IconName;
@@ -25,7 +27,7 @@ type Props = Omit<TextInputProps, 'style' | 'editable'> & {
  * Field — the single input of 919: text, dropdown, date, textarea.
  * Label on top 12/500, value 16/600, min height 56, radius 16.
  */
-export function Field({ label, required, error, disabled, onSurface, rightIcon, onPress, counter, right, value, multiline, maxLength, ...input }: Props) {
+export function Field({ label, required, error, disabled, locked, onSurface, rightIcon, onPress, counter, right, value, multiline, maxLength, ...input }: Props) {
   const { c } = useTheme();
   const [focused, setFocused] = useState(false);
   const isSelect = !!onPress;
@@ -72,7 +74,7 @@ export function Field({ label, required, error, disabled, onSurface, rightIcon, 
             value={value}
             multiline={multiline}
             maxLength={maxLength}
-            editable={!disabled}
+            editable={!disabled && !locked}
             onFocus={(e) => {
               setFocused(true);
               input.onFocus?.(e);

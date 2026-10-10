@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components';
 import { SessionProvider } from '@/data/session';
+import { SignupProvider } from '@/data/signup';
 import { fontAssets, ThemeProvider, useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -34,7 +35,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <SessionProvider>
-            <Root />
+            <SignupProvider>
+              <Root />
+            </SignupProvider>
           </SessionProvider>
         </ThemeProvider>
       </SafeAreaProvider>

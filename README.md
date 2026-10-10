@@ -33,6 +33,15 @@ src/app/kit.tsx           витрина всех компонентов в об
 - Кнопки primary без цветной тени. Подтверждения — BottomSheet. Тосты — `useToast()`.
 - Продуктовые правила (жизнь вакансии 7 дней, Free/Premium, Urgent 24 ч, контексты чатов) — в документе проекта `919-product-rules.md`.
 
+## Флоу в прототипе
+
+- Гостевая зона: `/guest`, поиск `/guest/search`, вакансия `/vacancy/[id]`
+- Вход и регистрация: `/auth/*` (телефон + OTP, email, Apple / Google, восстановление пароля, выбор роли)
+- Регистрация соискателя, 5 шагов: `/auth/about` → `/signup/occupation` → `/signup/details` → `/signup/media` (+ запись видео) → `/signup/review`
+- Регистрация работодателя: `/employer/type` → `/employer/rep` → `/employer/company` → `/employer/review`; вступление в компанию `/employer/join`; частный рекрутер
+
+Демо-значения: код `000000` — ошибка OTP; пароль `wrong` — ошибка входа; `taken@919.ae` — email занят; `nobody@919.ae` — нет аккаунта; компания LEO'V отклоняет запрос на вступление, остальные одобряют.
+
 ## Компоненты
 
 Button · Field · OTPField · SearchBar · Chip · StatusChip · SegmentedTabs · Card / RowGroup / Row · Toggle ·

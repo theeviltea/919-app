@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "919-app",
+    "name": "919",
     "slug": "919-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -31,6 +31,13 @@
           "backgroundColor": "#208AEF",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "919 uses your photos for your profile and company logo.",
+          "cameraPermission": "919 uses the camera to take profile photos and record your video presentation."
         }
       ]
     ],

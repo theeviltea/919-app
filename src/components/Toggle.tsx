@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated } from 'react-native';
 
 import { useTheme } from '@/theme';
@@ -8,7 +8,7 @@ import { Pressable } from './Pressable';
 /** Toggle 44×26 — for settings that apply immediately. Knob is white in both themes. */
 export function Toggle({ value, onValueChange, accessibilityLabel }: { value: boolean; onValueChange: (v: boolean) => void; accessibilityLabel?: string }) {
   const { c } = useTheme();
-  const x = useRef(new Animated.Value(value ? 1 : 0)).current;
+  const [x] = useState(() => new Animated.Value(value ? 1 : 0));
   useEffect(() => {
     Animated.timing(x, { toValue: value ? 1 : 0, duration: 160, useNativeDriver: false }).start();
   }, [value, x]);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, View, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '@/theme';
@@ -8,7 +8,7 @@ type Props = { width?: DimensionValue; height: number; radius?: number; strong?:
 /** Skeleton bar with a shimmer. `strong` for photos, avatars and buttons. */
 export function Skeleton({ width = '100%', height, radius = 6, strong, style }: Props) {
   const { c, scheme } = useTheme();
-  const t = useRef(new Animated.Value(0)).current;
+  const [t] = useState(() => new Animated.Value(0));
   const [w, setW] = useState(0);
   useEffect(() => {
     const loop = Animated.loop(Animated.timing(t, { toValue: 1, duration: 1400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }));

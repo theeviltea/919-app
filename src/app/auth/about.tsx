@@ -1,47 +1,42 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button, Card, Field, FormScreen, Icon, Pressable, StepProgress, Text } from '@/components';
+import { allCountries, citiesFor, countryCode, countryShort, formatDob, popularCountryNames } from '@/data/registration';
+import { useSignup } from '@/data/signup';
+import { DateSheet } from '@/features/auth/DateSheet';
+import { PhotoSheet } from '@/features/auth/PhotoSheet';
 import { SelectSheet } from '@/features/auth/SelectSheet';
-import { useFinishAuth } from '@/features/auth/useFinishAuth';
 import { useTheme } from '@/theme';
 
 const lettersOnly = (s: string) => /^[\p{L}\s'-]*$/u.test(s);
-const cities: Record<string, string[]> = {
-  UAE: ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah'],
-  'Saudi Arabia': ['Riyadh', 'Jeddah', 'Dammam'],
-  Qatar: ['Doha'],
-};
-type Sheet = 'gender' | 'country' | 'city' | null;
+const SAMPLE = require('@/assets/images/mock/people/p1.jpg');
+type Sheet = 'gender' | 'dob' | 'country' | 'city' | 'photo' | null;
 
 /** Seeker sign-up, step 1 of 5 — About you. Social sign-up arrives prefilled. */
 export default function About() {
   const { c } = useTheme();
-  const params = useLocalSearchParams<{ social?: 'apple' | 'google'; phone?: string; email?: string }>();
+  const params = useLocalSearchParams<{ social?: 'apple' | 'google' }>();
   const social = params.social;
-  const finish = useFinishAuth();
-  const [photo, setPhoto] = useState<number | null>(social ? require('@/assets/images/mock/people/p1.jpg') : null);
-  const [first, setFirst] = useState(social ? 'Mia' : '');
-  const [last, setLast] = useState(social ? 'Colsen' : '');
-  const [gender, setGender] = useState<string>();
-  const [dob, setDob] = useState('');
-  const [country, setCountry] = useState<string>();
-  const [city, setCity] = useState<string>();
+  const { seeker: s, setSeeker } = useSignup();
   const [sheet, setSheet] = useState<Sheet>(null);
 
-  const lastErr = last && !lettersOnly(last) ? 'Use letters only, without symbols' : undefined;
-  const firstErr = first && !lettersOnly(first) ? 'Use letters only, without symbols' : undefined;
-  const dobOk = /^\d{2}\.\d{2}\.\d{4}$/.test(dob);
-  const ok = !!photo && first && last && !lastErr && !firstErr && gender && dobOk && country && city;
+  useEffect(() => {
+    if (social && !s.firstName) setSeeker({ photo: SAMPLE, firstName: 'Mia', lastName: 'Colsen' });
+  }, [social]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const err = (v: string) => (v && !lettersOnly(v) ? 'Use letters only, without symbols' : undefined);
+  const cities = citiesFor(s.country);
+  const ok = !!s.photo && s.firstName.trim() && s.lastName.trim() && !err(s.firstName) && !err(s.lastName) && s.gender && s.dob && s.country && s.city;
 
   return (
     <FormScreen
       top={<StepProgress step={1} of={5} />}
       title="About you"
       subtitle="Employers see this first. Fields marked * are required."
-      footer={<Button size="l" label="Continue" disabled={!ok} onPress={() => finish({ role: 'seeker', firstName: first, phone: params.phone, email: params.email })} />}>
+      footer={<Button size="l" label="Continue" disabled={!ok} onPress={() => router.push('/signup/occupation')} />}>
       {social ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: c.successBack }}>
           <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' }}>
@@ -60,9 +55,9 @@ export default function About() {
       ) : null}
 
       <Card padding={20} style={{ alignItems: 'center', gap: 6 }}>
-        <Pressable onPress={() => setPhoto(photo ? null : require('@/assets/images/mock/people/p1.jpg'))} accessibilityRole="button" accessibilityLabel={photo ? 'Change profile photo' : 'Add profile photo'}>
+        <Pressable onPress={() => setSheet('photo')} accessibilityRole="button" accessibilityLabel={s.photo ? 'Change profile photo' : 'Add profile photo'}>
           <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: c.input, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            {photo ? <Image source={photo} contentFit="cover" style={{ width: 88, height: 88 }} /> : <Icon name="camera" size={30} color="textBody" />}
+            {s.photo ? <Image source={s.photo} contentFit="cover" style={{ width: 88, height: 88 }} /> : <Icon name="camera" size={30} color="textBody" />}
           </View>
           <View style={{ position: 'absolute', right: -2, bottom: -2, width: 32, height: 32, borderRadius: 16, backgroundColor: c.primary, borderWidth: 3, borderColor: c.surface, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="camera" size={16} color="ctaButtonText" />
@@ -72,41 +67,44 @@ export default function About() {
           Profile photo *
         </Text>
         <Text variant="bodyS" color="textBody" align="center">
-          {photo ? 'Tap the camera to change it' : 'A clear, well-lit photo with your face visible'}
+          {s.photo ? 'Tap the camera to change it' : 'A clear, well-lit photo with your face visible'}
         </Text>
       </Card>
 
       <View style={{ gap: 8 }}>
-        <Field label="First name" required value={first} onChangeText={setFirst} placeholder="Enter" autoComplete="given-name" error={firstErr} />
-        <Field label="Last name" required value={last} onChangeText={setLast} placeholder="Enter" autoComplete="family-name" error={lastErr} />
-        <Field label="Gender" required value={gender} placeholder="Select" onPress={() => setSheet('gender')} rightIcon="chevron-down" />
-        <Field
-          label="Date of birth"
-          required
-          value={dob}
-          onChangeText={(t) => {
-            const d = t.replace(/\D/g, '').slice(0, 8);
-            setDob([d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.'));
-          }}
-          placeholder="DD.MM.YYYY"
-          keyboardType="number-pad"
-          rightIcon="calendar"
-        />
-        <Field label="Country" required value={country} placeholder="Select" onPress={() => setSheet('country')} rightIcon="chevron-down" />
-        <Field
-          label="City"
-          required
-          value={city}
-          placeholder={country ? 'Select' : 'Choose a country first'}
-          disabled={!country}
-          onPress={() => setSheet('city')}
-          rightIcon="chevron-down"
-        />
+        <Field label="First name" required value={s.firstName} onChangeText={(v) => setSeeker({ firstName: v })} placeholder="Enter" autoComplete="given-name" error={err(s.firstName)} />
+        <Field label="Last name" required value={s.lastName} onChangeText={(v) => setSeeker({ lastName: v })} placeholder="Enter" autoComplete="family-name" error={err(s.lastName)} />
+        <Field label="Gender" required value={s.gender} placeholder="Select" onPress={() => setSheet('gender')} rightIcon="chevron-down" />
+        <Field label="Date of birth" required value={formatDob(s.dob)} placeholder="Select" onPress={() => setSheet('dob')} rightIcon="calendar" />
+        <Field label="Country" required value={s.country ? (countryShort[s.country] ?? s.country) : undefined} placeholder="Select" onPress={() => setSheet('country')} rightIcon="chevron-down" />
+        <Field label="City" required value={s.city} placeholder={s.country ? 'Select' : 'Choose a country first'} disabled={!s.country} onPress={() => setSheet('city')} rightIcon="chevron-down" />
       </View>
 
-      <SelectSheet visible={sheet === 'gender'} title="Gender" options={['Female', 'Male']} value={gender} onClose={() => setSheet(null)} onSelect={(v) => (setGender(v), setSheet(null))} />
-      <SelectSheet visible={sheet === 'country'} title="Country" options={Object.keys(cities)} value={country} onClose={() => setSheet(null)} onSelect={(v) => (setCountry(v), setCity(undefined), setSheet(null))} />
-      <SelectSheet visible={sheet === 'city'} title="City" options={country ? cities[country] : []} value={city} onClose={() => setSheet(null)} onSelect={(v) => (setCity(v), setSheet(null))} />
+      <PhotoSheet visible={sheet === 'photo'} title="Profile photo" onClose={() => setSheet(null)} sample={SAMPLE} square onPicked={([p]) => setSeeker({ photo: p })} />
+      <SelectSheet visible={sheet === 'gender'} title="Gender" options={['Female', 'Male']} value={s.gender} onClose={() => setSheet(null)} onSelect={(v) => (setSeeker({ gender: v }), setSheet(null))} />
+      <DateSheet visible={sheet === 'dob'} value={s.dob} onClose={() => setSheet(null)} onSelect={(d) => (setSeeker({ dob: d }), setSheet(null))} />
+      <SelectSheet
+        visible={sheet === 'country'}
+        title="Country"
+        searchPlaceholder="Search country"
+        sections={[
+          { title: 'POPULAR', items: popularCountryNames },
+          { title: 'ALL COUNTRIES', items: allCountries.filter((x) => !popularCountryNames.includes(x)) },
+        ]}
+        badge={(x) => countryCode[x] ?? x.slice(0, 2).toUpperCase()}
+        value={s.country}
+        onClose={() => setSheet(null)}
+        onSelect={(v) => (setSeeker({ country: v, city: undefined }), setSheet(null))}
+      />
+      <SelectSheet
+        visible={sheet === 'city'}
+        title="City"
+        searchPlaceholder={`Search city in ${s.country ? (countryShort[s.country] ?? s.country) : ''}`}
+        sections={[{ title: s.country?.toUpperCase(), items: cities.length ? cities : [`${s.country ?? ''} — other city`] }]}
+        value={s.city}
+        onClose={() => setSheet(null)}
+        onSelect={(v) => (setSeeker({ city: v }), setSheet(null))}
+      />
     </FormScreen>
   );
 }

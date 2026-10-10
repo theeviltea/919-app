@@ -2,7 +2,8 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 
 export type Role = 'seeker' | 'employer';
 
-type User = { id: string; role: Role; phone?: string; email?: string; firstName?: string };
+export type CompanyStatus = 'pending' | 'approved' | 'none';
+type User = { id: string; role: Role; phone?: string; email?: string; firstName?: string; company?: { name: string; status: CompanyStatus } };
 
 type Session = {
   user: User | null;

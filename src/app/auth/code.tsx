@@ -90,7 +90,7 @@ export default function Code() {
                 The code has expired
               </Text>
               <Text variant="bodyS" color="textBody">
-                Request a new one. We'll send it to the same {flow === 'email' || flow === 'forgot' ? 'email' : 'number'}.
+                Request a new one. We’ll send it to the same {flow === 'email' || flow === 'forgot' ? 'email' : 'number'}.
               </Text>
             </View>
           </View>

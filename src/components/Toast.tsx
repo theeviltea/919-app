@@ -18,7 +18,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const [toast, setToast] = useState<ToastOpts | null>(null);
-  const a = useRef(new Animated.Value(0)).current;
+  const [a] = useState(() => new Animated.Value(0));
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const show = useCallback(

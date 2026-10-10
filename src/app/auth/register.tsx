@@ -17,7 +17,9 @@ export default function Register() {
   const { pendingRole } = useSession();
   const finish = useFinishAuth();
   const finishRef = useRef(finish);
-  finishRef.current = finish;
+  useEffect(() => {
+    finishRef.current = finish;
+  });
   const [country, setCountry] = useState(popularCountries[0]);
   const [phone, setPhone] = useState('');
   const [connecting, setConnecting] = useState<'apple' | 'google' | null>(params.social ?? null);
@@ -30,7 +32,7 @@ export default function Register() {
       const p = connecting;
       setConnecting(null);
       if (params.signin) finishRef.current({ email: 'mia.colsen@gmail.com' });
-      else router.replace({ pathname: pendingRole === 'employer' ? '/auth/role' : '/auth/about', params: { social: p } });
+      else router.replace(pendingRole === 'employer' ? '/employer/type' : { pathname: '/auth/about', params: { social: p } });
     }, 1600);
     return () => clearTimeout(t);
   }, [connecting, params.signin, pendingRole]);

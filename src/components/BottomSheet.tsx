@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, Easing, Modal, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -22,7 +22,7 @@ type Props = {
 export function BottomSheet({ visible, onClose, title, subtitle, closable, children }: Props) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const y = useRef(new Animated.Value(1)).current;
+  const [y] = useState(() => new Animated.Value(1));
   useEffect(() => {
     if (visible) {
       y.setValue(1);

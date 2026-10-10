@@ -5,7 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, Logo, PatternHeader, Pressable, Text, type IconName } from '@/components';
 import { useSession } from '@/data/session';
-import { useFinishAuth } from '@/features/auth/useFinishAuth';
+import { useSignup } from '@/data/signup';
+import { formatPhone } from '@/features/auth/PhoneInput';
 import { useTheme } from '@/theme';
 
 function RoleCard({ icon, title, points, onPress }: { icon: IconName; title: string; points: string[]; onPress: () => void }) {
@@ -43,14 +44,17 @@ export default function Role() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ phone?: string; email?: string; social?: string }>();
   const { pendingRole } = useSession();
-  const finish = useFinishAuth();
+  const { setEmployer } = useSignup();
 
   useEffect(() => {
+    // Contact from sign-in: the phone is locked on the representative step, the email prefills it.
+    const [dial, digits] = (params.phone ?? '').split('|');
+    setEmployer({ phone: digits ? `${dial} ${formatPhone(digits)}` : '', phoneLocked: !!digits, email: params.email ?? '' });
     if (pendingRole === 'seeker') router.replace({ pathname: '/auth/about', params });
+    if (pendingRole === 'employer') router.replace('/employer/type');
   }, [pendingRole]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Employer onboarding (company, representative) lands in the employer stage; for now sign in as employer.
-  const employer = () => finish({ role: 'employer', phone: params.phone, email: params.email });
+  const employer = () => router.push('/employer/type');
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: c.back }} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
