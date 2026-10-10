@@ -13,13 +13,15 @@ type ChipProps = {
   /** Selection chips in forms show a check when selected. */
   check?: boolean;
   icon?: IconName;
+  /** Urgent quick filter — `urgent` yellow fill in both states, `inverse` ring when selected. */
+  urgent?: boolean;
   onPress?: () => void;
 };
 
 /** Chip — clickable filter / selection. Selected = `inverse` fill. */
-export function Chip({ label, selected, count, check, icon, onPress }: ChipProps) {
+export function Chip({ label, selected, count, check, icon, urgent, onPress }: ChipProps) {
   const { c } = useTheme();
-  const fg = selected ? 'onInverse' : 'textHeadline';
+  const fg = urgent ? 'onUrgent' : selected ? 'onInverse' : 'textHeadline';
   return (
     <Pressable
       onPress={onPress}
@@ -32,9 +34,9 @@ export function Chip({ label, selected, count, check, icon, onPress }: ChipProps
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        backgroundColor: selected ? c.inverse : c.surface,
-        borderWidth: selected ? 0 : 1,
-        borderColor: c.stroke,
+        backgroundColor: urgent ? c.urgent : selected ? c.inverse : c.surface,
+        borderWidth: urgent ? (selected ? 2 : 0) : selected ? 0 : 1,
+        borderColor: urgent ? c.inverse : c.stroke,
       }}>
       {selected && check ? <Icon name="check" size={14} color={fg} /> : icon ? <Icon name={icon} size={14} color={fg} /> : null}
       <Text variant="bodyS" weight={600} color={fg}>
