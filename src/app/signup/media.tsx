@@ -3,11 +3,11 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { BottomSheet, Button, FormScreen, Icon, Pressable, StepProgress, Text } from '@/components';
+import { Button, FormScreen, Icon, Pressable, StepProgress, Text } from '@/components';
 import { useSignup, type Photo } from '@/data/signup';
-import { MAX_PHOTOS, MIN_PHOTOS, SAMPLE_PHOTOS, VIDEO_POSTER } from '@/features/auth/media';
+import { MAX_PHOTOS, MIN_PHOTOS, SAMPLE_PHOTOS } from '@/features/auth/media';
 import { PhotoSheet } from '@/features/auth/PhotoSheet';
-import { pickVideo } from '@/features/auth/pickImage';
+import { VideoSheet } from '@/features/auth/VideoSheet';
 import { useTheme } from '@/theme';
 
 let seq = 0;
@@ -142,32 +142,7 @@ export default function Media() {
       )}
 
       <PhotoSheet visible={photoSheet} title="Add photos" onClose={() => setPhotoSheet(false)} multiple limit={MAX_PHOTOS - photos.length} sample={SAMPLE_PHOTOS.slice(0, Math.max(1, Math.min(MIN_PHOTOS, MAX_PHOTOS - photos.length)))} onPicked={add} />
-      <BottomSheet visible={videoSheet} onClose={() => setVideoSheet(false)} title="Video presentation" subtitle="A short vertical video where you introduce yourself to employers." closable>
-        <View style={{ backgroundColor: c.input, borderRadius: 16, padding: 14, gap: 8 }}>
-          {['30–60 seconds, vertical', 'Good light, face the camera', 'Name, experience, languages, when you can work'].map((t) => (
-            <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Icon name="check" size={16} color="successText" />
-              <Text variant="body" color="textPrimary" style={{ fontSize: 14 }}>
-                {t}
-              </Text>
-            </View>
-          ))}
-        </View>
-        <Button label="Record video" icon="camera" onPress={() => (setVideoSheet(false), router.push('/signup/video-record'))} />
-        <Button
-          variant="neutral"
-          label="Choose from gallery"
-          icon="image"
-          onPress={async () => {
-            setVideoSheet(false);
-            const v = await pickVideo();
-            if (v) {
-              const sec = Math.round((v.duration ?? 42000) / 1000);
-              setSeeker({ video: { poster: VIDEO_POSTER, duration: `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`, progress: 0 } });
-            }
-          }}
-        />
-      </BottomSheet>
+      <VideoSheet visible={videoSheet} onClose={() => setVideoSheet(false)} />
     </FormScreen>
   );
 }

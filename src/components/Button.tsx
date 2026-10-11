@@ -7,7 +7,7 @@ import { Icon, type IconName } from './Icon';
 import { Pressable } from './Pressable';
 import { Text } from './Text';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'tonal' | 'neutral' | 'premium' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'tonal' | 'neutral' | 'premium' | 'danger' | 'destructive';
 export type ButtonSize = 'l' | 'm' | 's';
 
 type Props = {
@@ -39,6 +39,8 @@ export function Button({ label, onPress, variant = 'primary', size = 'm', icon, 
     neutral: { bg: c.input, fg: 'textHeadline', weight: 600 },
     premium: { bg: c.labelOrangeBack, fg: 'labelOrangeText', weight: 700 },
     danger: { bg: c.surface, fg: 'dangerText', weight: 700 },
+    // Solid red for the final step of irreversible actions (log out, delete account).
+    destructive: { bg: '#E0123F', fg: 'ctaButtonText', weight: 700 },
   };
   const v = looks[variant];
   const off = !!disabled && variant === 'primary';

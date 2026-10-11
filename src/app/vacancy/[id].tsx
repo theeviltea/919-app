@@ -86,10 +86,9 @@ export default function VacancyScreen() {
   };
   const fix = (k: GateItem['key']) => {
     setSheet(null);
-    if (k === 'about') router.push('/profile/edit-about');
-    else if (k === 'photos') router.push({ pathname: '/signup/media', params: { edit: '1' } });
-    else if (k === 'photo') router.push({ pathname: '/auth/about', params: { edit: '1' } });
-    else router.push({ pathname: '/signup/occupation', params: { second: '1', edit: '1' } });
+    if (k === 'about' || k === 'photos') router.push('/profile/general');
+    else if (k === 'photo') router.push('/profile/edit');
+    else router.push('/profile/occupations');
   };
 
   return (
@@ -188,7 +187,7 @@ export default function VacancyScreen() {
                     {/video/i.test(firstGap) ? 'Add a video presentation — this employer asks for one before the first call.' : `Missing: ${firstGap}. You can still apply.`}
                   </Text>
                   {/video/i.test(firstGap) ? (
-                    <Pressable onPress={() => router.push({ pathname: '/signup/media', params: { edit: '1' } })} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Pressable onPress={() => router.push('/profile/general')} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Text variant="body" weight={700} color="link" style={{ fontSize: 14 }}>
                         Add video
                       </Text>

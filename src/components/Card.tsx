@@ -33,27 +33,32 @@ type RowProps = {
   subtitle?: string;
   icon?: IconName;
   danger?: boolean;
+  /** Icon tile colour; `danger` implies red. */
+  tone?: 'brand' | 'success' | 'premium' | 'neutral';
   right?: ReactNode;
   chevron?: boolean;
   last?: boolean;
   onPress?: () => void;
 };
 
-export function Row({ title, subtitle, icon, danger, right, chevron = !right, last, onPress }: RowProps) {
+export function Row({ title, subtitle, icon, danger, tone = 'brand', right, chevron = !right, last, onPress }: RowProps) {
   const { c } = useTheme();
+  const tile = danger
+    ? { bg: c.dangerBack, fg: 'dangerText' }
+    : { brand: { bg: c.primarySecondary, fg: 'primary' }, success: { bg: c.successBack, fg: 'labelGreenText' }, premium: { bg: c.labelOrangeBack, fg: 'labelOrangeText' }, neutral: { bg: c.input, fg: 'textBody' } }[tone];
   const content = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingVertical: 10, borderBottomWidth: last ? 0 : 1, borderColor: c.divider }}>
       {icon ? (
-        <View style={{ width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: danger ? c.dangerBack : c.primarySecondary }}>
-          <Icon name={icon} size={20} color={danger ? 'dangerText' : 'primary'} />
+        <View style={{ width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: tile.bg }}>
+          <Icon name={icon} size={20} color={tile.fg} />
         </View>
       ) : null}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text variant="bodyL" color={danger ? 'dangerText' : 'textHeadline'}>
+        <Text variant="bodyL" weight={600} color={danger ? 'dangerText' : 'textHeadline'}>
           {title}
         </Text>
         {subtitle ? (
-          <Text variant="bodyS" color="textBody" style={{ marginTop: 2 }}>
+          <Text variant="bodyS" color="textBody" style={{ marginTop: 2, fontSize: 13, lineHeight: 18 }}>
             {subtitle}
           </Text>
         ) : null}

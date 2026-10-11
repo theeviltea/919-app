@@ -2,21 +2,24 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Button, FormScreen, Icon, OTPField, Pressable, ResendTimer, Text } from '@/components';
+import { Button, FormScreen, Icon, OTPField, Pressable, ResendTimer, Text, useToast } from '@/components';
+import { useSeeker } from '@/data/seeker';
 import { maskPhone } from '@/features/auth/PhoneInput';
 import { useFinishAuth } from '@/features/auth/useFinishAuth';
 import { useTheme } from '@/theme';
 
-type Flow = 'signin' | 'signup' | 'email' | 'forgot';
+type Flow = 'signin' | 'signup' | 'email' | 'forgot' | 'phone';
 
 // Prototype rules: 000000 is a wrong code, anything else passes.
 const WRONG = '000000';
 
 /** OTP for phone sign-in / sign-up, email confirmation and password reset. Auto-submits on the 6th digit. */
 export default function Code() {
-  const { flow = 'signin', to = '' } = useLocalSearchParams<{ flow?: Flow; to?: string }>();
+  const { flow = 'signin', to = '', mode } = useLocalSearchParams<{ flow?: Flow; to?: string; mode?: 'change' | 'add' }>();
   const { c } = useTheme();
   const finish = useFinishAuth();
+  const toast = useToast();
+  const { updateProfile } = useSeeker();
   const [code, setCode] = useState('');
   const [attempts, setAttempts] = useState(3);
   const [error, setError] = useState<string>();
@@ -39,7 +42,12 @@ export default function Code() {
       setError(a > 0 ? `Incorrect code. ${a} attempt${a === 1 ? '' : 's'} left` : 'Too many attempts. Request a new code.');
       return;
     }
-    if (flow === 'signin') finish({ phone: to });
+    if (flow === 'phone') {
+      const d = digits ?? '';
+      updateProfile({ phone: `${dial} ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}` });
+      router.dismissTo('/profile/personal');
+      toast({ text: mode === 'add' ? 'Phone number added' : 'Phone number updated', icon: 'check', aboveTabBar: true });
+    } else if (flow === 'signin') finish({ phone: to });
     else if (flow === 'forgot') router.replace({ pathname: '/auth/new-password', params: { email: to } });
     else router.replace({ pathname: '/auth/role', params: flow === 'email' ? { email: to } : { phone: to } });
   };

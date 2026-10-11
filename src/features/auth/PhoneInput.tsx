@@ -13,17 +13,17 @@ export const flag = (code: string) => String.fromCodePoint(...[...code.toUpperCa
 export const formatPhone = (digits: string) => digits.replace(/^(\d{0,2})(\d{0,3})(\d{0,4}).*/, (_, a, b, c) => [a, b, c].filter(Boolean).join(' '));
 export const maskPhone = (dial: string, digits: string) => `${dial} ${digits.slice(0, 2)} ••• ${digits.slice(-4)}`;
 
-type Props = { country: Country; onCountry: (c: Country) => void; value: string; onChange: (digits: string) => void; autoFocus?: boolean };
+type Props = { country: Country; onCountry: (c: Country) => void; value: string; onChange: (digits: string) => void; autoFocus?: boolean; label?: string; error?: string };
 
 /** Country code button + phone field, as on SignInPhone / RegPhone. */
-export function PhoneInput({ country, onCountry, value, onChange, autoFocus }: Props) {
+export function PhoneInput({ country, onCountry, value, onChange, autoFocus, label = 'Phone number', error }: Props) {
   const { c } = useTheme();
   const [focused, setFocused] = useState(false);
   const [sheet, setSheet] = useState(false);
   return (
     <View style={{ gap: 8 }}>
       <Text variant="bodyS" weight={600}>
-        Phone number
+        {label}
       </Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <Pressable
@@ -40,14 +40,14 @@ export function PhoneInput({ country, onCountry, value, onChange, autoFocus }: P
             flex: 1,
             height: 56,
             borderRadius: 16,
-            backgroundColor: c.surface,
-            borderWidth: focused ? 2 : 1,
-            borderColor: focused ? c.primary : c.stroke,
-            paddingLeft: focused ? 15 : 16,
+            backgroundColor: error ? c.dangerBack : c.surface,
+            borderWidth: focused || error ? 2 : 1,
+            borderColor: error ? c.error : focused ? c.primary : c.stroke,
+            paddingLeft: focused || error ? 15 : 16,
             paddingRight: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            boxShadow: focused ? `0 0 0 4px ${c.focusRing}` : undefined,
+            boxShadow: focused && !error ? `0 0 0 4px ${c.focusRing}` : undefined,
           }}>
           <TextInput
             value={formatPhone(value)}
@@ -71,6 +71,16 @@ export function PhoneInput({ country, onCountry, value, onChange, autoFocus }: P
           ) : null}
         </View>
       </View>
+      {error ? (
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          <View style={{ marginTop: 2 }}>
+            <Icon name="alert-circle" size={14} color="dangerText" />
+          </View>
+          <Text variant="bodyS" color="dangerText" style={{ flex: 1, fontSize: 13 }}>
+            {error}
+          </Text>
+        </View>
+      ) : null}
       <CountrySheet visible={sheet} selected={country} onClose={() => setSheet(false)} onSelect={(x) => (onCountry(x), setSheet(false))} />
     </View>
   );

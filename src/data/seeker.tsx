@@ -2,13 +2,46 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import type { ImageSourcePropType } from 'react-native';
 
 import { ageFrom, type Field } from './registration';
+import { useSession } from './session';
 import { useSignup, type FieldEntry, type Photo, type SeekerDraft } from './signup';
 import type { Sphere, Vacancy } from './types';
 
 // ---------- profile
 
-export type Language = { code: string; name: string; level: 'Native' | 'Fluent' | 'Intermediate' | 'Basic' };
-export type Job = { role: string; place: string; period: string; length: string };
+export type LangLevel = 'Native' | 'Fluent' | 'Intermediate' | 'Basic';
+export type Language = { code: string; name: string; level: LangLevel };
+/** Month precision; `d` only when the person picked an exact day. Months are 0-based. */
+export type YM = { y: number; m: number; d?: number };
+export type Job = { id: string; role: string; company: string; city: string; category: string; start: YM; end?: YM; current: boolean; description: string };
+export type Study = { id: string; institution: string; degree: string; field: string; start: number; end?: number; current: boolean };
+export type LinkKind = 'web' | 'soundcloud' | 'instagram' | 'facebook' | 'tiktok' | 'youtube' | 'spotify' | 'linkedin';
+export type ProfileLink = { id: string; kind: LinkKind; value: string };
+
+export const linkKinds: Record<LinkKind, { label: string; code: string; placeholder: string }> = {
+  web: { label: 'Portfolio', code: 'WEB', placeholder: 'yoursite.com' },
+  soundcloud: { label: 'SoundCloud', code: 'SC', placeholder: 'soundcloud.com/you' },
+  instagram: { label: 'Instagram', code: 'IG', placeholder: '@username' },
+  facebook: { label: 'Facebook', code: 'FB', placeholder: 'Profile link' },
+  tiktok: { label: 'TikTok', code: 'TT', placeholder: '@username' },
+  youtube: { label: 'YouTube', code: 'YT', placeholder: 'youtube.com/@you' },
+  spotify: { label: 'Spotify', code: 'SP', placeholder: 'Artist link' },
+  linkedin: { label: 'LinkedIn', code: 'IN', placeholder: 'linkedin.com/in/you' },
+};
+
+export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MON = MONTHS.map((m) => m.slice(0, 3));
+export const fmtYM = (v?: YM, short = false) => (v ? `${v.d && !short ? `${v.d} ` : ''}${short ? MON[v.m] : MONTHS[v.m]} ${v.y}` : '');
+const months = (a: YM, b: YM) => Math.max(0, (b.y - a.y) * 12 + b.m - a.m + 1);
+export const nowYM = (): YM => ({ y: new Date().getFullYear(), m: new Date().getMonth() });
+export function fmtLength(n: number) {
+  const y = Math.floor(n / 12);
+  const m = n % 12;
+  return [y ? `${y} yr${y > 1 ? 's' : ''}` : '', m ? `${m} mo${m > 1 ? 's' : ''}` : ''].filter(Boolean).join(' ') || '1 mo';
+}
+export const jobMonths = (j: Job) => months(j.start, j.current || !j.end ? nowYM() : j.end);
+export const jobPeriod = (j: Job) => `${fmtYM(j.start, true)} — ${j.current || !j.end ? 'now' : fmtYM(j.end, true)} · ${fmtLength(jobMonths(j))}`;
+export const totalExperience = (jobs: Job[]) => fmtLength(jobs.reduce((n, j) => n + jobMonths(j), 0));
+export const studyPeriod = (e: Study) => `${e.start} — ${e.current || !e.end ? 'now' : e.end}`;
 
 export type SeekerProfile = {
   firstName: string;
@@ -16,6 +49,7 @@ export type SeekerProfile = {
   verified: boolean;
   photo?: ImageSourcePropType;
   gender?: string;
+  dob?: Date;
   age?: number;
   city?: string;
   country?: string;
@@ -25,8 +59,12 @@ export type SeekerProfile = {
   about: string;
   languages: Language[];
   experience: Job[];
-  education: { title: string; place: string; period: string }[];
-  links: { kind: string; label: string; value: string }[];
+  education: Study[];
+  links: ProfileLink[];
+  /** "+971 50 123 4567"; undefined when the account was created with email or a social login. */
+  phone?: string;
+  email?: string;
+  emailSource?: 'google' | 'apple';
   stats: { views: number; applications: number; invites: number; videoViews: string };
 };
 
@@ -56,14 +94,27 @@ const demoProfile: SeekerProfile = {
     { code: 'AR', name: 'Arabic', level: 'Basic' },
   ],
   experience: [
-    { role: 'Hostess', place: 'Atlantis The Palm · Dubai', period: 'Mar 2022 — now', length: '2 yrs 7 mos' },
-    { role: 'Waitress', place: 'Beach club, JBR · Dubai', period: 'Jun 2020 — Feb 2022', length: '1 yr 9 mos' },
+    {
+      id: 'x1',
+      role: 'Hostess',
+      company: 'Atlantis The Palm',
+      city: 'Dubai',
+      category: 'Hospitality',
+      start: { y: 2022, m: 2, d: 14 },
+      current: true,
+      description: 'Welcomed guests at the main restaurant, managed the waiting list and VIP seating for up to 300 covers a night.',
+    },
+    { id: 'x2', role: 'Waitress', company: 'Beach club, JBR', city: 'Dubai', category: 'F&B', start: { y: 2020, m: 5 }, end: { y: 2022, m: 1 }, current: false, description: '' },
   ],
-  education: [{ title: 'Diploma, Hospitality management', place: 'Dubai Hospitality College', period: '2017 — 2019' }],
+  education: [{ id: 'e1', institution: 'Dubai Hospitality College', degree: 'Diploma', field: 'Hospitality management', start: 2017, end: 2019, current: false }],
   links: [
-    { kind: 'WEB', label: 'Portfolio', value: 'miadakaskos.com' },
-    { kind: 'IG', label: 'Instagram', value: '@mia.dakaskos' },
+    { id: 'l1', kind: 'web', value: 'miadakaskos.com' },
+    { id: 'l2', kind: 'soundcloud', value: 'soundcloud.com/mia.dj' },
+    { id: 'l3', kind: 'instagram', value: '@mia.dakaskos' },
   ],
+  phone: '+971 50 123 4567',
+  email: 'mia.dakaskos@gmail.com',
+  emailSource: 'google',
   stats: { views: 128, applications: 12, invites: 5, videoViews: '1.2k' },
 };
 
@@ -234,6 +285,36 @@ const initialThreads: Thread[] = [
   },
 ];
 
+const guessKind = (l: string): LinkKind => {
+  const k = (['soundcloud', 'instagram', 'facebook', 'tiktok', 'youtube', 'spotify', 'linkedin'] as LinkKind[]).find((x) => l.toLowerCase().includes(x));
+  return k ?? 'web';
+};
+/** "+971|501234567" (session) → "+971 50 123 4567". */
+const phoneLabel = (v: string) => {
+  const [dial, d = ''] = v.includes('|') ? v.split('|') : ['+971', v.replace(/\D/g, '')];
+  return `${dial} ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}`.trim();
+};
+
+/** Profile strength for Edit profile and the "can't find you" banner. */
+export function completeness(p: SeekerProfile) {
+  const ready = p.photos.filter((x) => x.progress === undefined).length;
+  const items = [
+    { key: 'photo', done: !!p.photo, hint: 'Add a profile photo' },
+    { key: 'photos', done: ready >= 3, hint: 'Add at least 3 photos', count: `${Math.min(ready, 3)} / 3` },
+    { key: 'video', done: !!p.video, hint: 'Record a video presentation' },
+    { key: 'about', done: !!p.about.trim(), hint: 'Write a few lines about you' },
+    { key: 'languages', done: p.languages.length > 0, hint: 'Add your languages' },
+    { key: 'experience', done: p.experience.length > 0, hint: 'Add your experience' },
+    { key: 'education', done: p.education.length > 0, hint: 'Add your education' },
+  ];
+  const percent = Math.round((items.filter((i) => i.done).length / items.length) * 100);
+  /** Needed to appear in talent search. */
+  const search = items.filter((i) => ['photos', 'video', 'about'].includes(i.key) && !i.done);
+  const next = items.find((i) => !i.done);
+  const nextPercent = Math.round(((items.filter((i) => i.done).length + 1) / items.length) * 100);
+  return { percent, items, search, next, nextPercent };
+}
+
 // ---------- profile completeness (product rules §10)
 
 export const sphereToField: Record<Sphere, Field> = { hospitality: 'hospitality', fnb: 'hospitality', events: 'entertainment', modeling: 'model', music: 'music', beauty: 'service' };
@@ -267,6 +348,9 @@ type Store = {
   updateProfile: (u: Partial<SeekerProfile>) => void;
   hidden: boolean;
   setHidden: (v: boolean) => void;
+  /** Settings switches (notifications, privacy). */
+  prefs: Record<string, boolean>;
+  setPref: (k: string, v: boolean) => void;
   apps: Application[];
   appFor: (vacancyId: string) => Application | undefined;
   apply: (vacancyId: string, message: string) => void;
@@ -290,8 +374,12 @@ const now = () => {
 /** Seeker-side data for the prototype: profile, applications, saved vacancies and chats. Replaced by the API later. */
 export function SeekerProvider({ children }: { children: ReactNode }) {
   const { seeker: draft } = useSignup();
+  const { user } = useSession();
   const [extra, setExtra] = useState<Partial<SeekerProfile>>({});
   const [hidden, setHidden] = useState(false);
+  const [prefs, setPrefs] = useState<Record<string, boolean>>({
+    push: true, newVacancies: true, savedClosing: true, urgentNearby: false, appStatus: true, invites: true, messages: true, preview: true, digest: true, news: false, faceId: true, showAge: true, readReceipts: true,
+  });
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [saved, setSaved] = useState<string[]>(['v13', 'v10', 'v11', 'v12']);
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
@@ -304,6 +392,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       verified: !!base,
       photo: draft.photo,
       gender: draft.gender,
+      dob: draft.dob,
       age: ageFrom(draft.dob),
       city: draft.city,
       country: draft.country,
@@ -314,11 +403,14 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       languages: base?.languages ?? [],
       experience: base?.experience ?? [],
       education: base?.education ?? [],
-      links: base?.links ?? draft.occupations.flatMap((o) => o.links.map((l) => ({ kind: 'WEB', label: 'Link', value: l.replace(/^https?:\/\//, '') }))),
+      links: base?.links ?? draft.occupations.flatMap((o) => o.links.map((l, i) => ({ id: `${o.field}${i}`, kind: guessKind(l), value: l.replace(/^https?:\/\//, '') }))),
+      phone: base?.phone ?? (user?.phone ? phoneLabel(user.phone) : undefined),
+      email: base?.email ?? user?.email,
+      emailSource: base?.emailSource,
       stats: base?.stats ?? { views: 0, applications: 0, invites: 0, videoViews: '0' },
       ...extra,
     };
-  }, [draft, extra]);
+  }, [draft, extra, user]);
 
   const updateThread = useCallback((id: string, fn: (t: Thread) => Partial<Thread>) => setThreads((ts) => ts.map((t) => (t.id === id ? { ...t, ...fn(t) } : t))), []);
 
@@ -328,6 +420,8 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       updateProfile: (u) => setExtra((e) => ({ ...e, ...u })),
       hidden,
       setHidden,
+      prefs,
+      setPref: (k, v) => setPrefs((x) => ({ ...x, [k]: v })),
       apps,
       appFor: (id) => apps.find((a) => a.vacancyId === id),
       // The message goes with the application; the chat opens when the employer accepts.
@@ -349,7 +443,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
         ),
       unreadTotal: threads.filter((t) => !t.archived).reduce((n, t) => n + t.unread, 0),
     }),
-    [profile, hidden, apps, saved, threads, updateThread],
+    [profile, hidden, prefs, apps, saved, threads, updateThread],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -53,7 +53,7 @@ export default function VideoPreview() {
             style={{ flex: 1.4 }}
             onPress={() => {
               setSeeker({ video: { poster: VIDEO_POSTER, duration: fmt(dur), progress: 0 } });
-              router.dismissTo('/signup/media');
+              router.back();
             }}
           />
         </View>
