@@ -11,6 +11,7 @@ import { findVacancy } from '@/data/mock';
 import { clockNow, useSeeker, type Msg, type NewMsg } from '@/data/seeker';
 import { SAMPLE_PHOTOS, VIDEO_POSTER } from '@/features/auth/media';
 import { pickImages } from '@/features/auth/pickImage';
+import { ChatBackground } from '@/features/chat/ChatBackground';
 import { SwipeReply } from '@/features/chat/SwipeReply';
 import { openPhotos, openVideo } from '@/features/media/viewer';
 import { fontFamily, useTheme } from '@/theme';
@@ -52,7 +53,8 @@ function VideoTile({ poster, duration, onOpen }: { poster: ImageSourcePropType; 
           <Icon name="play" size={24} color="#FFFFFF" />
         </View>
       </View>
-      <View style={{ position: 'absolute', left: 10, bottom: 10, paddingHorizontal: 8, height: 24, borderRadius: 12, backgroundColor: c.mediaOverlay, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <View
+        style={{ position: 'absolute', left: 10, bottom: 10, paddingHorizontal: 8, height: 24, borderRadius: 12, backgroundColor: c.mediaOverlay, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         <Icon name="video" size={14} color="#FFFFFF" />
         <Text variant="caption" weight={600} color="#FFFFFF">
           {duration}
@@ -238,69 +240,85 @@ export default function ChatScreen() {
         ) : null}
       </View>
 
-      {/* messages */}
-      <ScrollView
-        ref={scroll}
-        onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: true })}
-        contentContainerStyle={{ padding: 16, gap: 8, flexGrow: 1, justifyContent: 'flex-end', width: '100%', maxWidth: 720, alignSelf: 'center' }}
-        keyboardShouldPersistTaps="handled">
-        {t.state === 'request' ? (
-          <View style={{ alignItems: 'center', gap: 8, paddingVertical: 12 }}>
-            <View style={{ width: 72, height: 72, borderRadius: 22, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center' }}>
-              <Text variant="title" color="ctaButtonText">
-                {t.company.initials}
+      {/* messages, over the 919 pattern */}
+      <View style={{ flex: 1 }}>
+        <ChatBackground />
+        <ScrollView
+          ref={scroll}
+          onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: true })}
+          contentContainerStyle={{ padding: 16, gap: 8, flexGrow: 1, justifyContent: 'flex-end', width: '100%', maxWidth: 720, alignSelf: 'center' }}
+          keyboardShouldPersistTaps="handled">
+          {t.state === 'request' ? (
+            <View style={{ alignItems: 'center', gap: 8, paddingVertical: 12 }}>
+              <View style={{ width: 72, height: 72, borderRadius: 22, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center' }}>
+                <Text variant="title" color="ctaButtonText">
+                  {t.company.initials}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text variant="bodyL" weight={700}>
+                  {t.company.name}
+                </Text>
+                {t.company.verified ? <Icon name="verified" size={18} color="primary" /> : null}
+              </View>
+              <Text variant="bodyS" color="textBody" align="center">
+                {t.person.name}, {t.person.role} · wants to contact you directly
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text variant="bodyL" weight={700}>
-                {t.company.name}
-              </Text>
-              {t.company.verified ? <Icon name="verified" size={18} color="primary" /> : null}
+          ) : null}
+          {t.messages.map((m) => {
+            if (m.kind === 'date') return <ChatDate key={m.id} label={m.label} />;
+            if (m.kind === 'system') return <ChatSystemLine key={m.id} text={m.text} time={m.time} tone={m.tone} />;
+            const attachment =
+              m.kind === 'photos' ? (
+                <PhotoGrid photos={m.photos} />
+              ) : m.kind === 'video' ? (
+                <VideoTile
+                  poster={m.poster}
+                  duration={m.duration}
+                  onOpen={() =>
+                    openVideo({
+                      poster: m.poster,
+                      duration: m.duration,
+                      label: `Chat · ${t.company.name}`,
+                      name: m.mine ? me : t.person.name,
+                      avatar: m.mine ? profile.photo : t.person.photo,
+                      subtitle: m.mine ? `Sent to ${t.company.name} · ${m.time}` : `${t.person.role} · ${m.time}`,
+                      text: m.text,
+                    })
+                  }
+                />
+              ) : m.kind === 'contact' ? (
+                <ContactCard m={m} />
+              ) : undefined;
+            const body = m.kind === 'text' || m.kind === 'photos' || m.kind === 'video' ? m.text : undefined;
+            return (
+              <SwipeReply
+                key={m.id}
+                mine={m.mine}
+                canReply={canWrite}
+                onReply={() => setReply({ author: m.mine ? 'You' : firstName, text: quoteText(m) })}
+                onLongPress={() => (setPicked(m), setSheet('actions'))}>
+                <ChatBubble
+                  mine={m.mine}
+                  text={body}
+                  time={m.time}
+                  quote={m.kind === 'text' ? m.quote : undefined}
+                  attachment={m.kind === 'contact' ? <View style={{ padding: 2 }}>{attachment}</View> : attachment}
+                />
+              </SwipeReply>
+            );
+          })}
+          {t.state === 'request' ? <ChatBubble text={t.requestText} time={t.time} /> : null}
+          {typing ? (
+            <View style={{ alignSelf: 'flex-start', paddingHorizontal: 14, height: 36, borderRadius: 18, backgroundColor: c.surface, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              {[0, 1, 2].map((i) => (
+                <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: c.textLightSecondary, opacity: 0.5 + i * 0.25 }} />
+              ))}
             </View>
-            <Text variant="bodyS" color="textBody" align="center">
-              {t.person.name}, {t.person.role} · wants to contact you directly
-            </Text>
-          </View>
-        ) : null}
-        {t.messages.map((m) => {
-          if (m.kind === 'date') return <ChatDate key={m.id} label={m.label} />;
-          if (m.kind === 'system') return <ChatSystemLine key={m.id} text={m.text} time={m.time} tone={m.tone} />;
-          const attachment = m.kind === 'photos' ? <PhotoGrid photos={m.photos} /> : m.kind === 'video' ? <VideoTile
-                poster={m.poster}
-                duration={m.duration}
-                onOpen={() =>
-                  openVideo({
-                    poster: m.poster,
-                    duration: m.duration,
-                    label: `Chat · ${t.company.name}`,
-                    name: m.mine ? me : t.person.name,
-                    avatar: m.mine ? profile.photo : t.person.photo,
-                    subtitle: m.mine ? `Sent to ${t.company.name} · ${m.time}` : `${t.person.role} · ${m.time}`,
-                    text: m.text,
-                  })
-                }
-              /> : m.kind === 'contact' ? <ContactCard m={m} /> : undefined;
-          const body = m.kind === 'text' || m.kind === 'photos' || m.kind === 'video' ? m.text : undefined;
-          return (
-            <SwipeReply
-              key={m.id}
-              mine={m.mine}
-              canReply={canWrite}
-              onReply={() => setReply({ author: m.mine ? 'You' : firstName, text: quoteText(m) })}
-              onLongPress={() => (setPicked(m), setSheet('actions'))}>
-              <ChatBubble mine={m.mine} text={body} time={m.time} quote={m.kind === 'text' ? m.quote : undefined} attachment={m.kind === 'contact' ? <View style={{ padding: 2 }}>{attachment}</View> : attachment} />
-            </SwipeReply>
-          );
-        })}
-        {t.state === 'request' ? <ChatBubble text={t.requestText} time={t.time} /> : null}
-        {typing ? (
-          <View style={{ alignSelf: 'flex-start', paddingHorizontal: 14, height: 36, borderRadius: 18, backgroundColor: c.surface, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            {[0, 1, 2].map((i) => (
-              <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: c.textLightSecondary, opacity: 0.5 + i * 0.25 }} />
-            ))}
-          </View>
-        ) : null}
-      </ScrollView>
+          ) : null}
+        </ScrollView>
+      </View>
 
       {/* bottom */}
       <View style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: insets.bottom + 10, backgroundColor: c.surfacePanel, borderTopWidth: 1, borderColor: c.divider }}>
@@ -391,7 +409,12 @@ export default function ChatScreen() {
       <BottomSheet visible={sheet === 'attach'} onClose={() => setSheet(null)} title="Attach">
         <Button variant="neutral" icon="image" label="Photo from library" onPress={() => attachPhoto(false)} />
         <Button variant="neutral" icon="sparkles" label="Use sample photos" onPress={() => attachPhoto(true)} />
-        <Button variant="neutral" icon="video" label="Video presentation" onPress={() => (setSheet(null), push({ kind: 'video', mine: true, poster: profile.video?.poster ?? VIDEO_POSTER, duration: profile.video?.duration ?? '0:42', time: clockNow() }))} />
+        <Button
+          variant="neutral"
+          icon="video"
+          label="Video presentation"
+          onPress={() => (setSheet(null), push({ kind: 'video', mine: true, poster: profile.video?.poster ?? VIDEO_POSTER, duration: profile.video?.duration ?? '0:42', time: clockNow() }))}
+        />
         <Button
           variant="neutral"
           icon="user"
@@ -422,7 +445,12 @@ export default function ChatScreen() {
           />
         ) : null}
         {picked && 'mine' in picked && !picked.mine ? (
-          <Button variant="danger" icon="alert-circle" label="Report message" onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will review this message', kind: 'neutral', icon: 'alert-circle' }))} />
+          <Button
+            variant="danger"
+            icon="alert-circle"
+            label="Report message"
+            onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will review this message', kind: 'neutral', icon: 'alert-circle' }))}
+          />
         ) : null}
       </BottomSheet>
 
@@ -430,11 +458,20 @@ export default function ChatScreen() {
       <BottomSheet visible={sheet === 'menu'} onClose={() => setSheet(null)} title={t.company.name} subtitle={`${t.person.name}, ${t.person.role}`}>
         {v ? <Button variant="neutral" icon="briefcase" label="View vacancy" onPress={() => (setSheet(null), router.push({ pathname: '/vacancy/[id]', params: { id: v.id } }))} /> : null}
         {canWithdraw ? <Button variant="neutral" icon="logout" label="Withdraw application" onPress={doWithdraw} /> : null}
-        <Button variant="neutral" icon="alert-circle" label="Report" onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will check this employer', kind: 'neutral', icon: 'alert-circle' }))} />
+        <Button
+          variant="neutral"
+          icon="alert-circle"
+          label="Report"
+          onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will check this employer', kind: 'neutral', icon: 'alert-circle' }))}
+        />
         {t.state !== 'blocked' ? <Button variant="danger" icon="cancel" label={`Block ${t.company.name}`} onPress={() => setSheet('block')} /> : null}
       </BottomSheet>
 
-      <BottomSheet visible={sheet === 'block'} onClose={() => setSheet(null)} title={`Block ${t.company.name}?`} subtitle="They won’t be able to message you or invite you to vacancies. You can unblock them later.">
+      <BottomSheet
+        visible={sheet === 'block'}
+        onClose={() => setSheet(null)}
+        title={`Block ${t.company.name}?`}
+        subtitle="They won’t be able to message you or invite you to vacancies. You can unblock them later.">
         <Button variant="danger" label="Block" onPress={block} />
         <Button variant="neutral" label="Cancel" onPress={() => setSheet(null)} />
       </BottomSheet>

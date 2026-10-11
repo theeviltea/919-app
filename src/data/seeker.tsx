@@ -414,6 +414,9 @@ type Store = {
   threads: Thread[];
   thread: (id: string) => Thread | undefined;
   updateThread: (id: string, fn: (t: Thread) => Partial<Thread>) => void;
+  /** Swipe actions in Messages: Archive / Restore keep the chat, Delete removes it for you. */
+  archiveThread: (id: string, archived: boolean) => void;
+  deleteThread: (id: string) => void;
   send: (id: string, msg: NewMsg) => void;
   unreadTotal: number;
   /** Contact request (Premium employer): accept opens the chat, decline hides it. */
@@ -505,6 +508,8 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       threads,
       thread: (id) => threads.find((t) => t.id === id),
       updateThread,
+      archiveThread: (id, archived) => updateThread(id, () => ({ archived })),
+      deleteThread: (id) => setThreads((ts) => ts.filter((t) => t.id !== id)),
       send: (id, msg) =>
         setThreads((ts) =>
           ts.map((t) => (t.id === id ? { ...t, messages: [...t.messages, { ...msg, id: `n${++mid}` } as Msg], time: 'time' in msg ? (msg.time as string) : now(), unread: 0 } : t)),
