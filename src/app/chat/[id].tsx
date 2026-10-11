@@ -66,7 +66,7 @@ function ContactCard({ m }: { m: Extract<Msg, { kind: 'contact' }> }) {
       {m.photo ? (
         <Image source={m.photo} contentFit="cover" style={{ width: 44, height: 44, borderRadius: 22 }} />
       ) : (
-        <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="user" size={22} color="primary" />
         </View>
       )}
@@ -95,7 +95,7 @@ export default function ChatScreen() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { thread, updateThread, send, profile, withdraw, appFor } = useSeeker();
+  const { thread, updateThread, send, profile, withdraw, appFor, acceptRequest, declineRequest } = useSeeker();
   const t = thread(id);
   const v = t?.vacancyId ? findVacancy(t.vacancyId) : undefined;
   const [text, setText] = useState('');
@@ -103,6 +103,7 @@ export default function ChatScreen() {
   const [sheet, setSheet] = useState<Sheet>(null);
   const [picked, setPicked] = useState<Msg | null>(null);
   const [typing, setTyping] = useState(false);
+  const [inputH, setInputH] = useState(22);
   const scroll = useRef<ScrollView>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -145,6 +146,7 @@ export default function ChatScreen() {
     if (!body) return;
     push({ kind: 'text', mine: true, text: body, time: clockNow(), quote: reply ?? undefined });
     setText('');
+    setInputH(22);
   };
 
   const attachPhoto = async (sample: boolean) => {
@@ -153,20 +155,10 @@ export default function ChatScreen() {
     if (photos.length) push({ kind: 'photos', mine: true, photos, time: clockNow() });
   };
 
-  const accept = () => {
-    updateThread(t.id, (x) => ({
-      state: 'active',
-      unread: 0,
-      messages: [
-        ...x.messages,
-        { id: 'req', kind: 'text', mine: false, text: x.requestText ?? '', time: x.time },
-        { id: 'acc', kind: 'system', tone: 'success', text: 'You accepted the request', time: clockNow() },
-      ],
-    }));
-  };
+  const accept = () => acceptRequest(t.id);
 
   const decline = () => {
-    updateThread(t.id, () => ({ state: 'declined', unread: 0, archived: true }));
+    declineRequest(t.id);
     toast({ text: 'Request declined. The employer won’t be notified', kind: 'neutral', icon: 'cancel' });
     router.back();
   };
@@ -339,17 +331,19 @@ export default function ChatScreen() {
                   disabled={!canWrite}
                   accessibilityRole="button"
                   accessibilityLabel="Attach"
-                  style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
+                  style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name="add" size={22} color="primary" />
                 </Pressable>
-                <View style={{ flex: 1, minHeight: 44, borderRadius: 22, backgroundColor: c.input, paddingHorizontal: 16, justifyContent: 'center' }}>
+                <View style={{ flex: 1, minHeight: 48, borderRadius: 16, backgroundColor: c.input, paddingLeft: 16, paddingRight: 8, paddingVertical: 13, justifyContent: 'center' }}>
                   <TextInput
                     value={text}
                     onChangeText={setText}
                     placeholder="Message"
                     placeholderTextColor={c.textLightSecondary}
                     multiline
+                    numberOfLines={1}
                     maxLength={2000}
+                    onContentSizeChange={(e) => setInputH(Math.min(110, Math.max(22, Math.round(e.nativeEvent.contentSize.height))))}
                     accessibilityLabel="Message"
                     onKeyPress={(e) => {
                       const ne = e.nativeEvent as { key: string; shiftKey?: boolean };
@@ -358,7 +352,7 @@ export default function ChatScreen() {
                         submit();
                       }
                     }}
-                    style={{ fontFamily: fontFamily('sans', 400), fontSize: 16, lineHeight: 21, color: c.textHeadline, paddingVertical: 11, maxHeight: 120, outlineStyle: 'none' } as object}
+                    style={{ fontFamily: fontFamily('sans', 400), fontSize: 16, lineHeight: 22, color: c.textHeadline, padding: 0, height: inputH, outlineStyle: 'none', resize: 'none' } as object}
                   />
                 </View>
                 <Pressable
@@ -366,7 +360,7 @@ export default function ChatScreen() {
                   disabled={!text.trim()}
                   accessibilityRole="button"
                   accessibilityLabel="Send"
-                  style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: text.trim() ? c.primary : c.control, alignItems: 'center', justifyContent: 'center' }}>
+                  style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: text.trim() ? c.primary : c.control, alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name="arrow-right" size={22} color="ctaButtonText" />
                 </Pressable>
               </View>

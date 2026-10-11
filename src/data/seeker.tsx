@@ -315,6 +315,51 @@ export function completeness(p: SeekerProfile) {
   return { percent, items, search, next, nextPercent };
 }
 
+// ---------- notifications
+
+export type NotifKind = 'request' | 'accepted' | 'declined' | 'vacancies' | 'urgent' | 'viewed' | 'saved' | 'views' | 'video';
+export type Notif = {
+  id: string;
+  kind: NotifKind;
+  group: 'applications' | 'requests' | 'vacancies' | 'other';
+  title: string;
+  text: string;
+  quote?: string;
+  time: string;
+  day: 'today' | 'earlier';
+  unread: boolean;
+  vacancyId?: string;
+  threadId?: string;
+  /** Category of a "new vacancies" digest and the covers to stack. */
+  sphere?: Sphere;
+  stack?: string[];
+  more?: number;
+};
+
+const initialNotifs: Notif[] = [
+  {
+    id: 'n1',
+    kind: 'request',
+    group: 'requests',
+    title: 'Azure Beach Club wants to chat with you',
+    text: 'Contact request · Rooftop lounge hostess',
+    quote: '“Hi Mia! We’re hiring hostesses for a new rooftop lounge, evening shifts. Would you like to talk?”',
+    time: '2 min',
+    day: 'today',
+    unread: true,
+    vacancyId: 'v6',
+    threadId: 'c-request-azure',
+  },
+  { id: 'n2', kind: 'accepted', group: 'applications', title: 'Skyline Hospitality accepted your application', text: 'Hostess, rooftop lounge · They opened a chat with you.', time: '5 min', day: 'today', unread: true, vacancyId: 'v3', threadId: 'c-skyline' },
+  { id: 'n3', kind: 'vacancies', group: 'vacancies', title: '5 new vacancies in Music', text: 'DJ for a boat party, Resident DJ, beach bar and 3 more', time: '1 h', day: 'today', unread: true, sphere: 'music', stack: ['v1', 'v12', 'v2'], more: 2 },
+  { id: 'n4', kind: 'declined', group: 'applications', title: 'DIVES Holding declined your application', text: 'European female waitresses · 12 similar vacancies are still open.', time: '3 h', day: 'today', unread: true, vacancyId: 'v4' },
+  { id: 'n5', kind: 'urgent', group: 'vacancies', title: 'Urgent in Hospitality: hostess for tonight', text: 'Skyline Hospitality · AED 120 / hour · Hiring within 24 h', time: '09:40', day: 'today', unread: false, vacancyId: 'v3' },
+  { id: 'n6', kind: 'viewed', group: 'applications', title: 'ORZU Group viewed your application', text: 'DJ for a boat party · Usually they reply within a day.', time: '08:55', day: 'today', unread: false, vacancyId: 'v1' },
+  { id: 'n7', kind: 'saved', group: 'vacancies', title: 'A saved vacancy closes tomorrow', text: 'Promo model, car launch · Prestige Events. Apply before it closes.', time: 'Yesterday', day: 'earlier', unread: false, vacancyId: 'v13' },
+  { id: 'n8', kind: 'views', group: 'other', title: 'Your profile was viewed 18 times this week', text: 'Employers from hospitality and music looked at your profile.', time: 'Mon', day: 'earlier', unread: false },
+  { id: 'n9', kind: 'video', group: 'other', title: 'Add a video presentation', text: 'Profiles with a video get 3× more invitations.', time: '2 Oct', day: 'earlier', unread: false },
+];
+
 // ---------- profile completeness (product rules §10)
 
 export const sphereToField: Record<Sphere, Field> = { hospitality: 'hospitality', fnb: 'hospitality', events: 'entertainment', modeling: 'model', music: 'music', beauty: 'service' };
@@ -362,6 +407,14 @@ type Store = {
   updateThread: (id: string, fn: (t: Thread) => Partial<Thread>) => void;
   send: (id: string, msg: NewMsg) => void;
   unreadTotal: number;
+  /** Contact request (Premium employer): accept opens the chat, decline hides it. */
+  acceptRequest: (threadId: string) => void;
+  declineRequest: (threadId: string) => void;
+  notifs: Notif[];
+  readNotif: (id: string) => void;
+  readAllNotifs: () => void;
+  removeNotif: (id: string) => void;
+  unreadNotifs: number;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -383,6 +436,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [saved, setSaved] = useState<string[]>(['v13', 'v10', 'v11', 'v12']);
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
+  const [notifs, setNotifs] = useState<Notif[]>(initialNotifs);
 
   const profile = useMemo<SeekerProfile>(() => {
     const base = draft.demo ? demoProfile : null;
@@ -442,8 +496,33 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
           ts.map((t) => (t.id === id ? { ...t, messages: [...t.messages, { ...msg, id: `n${++mid}` } as Msg], time: 'time' in msg ? (msg.time as string) : now(), unread: 0 } : t)),
         ),
       unreadTotal: threads.filter((t) => !t.archived).reduce((n, t) => n + t.unread, 0),
+      acceptRequest: (id) => {
+        updateThread(id, (x) =>
+          x.state !== 'request'
+            ? {}
+            : {
+                state: 'active',
+                unread: 0,
+                messages: [
+                  ...x.messages,
+                  { id: 'req', kind: 'text', mine: false, text: x.requestText ?? '', time: x.time },
+                  { id: 'acc', kind: 'system', tone: 'success', text: 'You accepted the request', time: now() },
+                ],
+              },
+        );
+        setNotifs((ns) => ns.filter((n) => !(n.kind === 'request' && n.threadId === id)));
+      },
+      declineRequest: (id) => {
+        updateThread(id, () => ({ state: 'declined', unread: 0, archived: true }));
+        setNotifs((ns) => ns.filter((n) => !(n.kind === 'request' && n.threadId === id)));
+      },
+      notifs,
+      readNotif: (id) => setNotifs((ns) => ns.map((n) => (n.id === id ? { ...n, unread: false } : n))),
+      readAllNotifs: () => setNotifs((ns) => ns.map((n) => ({ ...n, unread: false }))),
+      removeNotif: (id) => setNotifs((ns) => ns.filter((n) => n.id !== id)),
+      unreadNotifs: notifs.filter((n) => n.unread).length,
     }),
-    [profile, hidden, prefs, apps, saved, threads, updateThread],
+    [profile, hidden, prefs, apps, saved, threads, notifs, updateThread],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

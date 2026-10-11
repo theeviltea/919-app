@@ -4,7 +4,7 @@ import { ScrollView, View } from 'react-native';
 import Animated, { scrollTo, useAnimatedRef, useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Chip, CollapsingHeader, EmptyState, headerMetrics, TAB_BAR_SPACE, Text, useToast } from '@/components';
+import { Chip, CollapsingHeader, EmptyState, headerMetrics, TAB_BAR_SPACE, Text } from '@/components';
 import { spheres, vacancySpheres } from '@/data/dictionaries';
 import { feedVacancies } from '@/data/mock';
 import { useSeeker } from '@/data/seeker';
@@ -23,8 +23,7 @@ const greeting = () => {
 export default function SeekerHome() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const toast = useToast();
-  const { profile } = useSeeker();
+  const { profile, unreadNotifs } = useSeeker();
   const [quick, setQuick] = useState<'all' | 'urgent' | Sphere>('all');
   const [filters, setFilters] = useState<VacancyFilters>(emptyFilters);
   const [sheet, setSheet] = useState(false);
@@ -88,7 +87,7 @@ export default function SeekerHome() {
         searchPlaceholder="Role, venue or area"
         onSearch={() => router.push({ pathname: '/guest/search', params: { tab: 'vacancies' } })}
         onFilter={() => setSheet(true)}
-        iconAction={{ icon: 'notification', label: 'Notifications', dot: true, onPress: () => toast({ text: 'Notifications arrive in the next stage', kind: 'neutral', icon: 'notification', aboveTabBar: true }) }}
+        iconAction={{ icon: 'notification', label: unreadNotifs ? `Notifications, ${unreadNotifs} new` : 'Notifications', dot: unreadNotifs > 0, onPress: () => router.push('/notifications') }}
       />
       <FiltersSheet
         key={String(sheet)}
