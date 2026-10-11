@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { Pressable, Row, Text, useToast } from '@/components';
 import { DeleteAccountSheet, LogoutSheet } from '@/features/profile/AccountSheets';
+import { ThemeRow } from '@/features/profile/ThemeRow';
 import { GroupLabel, SubScreen } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
 
@@ -23,7 +24,8 @@ export default function Settings() {
       <GroupLabel>Account</GroupLabel>
       <Group>
         <Row icon="notification" title="Notifications" onPress={() => router.push('/profile/notifications')} />
-        <Row icon="lock" title="Privacy and security" onPress={() => router.push('/profile/privacy')} last />
+        <Row icon="lock" title="Privacy and security" onPress={() => router.push('/profile/privacy')} />
+        <ThemeRow />
       </Group>
 
       <GroupLabel>Subscription</GroupLabel>
