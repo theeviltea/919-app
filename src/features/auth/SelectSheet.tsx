@@ -16,12 +16,14 @@ type Props = {
   searchPlaceholder?: string;
   /** Small code chip in front of each item, e.g. country ISO code. */
   badge?: (item: string) => string | undefined;
+  /** Muted text before the radio, e.g. a result count. */
+  meta?: (item: string) => string | undefined;
   onClose: () => void;
   onSelect: (v: string) => void;
 };
 
 /** Single choice in a sheet — radio on the right, optional search and sections (country, city, sizes). */
-export function SelectSheet({ visible, title, options, sections, value, searchPlaceholder, badge, onClose, onSelect }: Props) {
+export function SelectSheet({ visible, title, options, sections, value, searchPlaceholder, badge, meta, onClose, onSelect }: Props) {
   const { c } = useTheme();
   const [q, setQ] = useState('');
   const groups = useMemo<Section[]>(() => {
@@ -68,6 +70,11 @@ export function SelectSheet({ visible, title, options, sections, value, searchPl
                   <Text variant="bodyL" weight={on ? 700 : 500} style={{ flex: 1 }}>
                     {o}
                   </Text>
+                  {meta?.(o) ? (
+                    <Text variant="bodyS" color="textBody" style={{ fontSize: 13 }}>
+                      {meta(o)}
+                    </Text>
+                  ) : null}
                   {on ? (
                     <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center' }}>
                       <Icon name="check" size={14} color="ctaButtonText" />

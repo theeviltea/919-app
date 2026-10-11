@@ -26,7 +26,7 @@ export const spheres: Record<Sphere, string> = {
   beauty: 'Beauty',
 };
 
-export const vacancySpheres: Sphere[] = ['hospitality', 'fnb', 'events', 'modeling'];
+export const vacancySpheres: Sphere[] = ['hospitality', 'fnb', 'events', 'modeling', 'music', 'beauty'];
 export const talentSpheres: { key: Sphere; label: string }[] = [
   { key: 'hospitality', label: 'Hospitality' },
   { key: 'modeling', label: 'Models' },

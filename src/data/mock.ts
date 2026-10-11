@@ -48,7 +48,7 @@ const base = (v: Partial<Vacancy> & Pick<Vacancy, 'id' | 'title' | 'company' | '
 
 export const vacancies: Vacancy[] = [
   base({ id: 'v1', title: 'DJ for a boat party', company: { id: 'orzu', name: 'ORZU Group', initials: 'OG', verified: true }, sphere: 'events', urgent: true, pay: { amount: 15000, currency: 'AED', contract: 'monthly' }, cover: img.dj }),
-  base({ id: 'v2', title: 'Event coordinator, beach festival', company: { id: 'coast', name: 'Coastline Events', initials: 'CE', verified: true }, sphere: 'events', postedAgo: '5 h ago', pay: { amount: 20000, currency: 'AED', contract: 'one-time' }, cover: img.dubai1 }),
+  base({ id: 'v2', title: 'Event coordinator, beach festival', company: { id: 'coast', name: 'Coastline Events', initials: 'CE', verified: true }, sphere: 'events', city: 'Abu Dhabi', postedAgo: '5 h ago', pay: { amount: 20000, currency: 'AED', contract: 'one-time' }, cover: img.dubai1 }),
   base({ id: 'v3', title: 'Hostess, rooftop lounge', company: { id: 'skyline', name: 'Skyline Hospitality', initials: 'SH', verified: true }, urgent: true, postedAgo: '1 h ago', pay: { amount: 120, currency: 'AED', contract: 'hourly' }, cover: img.hostess }),
   base({
     id: 'v4',
@@ -63,10 +63,10 @@ export const vacancies: Vacancy[] = [
     requirements: ['English — native', 'Age 21–25', 'Video presentation'],
   }),
   base({ id: 'v5', title: 'Hostess for a car launch', company: { id: 'velocity', name: 'Velocity Events', initials: 'VE', verified: true }, sphere: 'events', urgent: true, postedAgo: '3 h ago', pay: { amount: 1200, currency: 'AED', contract: 'daily' }, cover: img.dubai1 }),
-  base({ id: 'v6', title: 'Restaurant hostess, beach club', company: { id: 'azure', name: 'Azure Beach', initials: 'AB', verified: false }, sphere: 'fnb', postedAgo: 'Yesterday', pay: { amount: 90, currency: 'AED', contract: 'hourly' }, cover: img.misc }),
-  base({ id: 'v7', title: 'VIP hostess, yacht show', company: { id: 'marina', name: 'Marina Yachts', initials: 'MY', verified: true }, sphere: 'events', postedAgo: '2 d ago', pay: { amount: 800, currency: 'AED', contract: 'daily' }, cover: img.dubai2 }),
-  base({ id: 'v8', title: 'Barista, specialty coffee bar', company: { id: 'brew', name: 'Brew Lab', initials: 'BL', verified: true }, sphere: 'fnb', postedAgo: '6 h ago', pay: { amount: 6500, currency: 'AED', contract: 'monthly' }, cover: img.barber }),
-  base({ id: 'v9', title: 'Promo models for a fashion week', company: { id: 'atelier', name: 'Atelier Gulf', initials: 'AG', verified: true }, sphere: 'modeling', postedAgo: '8 h ago', pay: { amount: 2500, currency: 'AED', contract: 'fixed-term' }, cover: img.dubai2 }),
+  base({ id: 'v6', title: 'Restaurant hostess, beach club', company: { id: 'azure', name: 'Azure Beach', initials: 'AB', verified: false }, sphere: 'fnb', city: 'Sharjah', postedAgo: 'Yesterday', pay: { amount: 90, currency: 'AED', contract: 'hourly' }, cover: img.misc }),
+  base({ id: 'v7', title: 'VIP hostess, yacht show', company: { id: 'marina', name: 'Marina Yachts', initials: 'MY', verified: true }, sphere: 'events', city: 'Abu Dhabi', postedAgo: '2 d ago', pay: { amount: 800, currency: 'AED', contract: 'daily' }, cover: img.dubai2 }),
+  base({ id: 'v8', title: 'Barista, specialty coffee bar', company: { id: 'brew', name: 'Brew Lab', initials: 'BL', verified: true }, sphere: 'fnb', city: 'Riyadh', country: 'Saudi Arabia', postedAgo: '6 h ago', pay: { amount: 6500, currency: 'AED', contract: 'monthly' }, cover: img.barber }),
+  base({ id: 'v9', title: 'Promo models for a fashion week', company: { id: 'atelier', name: 'Atelier Gulf', initials: 'AG', verified: true }, sphere: 'modeling', city: 'Doha', country: 'Qatar', postedAgo: '8 h ago', pay: { amount: 2500, currency: 'AED', contract: 'fixed-term' }, cover: img.dubai2 }),
   // Not in the public feed: referenced by the seeker's applications and saved list.
   base({ id: 'v10', title: 'Barber, premium salon', company: { id: 'gents', name: 'Gentlemen’s Club', initials: 'GC', verified: true }, sphere: 'beauty', postedAgo: '5 h ago', pay: { amount: 8000, currency: 'AED', contract: 'monthly' }, cover: img.barber }),
   base({ id: 'v11', title: 'Hostess, yacht club', company: { id: 'myc', name: 'Marina Yacht Club', initials: 'MY', verified: true }, postedAgo: 'Yesterday', pay: { amount: 600, currency: 'AED', contract: 'daily' }, cover: img.hostess }),

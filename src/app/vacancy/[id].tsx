@@ -7,12 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton, BottomSheet, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text, useToast } from '@/components';
 import { contractTypes, formatAmount, spheres } from '@/data/dictionaries';
 import { findVacancy } from '@/data/mock';
-import { fieldByKey } from '@/data/registration';
-import { matchRequirement, missingForApply, sphereToField, useSeeker, type GateItem } from '@/data/seeker';
+import { matchRequirement, useSeeker } from '@/data/seeker';
 import { useSession } from '@/data/session';
 import { GuestAuthSheet } from '@/features/talent/GuestAuth';
-import { ApplyGate } from '@/features/vacancies/ApplyGate';
-import { ApplySheet } from '@/features/vacancies/ApplySheet';
+import { useApply } from '@/features/vacancies/useApply';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
 import { useTheme } from '@/theme';
 
@@ -57,8 +55,9 @@ export default function VacancyScreen() {
   const [page, setPage] = useState(0);
   const [more, setMore] = useState(false);
   const [auth, setAuth] = useState(false);
-  const [sheet, setSheet] = useState<'apply' | 'gate' | 'more' | null>(null);
+  const [sheet, setSheet] = useState<'more' | null>(null);
   const seeker = useSeeker();
+  const apply = useApply({ aboveTabBar: true });
   const w = Math.min(width, 640);
 
   if (!v) {
@@ -74,21 +73,13 @@ export default function VacancyScreen() {
   const p = seeker.profile;
   const app = guest ? undefined : seeker.appFor(v.id);
   const saved = !guest && seeker.saved.includes(v.id);
-  const fieldLabel = fieldByKey(sphereToField[v.sphere]).label;
-  const missing = guest ? [] : missingForApply(p, v, fieldLabel);
   const fits = v.requirements.map((r) => ({ r, ok: !guest && matchRequirement(r, p) }));
   const fitN = fits.filter((f) => f.ok).length;
   const firstGap = fits.find((f) => !f.ok)?.r;
 
   const respond = () => {
     if (guest) return setAuth(true);
-    setSheet(missing.length ? 'gate' : 'apply');
-  };
-  const fix = (k: GateItem['key']) => {
-    setSheet(null);
-    if (k === 'about' || k === 'photos') router.push('/profile/general');
-    else if (k === 'photo') router.push('/profile/edit');
-    else router.push('/profile/occupations');
+    apply.respond(v.id);
   };
 
   return (
@@ -284,7 +275,12 @@ export default function VacancyScreen() {
           {!app ? (
             <Button size="l" label="Respond" onPress={respond} />
           ) : app.status === 'pending' ? (
-            <Button size="l" variant="neutral" icon="clock" label="Pending approval" disabled />
+            <View accessibilityRole="text" style={{ height: 56, borderRadius: 18, backgroundColor: c.input, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Icon name="clock" size={20} color="textBody" />
+              <Text variant="bodyL" weight={700} color="textBody" style={{ fontSize: 17 }}>
+                Pending approval
+              </Text>
+            </View>
           ) : app.status === 'declined' || app.status === 'closed' ? (
             <Button size="l" variant="neutral" label={app.status === 'declined' ? 'Application declined' : 'Vacancy closed'} disabled />
           ) : (
@@ -295,17 +291,7 @@ export default function VacancyScreen() {
 
       {guest ? null : (
         <>
-          <ApplySheet
-            v={v}
-            visible={sheet === 'apply'}
-            onClose={() => setSheet(null)}
-            onSend={(m) => {
-              seeker.apply(v.id, m);
-              setSheet(null);
-              toast({ text: 'You’ve applied to this vacancy' });
-            }}
-          />
-          <ApplyGate items={missing} percent={Math.max(10, Math.round(((4 - missing.length) / 4) * 100))} visible={sheet === 'gate'} onClose={() => setSheet(null)} onFix={fix} />
+          {apply.sheets}
           <BottomSheet visible={sheet === 'more'} onClose={() => setSheet(null)}>
             <Button variant="neutral" icon="share" label="Share vacancy" onPress={() => (setSheet(null), Share.share({ message: `${v.title} · ${v.company.name} — 919` }))} />
             <Button variant="danger" icon="alert-circle" label="Report vacancy" onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will check this vacancy', kind: 'neutral', icon: 'alert-circle' }))} />

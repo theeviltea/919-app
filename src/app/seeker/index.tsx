@@ -95,8 +95,8 @@ export default function SeekerHome() {
         visible={sheet}
         value={filters}
         onClose={() => setSheet(false)}
+        source={feedVacancies}
         onApply={(f) => (setFilters(f), setSheet(false))}
-        resultCount={(f) => applyFilters(feedVacancies, f).length}
       />
     </View>
   );

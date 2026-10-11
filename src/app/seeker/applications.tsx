@@ -10,6 +10,7 @@ import { findVacancy } from '@/data/mock';
 import { useSeeker, type AppStatus, type Application } from '@/data/seeker';
 import type { Vacancy } from '@/data/types';
 import { SaveButton } from '@/features/vacancies/SaveButton';
+import { useApply } from '@/features/vacancies/useApply';
 import { useTheme } from '@/theme';
 
 type Tab = 'applied' | 'saved' | 'active' | 'archive';
@@ -79,7 +80,8 @@ function AppFooter({ a }: { a: Application }) {
 export default function Applications() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const { apps, saved } = useSeeker();
+  const { apps, saved, appFor } = useSeeker();
+  const apply = useApply({ aboveTabBar: true });
   const [tab, setTab] = useState<Tab>('applied');
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -146,9 +148,17 @@ export default function Applications() {
                       <Text variant="bodyS" color={i === 0 ? 'attentionText' : 'textBody'} style={{ flex: 1 }}>
                         {i === 0 ? 'Closes in 2 days' : `Posted ${v.postedAgo.toLowerCase()}`}
                       </Text>
-                      <Text variant="body" weight={700} color="link" style={{ fontSize: 14 }}>
-                        Apply
-                      </Text>
+                      {appFor(v.id) ? (
+                        <Text variant="bodyS" weight={600} color="textBody">
+                          Applied
+                        </Text>
+                      ) : (
+                        <Pressable onPress={() => apply.respond(v.id)} accessibilityRole="button" accessibilityLabel={`Apply to ${v.title}`} hitSlop={10}>
+                          <Text variant="body" weight={700} color="link" style={{ fontSize: 14 }}>
+                            Apply
+                          </Text>
+                        </Pressable>
+                      )}
                     </>
                   }
                 />
@@ -206,6 +216,7 @@ export default function Applications() {
           )
         ) : null}
       </ScrollView>
+      {apply.sheets}
     </View>
   );
 }
