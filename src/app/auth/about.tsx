@@ -18,7 +18,8 @@ type Sheet = 'gender' | 'dob' | 'country' | 'city' | 'photo' | null;
 /** Seeker sign-up, step 1 of 5 — About you. Social sign-up arrives prefilled. */
 export default function About() {
   const { c } = useTheme();
-  const params = useLocalSearchParams<{ social?: 'apple' | 'google' }>();
+  const params = useLocalSearchParams<{ social?: 'apple' | 'google'; edit?: string }>();
+  const edit = !!params.edit;
   const social = params.social;
   const { seeker: s, setSeeker } = useSignup();
   const [sheet, setSheet] = useState<Sheet>(null);
@@ -33,10 +34,10 @@ export default function About() {
 
   return (
     <FormScreen
-      top={<StepProgress step={1} of={5} />}
-      title="About you"
+      top={edit ? undefined : <StepProgress step={1} of={5} />}
+      title={edit ? 'Personal details' : 'About you'}
       subtitle="Employers see this first. Fields marked * are required."
-      footer={<Button size="l" label="Continue" disabled={!ok} onPress={() => router.push('/signup/occupation')} />}>
+      footer={<Button size="l" label={edit ? 'Save' : 'Continue'} disabled={!ok} onPress={() => (edit ? router.back() : router.push('/signup/occupation'))} />}>
       {social ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: c.successBack }}>
           <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' }}>

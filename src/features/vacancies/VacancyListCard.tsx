@@ -1,6 +1,8 @@
 import { Image } from 'expo-image';
 import { View } from 'react-native';
 
+import type { ReactNode } from 'react';
+
 import { Pressable, StatusChip, Text } from '@/components';
 import { contractLabelColors, contractTypes, formatAmount } from '@/data/dictionaries';
 import type { Vacancy } from '@/data/types';
@@ -20,7 +22,7 @@ export function PayLabel({ contract }: { contract: Vacancy['pay']['contract'] })
 }
 
 /** Vacancy card in lists: cover 56, title, company · city, Urgent, pay row. */
-export function VacancyListCard({ v, onPress }: { v: Vacancy; onPress: () => void }) {
+export function VacancyListCard({ v, onPress, right, footer }: { v: Vacancy; onPress: () => void; right?: ReactNode; footer?: ReactNode }) {
   const { c } = useTheme();
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${v.title}, ${v.company.name}`} style={{ backgroundColor: c.surface, borderRadius: 20, padding: 16, gap: 14 }}>
@@ -39,7 +41,9 @@ export function VacancyListCard({ v, onPress }: { v: Vacancy; onPress: () => voi
             </View>
           ) : null}
         </View>
+        {right}
       </View>
+      {footer ?? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text variant="bodyL" weight={700} style={{ fontSize: 17 }}>
           {v.pay.currency} {formatAmount(v.pay.amount)}
@@ -53,6 +57,7 @@ export function VacancyListCard({ v, onPress }: { v: Vacancy; onPress: () => voi
           {v.postedAgo}
         </Text>
       </View>
+      )}
     </Pressable>
   );
 }

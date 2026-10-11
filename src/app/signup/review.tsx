@@ -4,23 +4,10 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button, FormScreen, Icon, IconButton, Pressable, StatusChip, StepProgress, Text } from '@/components';
-import { ageFrom, fieldByKey } from '@/data/registration';
+import { ageFrom, fieldByKey, occupationRows } from '@/data/registration';
 import { useSignup, type FieldEntry } from '@/data/signup';
 import { useFinishAuth } from '@/features/auth/useFinishAuth';
 import { useTheme } from '@/theme';
-
-const LABELS: Record<string, [string, string?]> = {
-  weight: ['Weight', 'kg'],
-  height: ['Height', 'cm'],
-  bust: ['Bust', 'cm'],
-  waist: ['Waist', 'cm'],
-  hips: ['Hips', 'cm'],
-  clothing: ['Clothing size'],
-  shoe: ['Shoe size', 'EU'],
-  hair: ['Hair color'],
-  appearance: ['Appearance'],
-  genre: ['Genre'],
-};
 
 function Row({ label, value, last }: { label: string; value: string; last?: boolean }) {
   const { c } = useTheme();
@@ -40,11 +27,7 @@ function OccupationCard({ e, onEdit }: { e: FieldEntry; onEdit: () => void }) {
   const { c } = useTheme();
   const [open, setOpen] = useState(true);
   const f = fieldByKey(e.field);
-  const rows: [string, string][] = Object.entries(LABELS)
-    .filter(([k]) => e.details[k])
-    .map(([k, [l, u]]) => [l, u ? `${e.details[k]} ${u}` : e.details[k]]);
-  if (f.form === 'model' || f.form === 'body') rows.push(['Tattoos', e.tattoos ? 'Yes' : 'No'], ['Piercing', e.piercing ? 'Yes' : 'No']);
-  e.links.forEach((l, i) => rows.push([i ? `Link ${i + 1}` : f.form === 'music' ? 'Promo link' : 'Portfolio', l.replace(/^https?:\/\//, '')]));
+  const rows = occupationRows(e);
 
   return (
     <View style={{ backgroundColor: c.surface, borderRadius: 24, padding: 16, gap: 12 }}>

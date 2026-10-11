@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components';
 import { SessionProvider } from '@/data/session';
+import { SeekerProvider } from '@/data/seeker';
 import { SignupProvider } from '@/data/signup';
 import { fontAssets, ThemeProvider, useTheme } from '@/theme';
 
@@ -36,7 +37,9 @@ export default function RootLayout() {
         <ThemeProvider>
           <SessionProvider>
             <SignupProvider>
-              <Root />
+              <SeekerProvider>
+                <Root />
+              </SeekerProvider>
             </SignupProvider>
           </SessionProvider>
         </ThemeProvider>

@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -16,6 +16,7 @@ let seq = 0;
 export default function Media() {
   const { c } = useTheme();
   const { seeker, setSeeker } = useSignup();
+  const edit = !!useLocalSearchParams<{ edit?: string }>().edit;
   const [photoSheet, setPhotoSheet] = useState(false);
   const [videoSheet, setVideoSheet] = useState(false);
   const photos = seeker.photos;
@@ -29,10 +30,10 @@ export default function Media() {
 
   return (
     <FormScreen
-      top={<StepProgress step={4} of={5} />}
+      top={edit ? undefined : <StepProgress step={4} of={5} />}
       title="Photos and video"
       subtitle="The same set shows for every field you work in. At least 3 photos are required, video is optional."
-      footer={<Button size="l" label="Continue" disabled={ready < MIN_PHOTOS} onPress={() => router.push('/signup/review')} />}>
+      footer={<Button size="l" label={edit ? 'Save' : 'Continue'} disabled={ready < MIN_PHOTOS} onPress={() => (edit ? router.back() : router.push('/signup/review'))} />}>
       <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
         <Text variant="bodyL" weight={700} style={{ flex: 1 }}>
           Photos *

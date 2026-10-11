@@ -65,3 +65,27 @@ export const ageFrom = (dob?: Date) => {
 };
 export const formatDob = (d?: Date) =>
   d ? `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}` : undefined;
+
+const DETAIL_LABELS: Record<string, [string, string?]> = {
+  weight: ['Weight', 'kg'],
+  height: ['Height', 'cm'],
+  bust: ['Bust', 'cm'],
+  waist: ['Waist', 'cm'],
+  hips: ['Hips', 'cm'],
+  clothing: ['Clothing size'],
+  shoe: ['Shoe size', 'EU'],
+  hair: ['Hair color'],
+  appearance: ['Appearance'],
+  genre: ['Genre'],
+};
+
+/** Label/value rows of a filled questionnaire (review screen, profile). */
+export function occupationRows(e: { field: Field; details: Record<string, string>; tattoos?: boolean; piercing?: boolean; links: string[] }, withLinks = true): [string, string][] {
+  const f = fieldByKey(e.field);
+  const rows: [string, string][] = Object.entries(DETAIL_LABELS)
+    .filter(([k]) => e.details[k])
+    .map(([k, [l, u]]) => [l, u ? `${e.details[k]} ${u}` : e.details[k]]);
+  if (f.form === 'model' || f.form === 'body') rows.push(['Tattoos', e.tattoos ? 'Yes' : 'No'], ['Piercing', e.piercing ? 'Yes' : 'No']);
+  if (withLinks) e.links.forEach((l, i) => rows.push([i ? `Link ${i + 1}` : f.form === 'music' ? 'Promo link' : 'Portfolio', l.replace(/^https?:\/\//, '')]));
+  return rows;
+}

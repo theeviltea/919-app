@@ -14,7 +14,7 @@ const looksLikeLink = (s: string) => /^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/
 /** Seeker sign-up, step 3 — questionnaire for the chosen field (body, model, music or service). */
 export default function Details() {
   const { c } = useTheme();
-  const { second } = useLocalSearchParams<{ second?: string }>();
+  const { second, edit } = useLocalSearchParams<{ second?: string; edit?: string }>();
   const idx = second ? 1 : 0;
   const { seeker, setSeeker } = useSignup();
   const entry = seeker.occupations[idx];
@@ -64,7 +64,9 @@ export default function Details() {
       occ[idx] = next;
       return { occupations: occ };
     });
-    router.push(second ? '/signup/review' : '/signup/media');
+    // Opened from the apply gate or profile: return to where the edit started.
+    if (edit) router.dismiss(2);
+    else router.push(second ? '/signup/review' : '/signup/media');
   };
 
   const title = form === 'model' ? 'Model details' : form === 'music' ? 'Musician details' : `${role} details`;
@@ -78,7 +80,7 @@ export default function Details() {
           : `${f.label} · ${role}. Employers filter candidates by these. Fields marked * are required.`;
 
   return (
-    <FormScreen top={<StepProgress step={3} of={5} />} title={title} subtitle={subtitle} footer={<Button size="l" label="Continue" disabled={!ok} onPress={save} />}>
+    <FormScreen top={edit ? undefined : <StepProgress step={3} of={5} />} title={title} subtitle={subtitle} footer={<Button size="l" label={edit ? 'Save' : 'Continue'} disabled={!ok} onPress={save} />}>
       {body ? (
         <View style={{ gap: 8 }}>
           {num('height', 'Height, cm')}

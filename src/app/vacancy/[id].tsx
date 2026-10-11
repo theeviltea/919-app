@@ -1,14 +1,18 @@
 import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, Share, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BackButton, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text, useToast } from '@/components';
+import { BackButton, BottomSheet, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text, useToast } from '@/components';
 import { contractTypes, formatAmount, spheres } from '@/data/dictionaries';
 import { findVacancy } from '@/data/mock';
+import { fieldByKey } from '@/data/registration';
+import { matchRequirement, missingForApply, sphereToField, useSeeker, type GateItem } from '@/data/seeker';
 import { useSession } from '@/data/session';
 import { GuestAuthSheet } from '@/features/talent/GuestAuth';
+import { ApplyGate } from '@/features/vacancies/ApplyGate';
+import { ApplySheet } from '@/features/vacancies/ApplySheet';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
 import { useTheme } from '@/theme';
 
@@ -53,7 +57,8 @@ export default function VacancyScreen() {
   const [page, setPage] = useState(0);
   const [more, setMore] = useState(false);
   const [auth, setAuth] = useState(false);
-  const [applied, setApplied] = useState(false);
+  const [sheet, setSheet] = useState<'apply' | 'gate' | 'more' | null>(null);
+  const seeker = useSeeker();
   const w = Math.min(width, 640);
 
   if (!v) {
@@ -66,10 +71,25 @@ export default function VacancyScreen() {
   }
 
   const guest = !user;
+  const p = seeker.profile;
+  const app = guest ? undefined : seeker.appFor(v.id);
+  const saved = !guest && seeker.saved.includes(v.id);
+  const fieldLabel = fieldByKey(sphereToField[v.sphere]).label;
+  const missing = guest ? [] : missingForApply(p, v, fieldLabel);
+  const fits = v.requirements.map((r) => ({ r, ok: !guest && matchRequirement(r, p) }));
+  const fitN = fits.filter((f) => f.ok).length;
+  const firstGap = fits.find((f) => !f.ok)?.r;
+
   const respond = () => {
     if (guest) return setAuth(true);
-    setApplied(true);
-    toast({ text: 'You’ve applied to this vacancy' });
+    setSheet(missing.length ? 'gate' : 'apply');
+  };
+  const fix = (k: GateItem['key']) => {
+    setSheet(null);
+    if (k === 'about') router.push('/profile/edit-about');
+    else if (k === 'photos') router.push({ pathname: '/signup/media', params: { edit: '1' } });
+    else if (k === 'photo') router.push({ pathname: '/auth/about', params: { edit: '1' } });
+    else router.push({ pathname: '/signup/occupation', params: { second: '1', edit: '1' } });
   };
 
   return (
@@ -92,7 +112,17 @@ export default function VacancyScreen() {
             <BackButton tone="onPhoto" />
             <View style={{ flex: 1 }} />
             <IconButton tone="onPhoto" icon="share" label="Share" onPress={() => Share.share({ message: `${v.title} · ${v.company.name} — 919` })} />
-            <IconButton tone="onPhoto" icon="bookmark" label="Save vacancy" onPress={() => (guest ? setAuth(true) : toast({ text: 'Saved to your vacancies', kind: 'neutral', icon: 'bookmark' }))} />
+            <IconButton
+              tone="onPhoto"
+              icon="bookmark"
+              label={saved ? 'Remove from saved' : 'Save vacancy'}
+              onPress={() => {
+                if (guest) return setAuth(true);
+                const on = seeker.toggleSaved(v.id);
+                toast({ text: on ? 'Saved to your vacancies' : 'Removed from saved', kind: 'neutral', icon: 'bookmark' });
+              }}
+            />
+            {guest ? null : <IconButton tone="onPhoto" icon="more" label="More" onPress={() => setSheet('more')} />}
           </View>
           <View style={{ position: 'absolute', right: 16, bottom: 52, height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.mediaOverlay, justifyContent: 'center' }}>
             <Text variant="caption" weight={600} color="#FFFFFF">
@@ -144,6 +174,36 @@ export default function VacancyScreen() {
             </View>
           </View>
 
+          {!guest && v.requirements.length ? (
+            <View style={{ backgroundColor: c.primarySecondary, borderRadius: 24, padding: 18, gap: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Icon name="sparkles" size={18} color="link" />
+                <Text variant="body" weight={700}>
+                  {fitN === fits.length ? 'You fit all requirements' : `You fit ${fitN} of ${fits.length} requirements`}
+                </Text>
+              </View>
+              {firstGap ? (
+                <>
+                  <Text variant="bodyS" color="textPrimary">
+                    {/video/i.test(firstGap) ? 'Add a video presentation — this employer asks for one before the first call.' : `Missing: ${firstGap}. You can still apply.`}
+                  </Text>
+                  {/video/i.test(firstGap) ? (
+                    <Pressable onPress={() => router.push({ pathname: '/signup/media', params: { edit: '1' } })} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Text variant="body" weight={700} color="link" style={{ fontSize: 14 }}>
+                        Add video
+                      </Text>
+                      <Icon name="chevron-right" size={14} color="link" />
+                    </Pressable>
+                  ) : null}
+                </>
+              ) : (
+                <Text variant="bodyS" color="textPrimary">
+                  Your profile matches what the employer asks for.
+                </Text>
+              )}
+            </View>
+          ) : null}
+
           <Section title="Vacancy details">
             <View>
               <DetailRow label="Role" value={v.details.role} />
@@ -168,14 +228,22 @@ export default function VacancyScreen() {
           <Section title="Requirements">
             {/* Guests can't be matched against a profile: neutral chips, no checkmarks. */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {v.requirements.map((r) => (
-                <View key={r} style={{ height: 34, paddingHorizontal: 12, borderRadius: 999, backgroundColor: c.input, justifyContent: 'center' }}>
-                  <Text variant="body" weight={600} style={{ fontSize: 14 }}>
+              {fits.map(({ r, ok }) => (
+                <View
+                  key={r}
+                  style={{ height: 34, paddingHorizontal: 12, borderRadius: 999, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: guest ? c.input : ok ? c.successBack : c.infoBack }}>
+                  {guest ? null : <Icon name={ok ? 'check' : 'alert-circle'} size={14} color={ok ? 'successText' : 'infoText'} />}
+                  <Text variant="body" weight={600} color={guest ? 'textHeadline' : ok ? 'successText' : 'infoText'} style={{ fontSize: 14 }}>
                     {r}
                   </Text>
                 </View>
               ))}
             </View>
+            {guest ? null : (
+              <Text variant="bodyS" color="textBody">
+                Green — already in your profile.
+              </Text>
+            )}
           </Section>
 
           <Section
@@ -214,9 +282,37 @@ export default function VacancyScreen() {
 
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: 14, paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 14) + 6, backgroundColor: c.surfacePanel, borderTopWidth: 1, borderColor: c.divider, backdropFilter: 'blur(12px)' } as object}>
         <View style={{ width: '100%', maxWidth: 600, alignSelf: 'center' }}>
-          {applied ? <Button size="l" variant="neutral" icon="clock" label="Pending approval" disabled /> : <Button size="l" label="Respond" onPress={respond} />}
+          {!app ? (
+            <Button size="l" label="Respond" onPress={respond} />
+          ) : app.status === 'pending' ? (
+            <Button size="l" variant="neutral" icon="clock" label="Pending approval" disabled />
+          ) : app.status === 'declined' || app.status === 'closed' ? (
+            <Button size="l" variant="neutral" label={app.status === 'declined' ? 'Application declined' : 'Vacancy closed'} disabled />
+          ) : (
+            <Button size="l" icon="message" label={app.status === 'hired' ? 'You’re hired · Open chat' : 'Accepted · Open chat'} onPress={() => app.chatId && router.push({ pathname: '/chat/[id]', params: { id: app.chatId } })} />
+          )}
         </View>
       </View>
+
+      {guest ? null : (
+        <>
+          <ApplySheet
+            v={v}
+            visible={sheet === 'apply'}
+            onClose={() => setSheet(null)}
+            onSend={(m) => {
+              seeker.apply(v.id, m);
+              setSheet(null);
+              toast({ text: 'You’ve applied to this vacancy' });
+            }}
+          />
+          <ApplyGate items={missing} percent={Math.max(10, Math.round(((4 - missing.length) / 4) * 100))} visible={sheet === 'gate'} onClose={() => setSheet(null)} onFix={fix} />
+          <BottomSheet visible={sheet === 'more'} onClose={() => setSheet(null)}>
+            <Button variant="neutral" icon="share" label="Share vacancy" onPress={() => (setSheet(null), Share.share({ message: `${v.title} · ${v.company.name} — 919` }))} />
+            <Button variant="danger" icon="alert-circle" label="Report vacancy" onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will check this vacancy', kind: 'neutral', icon: 'alert-circle' }))} />
+          </BottomSheet>
+        </>
+      )}
 
       <GuestAuthSheet
         visible={auth}

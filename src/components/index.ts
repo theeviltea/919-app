@@ -20,3 +20,4 @@ export * from './Brand';
 export * from './IconButton';
 export * from './Screen';
 export * from './CollapsingHeader';
+export * from './TabBar';

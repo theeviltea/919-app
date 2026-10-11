@@ -12,7 +12,7 @@ export default function Splash() {
   const insets = useSafeAreaInsets();
   const { user } = useSession();
   useEffect(() => {
-    const t = setTimeout(() => router.replace(user ? '/home' : '/guest'), 1400);
+    const t = setTimeout(() => router.replace(user ? (user.role === 'seeker' ? '/seeker' : '/home') : '/guest'), 1400);
     return () => clearTimeout(t);
   }, [user]);
   return (

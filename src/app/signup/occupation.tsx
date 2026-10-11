@@ -10,7 +10,7 @@ import { useTheme } from '@/theme';
 /** Seeker sign-up, step 2 — main field and roles. `?second=1` adds a second field from the review step. */
 export default function Occupation() {
   const { c } = useTheme();
-  const { second } = useLocalSearchParams<{ second?: string }>();
+  const { second, edit } = useLocalSearchParams<{ second?: string; edit?: string }>();
   const { seeker, setSeeker } = useSignup();
   const taken = second ? seeker.occupations[0]?.field : undefined;
   const current = second ? seeker.occupations[1] : seeker.occupations[0];
@@ -45,12 +45,12 @@ export default function Occupation() {
       occ[second ? 1 : 0] = entry;
       return { occupations: second ? occ : [entry, ...occ.slice(1)] };
     });
-    router.push({ pathname: '/signup/details', params: second ? { second: '1' } : {} });
+    router.push({ pathname: '/signup/details', params: { ...(second ? { second: '1' } : {}), ...(edit ? { edit: '1' } : {}) } });
   };
 
   return (
     <FormScreen
-      top={<StepProgress step={2} of={5} />}
+      top={edit ? undefined : <StepProgress step={2} of={5} />}
       title={second ? 'Add a second field' : 'What do you do?'}
       subtitle={second ? 'Pick another field you work in. Photos and video stay the same.' : 'Pick your main field and roles. You can add a second field at the end.'}
       footer={<Button size="l" label="Continue" disabled={!field || !roles.length} onPress={save} />}>

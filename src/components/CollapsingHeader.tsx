@@ -1,39 +1,53 @@
 import { Image } from 'expo-image';
-import { Pressable as RNPressable } from 'react-native';
+import { Pressable as RNPressable, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { useTheme } from '@/theme';
 
 import { Logo } from './Brand';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
+type Layout = { titleLines?: number; eyebrow?: boolean };
+
 /** Geometry of the collapsing header, shared with the screen for content padding and snapping. */
-export function headerMetrics(insetTop: number) {
-  const expanded = insetTop + 222;
+export function headerMetrics(insetTop: number, layout: Layout = {}) {
+  const titleH = (layout.titleLines ?? 2) * 31 + (layout.eyebrow ? 22 : 0);
+  const searchTop = insetTop + 70 + titleH + 18;
+  const expanded = searchTop + 48 + 24;
   const collapsed = insetTop + 64;
-  return { expanded, collapsed, range: expanded - collapsed };
+  return { expanded, collapsed, range: expanded - collapsed, searchTop };
 }
 
-type Props = {
+type Props = Layout & {
   scrollY: SharedValue<number>;
   insetTop: number;
   title: string;
+  /** Small line above the title, e.g. "Good evening, Mia". */
+  eyebrowText?: string;
   searchPlaceholder: string;
   onSearch: () => void;
-  /** Right-side action, e.g. Sign in. Moves from the logo row into the search row as the header collapses. */
+  /** Text action (Sign in) — moves from the logo row into the search row as the header collapses. */
   action?: { label: string; onPress: () => void };
+  /** Icon action (notifications) — same travel as `action`. */
+  iconAction?: { icon: IconName; label: string; onPress: () => void; dot?: boolean };
+  /** Yellow filter button next to the search bar. */
+  onFilter?: () => void;
 };
 
 const ACTION_W = 84;
+const BTN = 44;
 
 /**
  * Brand header that minimises with scroll: the logo and title fade and lift away, the search bar rides up
- * into one compact row with the action, the bottom radius tightens. Overscroll stretches the pattern.
+ * into one compact row with the actions, the bottom radius tightens. Overscroll stretches the pattern.
  */
-export function CollapsingHeader({ scrollY, insetTop, title, searchPlaceholder, onSearch, action }: Props) {
+export function CollapsingHeader(props: Props) {
+  const { scrollY, insetTop, title, eyebrowText, searchPlaceholder, onSearch, action, iconAction, onFilter } = props;
   const { c } = useTheme();
-  const { expanded, collapsed, range } = headerMetrics(insetTop);
+  const { expanded, collapsed, range, searchTop } = headerMetrics(insetTop, { titleLines: props.titleLines, eyebrow: !!eyebrowText });
+  const tail = action ? ACTION_W + 8 : iconAction ? BTN + 8 : 0; // right-side space taken in the compact row
+  const filterW = onFilter ? BTN + 8 : 0;
 
   const box = useAnimatedStyle(() => ({
     height: interpolate(scrollY.value, [-120, 0, range], [expanded + 120, expanded, collapsed], Extrapolation.CLAMP),
@@ -57,16 +71,21 @@ export function CollapsingHeader({ scrollY, insetTop, title, searchPlaceholder, 
       { scale: interpolate(scrollY.value, [0, range], [1, 0.94], Extrapolation.CLAMP) },
     ],
   }));
+  const rowTop = (from: number) => interpolate(scrollY.value, [0, range], [from, insetTop + 10], Extrapolation.CLAMP);
   const search = useAnimatedStyle(() => ({
-    top: interpolate(scrollY.value, [0, range], [insetTop + 150, insetTop + 8], Extrapolation.CLAMP),
+    top: interpolate(scrollY.value, [0, range], [searchTop, insetTop + 10], Extrapolation.CLAMP),
     height: interpolate(scrollY.value, [0, range], [48, 44], Extrapolation.CLAMP),
     left: interpolate(scrollY.value, [0, range], [20, 16], Extrapolation.CLAMP),
-    right: interpolate(scrollY.value, [0, range], [20, 16 + (action ? ACTION_W + 8 : 0)], Extrapolation.CLAMP),
+    right: interpolate(scrollY.value, [0, range], [20 + filterW, 16 + filterW + tail], Extrapolation.CLAMP),
     borderRadius: interpolate(scrollY.value, [0, range], [16, 14], Extrapolation.CLAMP),
   }));
+  const filter = useAnimatedStyle(() => ({
+    top: interpolate(scrollY.value, [0, range], [searchTop + 2, insetTop + 10], Extrapolation.CLAMP),
+    right: interpolate(scrollY.value, [0, range], [20, 16 + tail], Extrapolation.CLAMP),
+  }));
   const actionStyle = useAnimatedStyle(() => ({
-    top: interpolate(scrollY.value, [0, range], [insetTop + 12, insetTop + 8], Extrapolation.CLAMP),
-    height: interpolate(scrollY.value, [0, range], [40, 44], Extrapolation.CLAMP),
+    top: rowTop(insetTop + 12),
+    height: interpolate(scrollY.value, [0, range], [action ? 40 : BTN, BTN], Extrapolation.CLAMP),
     right: interpolate(scrollY.value, [0, range], [20, 16], Extrapolation.CLAMP),
   }));
 
@@ -80,7 +99,12 @@ export function CollapsingHeader({ scrollY, insetTop, title, searchPlaceholder, 
         <Logo height={24} />
       </Animated.View>
       <Animated.View style={[{ position: 'absolute', left: 20, right: 20, top: insetTop + 70, transformOrigin: 'left center' }, titleStyle]} pointerEvents="none">
-        <Text variant="displayXl" color="#FFFFFF" accessibilityRole="header" style={{ fontSize: 27, lineHeight: 31 }}>
+        {eyebrowText ? (
+          <Text variant="body" weight={500} color="rgba(255,255,255,0.88)" style={{ fontSize: 15, lineHeight: 22 }}>
+            {eyebrowText}
+          </Text>
+        ) : null}
+        <Text variant="displayXl" color="#FFFFFF" accessibilityRole="header" style={{ fontSize: eyebrowText ? 24 : 27, lineHeight: 31 }}>
           {title}
         </Text>
       </Animated.View>
@@ -94,15 +118,42 @@ export function CollapsingHeader({ scrollY, insetTop, title, searchPlaceholder, 
         </RNPressable>
       </Animated.View>
 
-      {action ? (
-        <Animated.View style={[{ position: 'absolute', width: ACTION_W }, actionStyle]}>
+      {onFilter ? (
+        <Animated.View style={[{ position: 'absolute', width: BTN, height: BTN }, filter]}>
           <RNPressable
-            onPress={action.onPress}
+            onPress={onFilter}
             accessibilityRole="button"
-            style={({ pressed }) => ({ flex: 1, borderRadius: 14, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.82 : 1 })}>
-            <Text variant="body" weight={700} style={{ fontSize: 14 }}>
-              {action.label}
-            </Text>
+            accessibilityLabel="Filters"
+            style={({ pressed }) => ({ flex: 1, borderRadius: 14, backgroundColor: c.urgent, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.82 : 1 })}>
+            <Icon name="filter" size={20} color="onUrgent" />
+          </RNPressable>
+        </Animated.View>
+      ) : null}
+
+      {action || iconAction ? (
+        <Animated.View style={[{ position: 'absolute', width: action ? ACTION_W : BTN }, actionStyle]}>
+          <RNPressable
+            onPress={action?.onPress ?? iconAction?.onPress}
+            accessibilityRole="button"
+            accessibilityLabel={action?.label ?? iconAction?.label}
+            style={({ pressed }) => ({
+              flex: 1,
+              borderRadius: 14,
+              backgroundColor: action ? c.surface : 'rgba(255,255,255,0.18)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pressed ? 0.82 : 1,
+            })}>
+            {action ? (
+              <Text variant="body" weight={700} style={{ fontSize: 14 }}>
+                {action.label}
+              </Text>
+            ) : iconAction ? (
+              <>
+                <Icon name={iconAction.icon} size={22} color="#FFFFFF" />
+                {iconAction.dot ? <View style={{ position: 'absolute', top: 10, right: 11, width: 9, height: 9, borderRadius: 5, backgroundColor: c.urgent, borderWidth: 1.5, borderColor: c.primary }} /> : null}
+              </>
+            ) : null}
           </RNPressable>
         </Animated.View>
       ) : null}

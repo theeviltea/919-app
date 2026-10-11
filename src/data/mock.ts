@@ -67,7 +67,19 @@ export const vacancies: Vacancy[] = [
   base({ id: 'v7', title: 'VIP hostess, yacht show', company: { id: 'marina', name: 'Marina Yachts', initials: 'MY', verified: true }, sphere: 'events', postedAgo: '2 d ago', pay: { amount: 800, currency: 'AED', contract: 'daily' }, cover: img.dubai2 }),
   base({ id: 'v8', title: 'Barista, specialty coffee bar', company: { id: 'brew', name: 'Brew Lab', initials: 'BL', verified: true }, sphere: 'fnb', postedAgo: '6 h ago', pay: { amount: 6500, currency: 'AED', contract: 'monthly' }, cover: img.barber }),
   base({ id: 'v9', title: 'Promo models for a fashion week', company: { id: 'atelier', name: 'Atelier Gulf', initials: 'AG', verified: true }, sphere: 'modeling', postedAgo: '8 h ago', pay: { amount: 2500, currency: 'AED', contract: 'fixed-term' }, cover: img.dubai2 }),
+  // Not in the public feed: referenced by the seeker's applications and saved list.
+  base({ id: 'v10', title: 'Barber, premium salon', company: { id: 'gents', name: 'Gentlemen’s Club', initials: 'GC', verified: true }, sphere: 'beauty', postedAgo: '5 h ago', pay: { amount: 8000, currency: 'AED', contract: 'monthly' }, cover: img.barber }),
+  base({ id: 'v11', title: 'Hostess, yacht club', company: { id: 'myc', name: 'Marina Yacht Club', initials: 'MY', verified: true }, postedAgo: 'Yesterday', pay: { amount: 600, currency: 'AED', contract: 'daily' }, cover: img.hostess }),
+  base({ id: 'v12', title: 'Resident DJ, beach bar', company: { id: 'sunset', name: 'Sunset Beach', initials: 'SB', verified: true }, sphere: 'music', postedAgo: '4 d ago', pay: { amount: 12000, currency: 'AED', contract: 'monthly' }, cover: img.dj }),
+  base({ id: 'v13', title: 'Promo model, car launch', company: { id: 'prestige', name: 'Prestige Events', initials: 'PE', verified: true }, sphere: 'modeling', postedAgo: '1 d ago', pay: { amount: 1200, currency: 'AED', contract: 'daily' }, cover: img.dubai2 }),
+  base({ id: 'v14', title: 'Promo model, auto show', company: { id: 'prestige', name: 'Prestige Events', initials: 'PE', verified: true }, sphere: 'modeling', postedAgo: '2 d ago', pay: { amount: 1500, currency: 'AED', contract: 'daily' }, cover: img.dubai1 }),
+  base({ id: 'v15', title: 'Waiter, fine dining', company: { id: 'atlantis', name: 'Atlantis The Palm', initials: 'AP', verified: true }, sphere: 'fnb', postedAgo: '3 w ago', pay: { amount: 8000, currency: 'AED', contract: 'monthly' }, cover: img.waiter }),
+  base({ id: 'v16', title: 'DJ, New Year party', company: { id: 'orzu', name: 'ORZU Group', initials: 'OG', verified: true }, sphere: 'music', postedAgo: '10 mo ago', pay: { amount: 3000, currency: 'AED', contract: 'one-time' }, cover: img.dj }),
+  base({ id: 'v17', title: 'Bartender, pop-up bar', company: { id: 'brew', name: 'Brew Lab', initials: 'BL', verified: true }, sphere: 'fnb', postedAgo: '1 mo ago', pay: { amount: 700, currency: 'AED', contract: 'daily' }, cover: img.barber }),
 ];
+
+/** Vacancies shown in feeds; the rest exist only in a seeker's history. */
+export const feedVacancies = vacancies.slice(0, 9);
 
 export const talents: Talent[] = [
   { id: 't1', name: 'Angela R.', role: 'Hostess', city: 'Dubai', verified: true, premium: true, sphere: 'hospitality', photo: p(1), placeholder: 1 },

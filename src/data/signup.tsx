@@ -25,6 +25,8 @@ export type SeekerDraft = {
   occupations: FieldEntry[];
   photos: Photo[];
   video?: { poster: ImageSourcePropType; duration: string; progress?: number };
+  /** Existing demo account (signed in rather than registered): profile extras come from the demo data. */
+  demo?: boolean;
 };
 
 export type EmployerMode = 'company' | 'join' | 'private';
