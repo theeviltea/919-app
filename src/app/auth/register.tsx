@@ -5,8 +5,8 @@ import { ActivityIndicator, Modal, View } from 'react-native';
 import { BrandMarkPlaceholder, Button, FormScreen, Icon, Pressable, Text } from '@/components';
 import { OrDivider } from '@/components/AuthSheet';
 import { popularCountries } from '@/data/dictionaries';
-import { useSession } from '@/data/session';
 import { PhoneInput } from '@/features/auth/PhoneInput';
+import { useAfterContact } from '@/features/auth/useCreateAccount';
 import { useFinishAuth } from '@/features/auth/useFinishAuth';
 import { useTheme } from '@/theme';
 
@@ -14,11 +14,11 @@ import { useTheme } from '@/theme';
 export default function Register() {
   const params = useLocalSearchParams<{ social?: 'apple' | 'google'; signin?: string }>();
   const { c } = useTheme();
-  const { pendingRole } = useSession();
   const finish = useFinishAuth();
-  const finishRef = useRef(finish);
+  const afterContact = useAfterContact();
+  const finishRef = useRef({ finish, afterContact });
   useEffect(() => {
-    finishRef.current = finish;
+    finishRef.current = { finish, afterContact };
   });
   const [country, setCountry] = useState(popularCountries[0]);
   const [phone, setPhone] = useState('');
@@ -31,11 +31,11 @@ export default function Register() {
     const t = setTimeout(() => {
       const p = connecting;
       setConnecting(null);
-      if (params.signin) finishRef.current({ email: 'mia.colsen@gmail.com' });
-      else router.replace(pendingRole === 'employer' ? '/employer/type' : { pathname: '/auth/about', params: { social: p } });
+      if (params.signin) finishRef.current.finish({ email: 'mia.colsen@gmail.com' });
+      else finishRef.current.afterContact({ social: p });
     }, 1600);
     return () => clearTimeout(t);
-  }, [connecting, params.signin, pendingRole]);
+  }, [connecting, params.signin]);
 
   return (
     <FormScreen

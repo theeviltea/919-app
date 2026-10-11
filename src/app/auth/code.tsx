@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { Button, FormScreen, Icon, OTPField, Pressable, ResendTimer, Text, useToast } from '@/components';
 import { useSeeker } from '@/data/seeker';
 import { maskPhone } from '@/features/auth/PhoneInput';
+import { useAfterContact } from '@/features/auth/useCreateAccount';
 import { useFinishAuth } from '@/features/auth/useFinishAuth';
 import { useTheme } from '@/theme';
 
@@ -18,6 +19,7 @@ export default function Code() {
   const { flow = 'signin', to = '', mode } = useLocalSearchParams<{ flow?: Flow; to?: string; mode?: 'change' | 'add' }>();
   const { c } = useTheme();
   const finish = useFinishAuth();
+  const afterContact = useAfterContact();
   const toast = useToast();
   const { updateProfile } = useSeeker();
   const [code, setCode] = useState('');
@@ -49,7 +51,7 @@ export default function Code() {
       toast({ text: mode === 'add' ? 'Phone number added' : 'Phone number updated', icon: 'check', aboveTabBar: true });
     } else if (flow === 'signin') finish({ phone: to });
     else if (flow === 'forgot') router.replace({ pathname: '/auth/new-password', params: { email: to } });
-    else router.replace({ pathname: '/auth/role', params: flow === 'email' ? { email: to } : { phone: to } });
+    else afterContact(flow === 'email' ? { email: to } : { phone: to });
   };
 
   const resend = () => {

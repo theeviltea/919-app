@@ -12,6 +12,8 @@ type Session = {
   /** Role the next new account gets — set by the guest action that triggered sign-up. */
   pendingRole: Role | null;
   setReturn: (path: string | null, role?: Role | null) => void;
+  /** Role picked on the "Who are you here as?" screen at the start of sign-up. */
+  setPendingRole: (role: Role | null) => void;
   signIn: (u: User) => void;
   signOut: () => void;
 };
@@ -32,6 +34,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setReturnTo(path);
         setPendingRole(role);
       },
+      setPendingRole,
       signIn: (u) => setUser(u),
       signOut: () => setUser(null),
     }),

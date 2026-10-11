@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { BottomSheet, BrandMarkPlaceholder, Button, FormScreen, Icon, Pressable, Text } from '@/components';
 import { popularCountries } from '@/data/dictionaries';
 import { PhoneInput } from '@/features/auth/PhoneInput';
+import { useCreateAccount } from '@/features/auth/useCreateAccount';
 import { View } from 'react-native';
 
 /** Sign in — phone first; email / Apple / Google behind "Another way to sign in". */
 export default function SignIn() {
+  const createAccount = useCreateAccount();
   const [country, setCountry] = useState(popularCountries[0]);
   const [phone, setPhone] = useState('');
   const [other, setOther] = useState(false);
@@ -16,7 +18,7 @@ export default function SignIn() {
     <FormScreen
       title="Welcome back"
       subtitle="Enter the phone number linked to your 919 account. We'll text you a one-time code."
-      headerAction={{ label: 'Create account', onPress: () => router.replace('/auth/register') }}
+      headerAction={{ label: 'Create account', onPress: () => createAccount('replace') }}
       footer={<Button size="l" label="Get code" disabled={!ok} onPress={() => router.push({ pathname: '/auth/code', params: { flow: 'signin', to: `${country.dial}|${phone}` } })} />}>
       <PhoneInput country={country} onCountry={setCountry} value={phone} onChange={setPhone} autoFocus />
       <Pressable onPress={() => setOther(true)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', paddingVertical: 8 }}>

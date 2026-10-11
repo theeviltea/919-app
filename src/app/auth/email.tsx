@@ -3,12 +3,14 @@ import { useState } from 'react';
 
 import { Button, Field, FormScreen, Icon, Pressable, Text } from '@/components';
 import { PasswordField } from '@/features/auth/PasswordField';
+import { useCreateAccount } from '@/features/auth/useCreateAccount';
 import { useFinishAuth } from '@/features/auth/useFinishAuth';
 
 const isEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
 /** Sign in with email + password. Prototype: password "wrong" shows the error state. */
 export default function EmailSignIn() {
+  const createAccount = useCreateAccount();
   const finish = useFinishAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +20,7 @@ export default function EmailSignIn() {
     <FormScreen
       title="Sign in with email"
       subtitle="Enter the email and password of your 919 account."
-      headerAction={{ label: 'Create account', onPress: () => router.replace('/auth/register') }}
+      headerAction={{ label: 'Create account', onPress: () => createAccount('replace') }}
       footer={
         <Button
           size="l"
