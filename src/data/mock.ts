@@ -45,6 +45,10 @@ const p = (n: number) =>
     14: require('@/assets/images/mock/people/p14.jpg'),
   })[n];
 
+/** Photos for other mock modules (employer data). */
+export const mockImg = { ...img, ...vac };
+export const personPhoto = (n: number) => p(n);
+
 const dives = { id: 'dives', name: 'DIVES Holding', initials: 'DH', verified: true };
 const desc =
   "Welcome guests at the hotel's beach restaurant, take orders and serve food and drinks during lunch and dinner. Shifts are 8 hours, 5 days a week, with uniform and staff meals provided. Previous experience in a five-star venue is a plus.";

@@ -49,7 +49,11 @@ export default function Code() {
       updateProfile({ phone: `${dial} ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}` });
       router.dismissTo('/profile/personal');
       toast({ text: mode === 'add' ? 'Phone number added' : 'Phone number updated', icon: 'check', aboveTabBar: true });
-    } else if (flow === 'signin') finish({ phone: to });
+    } else if (flow === 'signin') {
+      // Prototype: a number of all 8s (e.g. 88 888 8888) signs in to the demo employer, any other one to the demo seeker.
+      const employer = /^8+$/.test(digits ?? '');
+      finish(employer ? { phone: to, role: 'employer', firstName: 'Emanuel', company: { name: 'Skyline Hospitality', status: 'approved' } } : { phone: to, role: 'seeker' });
+    }
     else if (flow === 'forgot') router.replace({ pathname: '/auth/new-password', params: { email: to } });
     else afterContact(flow === 'email' ? { email: to } : { phone: to });
   };

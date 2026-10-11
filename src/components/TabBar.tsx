@@ -10,12 +10,14 @@ import { Text } from './Text';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 export type TabMeta = Record<string, { label: string; icon: IconName; badge?: number }>;
+/** Raised round action between tabs (employer: Post a new vacancy), placed after the tab named `after`. */
+export type TabCenter = { after: string; label: string; icon: IconName; onPress: () => void };
 
 /**
  * 919 tab bar: `surface-panel` with blur and a top divider. Active item is recoloured `primary` on a
  * `primary-secondary` pill; the icon stays stroke (never filled). Badge = unread count.
  */
-export function TabBar({ state, navigation, insets, meta, aliases = {} }: TabBarProps & { meta: TabMeta; aliases?: Record<string, string> }) {
+export function TabBar({ state, navigation, insets, meta, aliases = {}, center }: TabBarProps & { meta: TabMeta; aliases?: Record<string, string>; center?: TabCenter }) {
   const { c } = useTheme();
   const current = state.routes[state.index]?.name;
   const activeName = aliases[current] ?? current;
@@ -40,35 +42,67 @@ export function TabBar({ state, navigation, insets, meta, aliases = {} }: TabBar
       {state.routes.map((route, i) => {
         const m = meta[route.name];
         if (!m) return null;
-        const focused = route.name === activeName;
-        const col = focused ? 'primary' : 'textBody';
-        return (
-          <Pressable
-            key={route.key}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: focused }}
-            accessibilityLabel={m.badge ? `${m.label}, ${m.badge} unread` : m.label}
-            onPress={() => {
-              const e = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-              if (state.index !== i && !e.defaultPrevented) navigation.navigate(route.name);
-            }}
-            style={{ flex: 1, alignItems: 'center', gap: 4 }}>
-            <View style={{ width: 56, height: 30, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: focused ? c.primarySecondary : 'transparent' }}>
-              <Icon name={m.icon} size={22} color={col} />
-              {m.badge ? (
-                <View style={{ position: 'absolute', top: -3, right: 6, minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9, backgroundColor: c.error, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text variant="caption" weight={700} color="#FFFFFF" style={{ fontSize: 10, lineHeight: 12 }}>
-                    {m.badge > 99 ? '99+' : m.badge}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-            <Text variant="caption" weight={600} color={col} style={{ fontSize: 11, lineHeight: 14 }}>
-              {m.label}
-            </Text>
-          </Pressable>
-        );
+        const tab = renderTab(route, i, m);
+        return center?.after === route.name ? [tab, <CenterAction key="center" {...center} />] : tab;
       })}
+    </View>
+  );
+
+  function renderTab(route: (typeof state.routes)[number], i: number, m: TabMeta[string]) {
+    const focused = route.name === activeName;
+    const col = focused ? 'primary' : 'textBody';
+    return (
+      <Pressable
+        key={route.key}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: focused }}
+        accessibilityLabel={m.badge ? `${m.label}, ${m.badge} unread` : m.label}
+        onPress={() => {
+          const e = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (state.index !== i && !e.defaultPrevented) navigation.navigate(route.name);
+        }}
+        style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+        <View style={{ width: 56, height: 30, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: focused ? c.primarySecondary : 'transparent' }}>
+          <Icon name={m.icon} size={22} color={col} />
+          {m.badge ? (
+            <View
+              style={{
+                position: 'absolute',
+                top: -3,
+                right: 6,
+                minWidth: 18,
+                height: 18,
+                paddingHorizontal: 5,
+                borderRadius: 9,
+                backgroundColor: c.error,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text variant="caption" weight={700} color="#FFFFFF" style={{ fontSize: 10, lineHeight: 12 }}>
+                {m.badge > 99 ? '99+' : m.badge}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        <Text variant="caption" weight={600} color={col} style={{ fontSize: 11, lineHeight: 14 }}>
+          {m.label}
+        </Text>
+      </Pressable>
+    );
+  }
+}
+
+function CenterAction({ label, icon, onPress }: TabCenter) {
+  const { c } = useTheme();
+  return (
+    <View style={{ flex: 1, alignItems: 'center' }}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        style={{ marginTop: -24, width: 56, height: 56, borderRadius: 28, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(53,137,242,0.35)' }}>
+        <Icon name={icon} size={26} color="ctaButtonText" />
+      </Pressable>
     </View>
   );
 }

@@ -68,12 +68,12 @@ export function FormScreen({ title, subtitle, headerAction, onBack, hideBack, fo
 }
 
 /** "Step 1 of 5" + segmented progress. */
-export function StepProgress({ step, of }: { step: number; of: number }) {
+export function StepProgress({ step, of, label }: { step: number; of: number; /** Flow name before the step, e.g. "New vacancy". */ label?: string }) {
   const { c } = useTheme();
   return (
     <View style={{ gap: 6 }} accessibilityLabel={`Step ${step} of ${of}`}>
       <Text variant="caption" weight={600} color="textBody">
-        Step {step} of {of}
+        {label ? `${label} · ` : ''}Step {step} of {of}
       </Text>
       <View style={{ flexDirection: 'row', gap: 6 }}>
         {Array.from({ length: of }, (_, i) => (

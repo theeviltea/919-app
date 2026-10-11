@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components';
+import { EmployerProvider } from '@/data/employer';
 import { SessionProvider } from '@/data/session';
 import { SeekerProvider } from '@/data/seeker';
 import { SignupProvider } from '@/data/signup';
@@ -38,7 +39,9 @@ export default function RootLayout() {
           <SessionProvider>
             <SignupProvider>
               <SeekerProvider>
-                <Root />
+                <EmployerProvider>
+                  <Root />
+                </EmployerProvider>
               </SeekerProvider>
             </SignupProvider>
           </SessionProvider>

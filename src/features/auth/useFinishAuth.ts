@@ -13,7 +13,9 @@ export function useFinishAuth() {
     // Signing in (not registering) as a seeker opens the demo account.
     if (role === 'seeker' && !seeker.firstName) setSeeker(demoDraft);
     signIn({ id: 'me', role, phone: data.phone, email: data.email, firstName: data.firstName, company: data.company });
-    const to = returnTo ?? (role === 'seeker' ? '/seeker' : '/home');
+    // A guest action of the other role (e.g. Respond while signing in as an employer) doesn't apply.
+    const home = role === 'seeker' ? '/seeker' : '/hire';
+    const to = returnTo && (!pendingRole || pendingRole === role) ? returnTo : home;
     setReturn(null);
     router.dismissAll();
     router.replace(to as never);

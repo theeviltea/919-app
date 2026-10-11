@@ -2,10 +2,11 @@ import { View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
+import { Icon, type IconName } from './Icon';
 import { Pressable } from './Pressable';
 import { Text } from './Text';
 
-type Item<K extends string> = { key: K; label: string; count?: number };
+type Item<K extends string> = { key: K; label: string; count?: number; icon?: IconName };
 
 /** SegmentedTabs — 2–4 views inside one screen. Track `back-darker`, active segment `surface`. */
 export function SegmentedTabs<K extends string>({ items, value, onChange }: { items: Item<K>[]; value: K; onChange: (k: K) => void }) {
@@ -27,10 +28,11 @@ export function SegmentedTabs<K extends string>({ items, value, onChange }: { it
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 4,
+              gap: it.icon ? 8 : 4,
               backgroundColor: on ? c.surface : 'transparent',
               boxShadow: on ? '0 2px 8px rgba(14,26,43,0.08)' : undefined,
             }}>
+            {it.icon ? <Icon name={it.icon} size={18} color={on ? 'textHeadline' : 'textPrimary'} /> : null}
             <Text variant="body" weight={on ? 700 : 600} color={on ? 'textHeadline' : 'textPrimary'} style={{ fontSize: 14 }} numberOfLines={1}>
               {it.label}
             </Text>
