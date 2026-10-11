@@ -11,6 +11,7 @@ import { findVacancy } from '@/data/mock';
 import { clockNow, useSeeker, type Msg, type NewMsg } from '@/data/seeker';
 import { SAMPLE_PHOTOS, VIDEO_POSTER } from '@/features/auth/media';
 import { pickImages } from '@/features/auth/pickImage';
+import { SwipeReply } from '@/features/chat/SwipeReply';
 import { fontFamily, useTheme } from '@/theme';
 
 type Quote = { author: string; text: string };
@@ -264,14 +265,14 @@ export default function ChatScreen() {
           const attachment = m.kind === 'photos' ? <PhotoGrid photos={m.photos} /> : m.kind === 'video' ? <VideoTile poster={m.poster} duration={m.duration} /> : m.kind === 'contact' ? <ContactCard m={m} /> : undefined;
           const body = m.kind === 'text' || m.kind === 'photos' || m.kind === 'video' ? m.text : undefined;
           return (
-            <Pressable
+            <SwipeReply
               key={m.id}
-              onLongPress={() => (setPicked(m), setSheet('actions'))}
-              delayLongPress={350}
-              accessibilityHint="Long press for actions"
-              style={{ alignSelf: m.mine ? 'flex-end' : 'flex-start', maxWidth: '100%' }}>
+              mine={m.mine}
+              canReply={canWrite}
+              onReply={() => setReply({ author: m.mine ? 'You' : firstName, text: quoteText(m) })}
+              onLongPress={() => (setPicked(m), setSheet('actions'))}>
               <ChatBubble mine={m.mine} text={body} time={m.time} quote={m.kind === 'text' ? m.quote : undefined} attachment={m.kind === 'contact' ? <View style={{ padding: 2 }}>{attachment}</View> : attachment} />
-            </Pressable>
+            </SwipeReply>
           );
         })}
         {t.state === 'request' ? <ChatBubble text={t.requestText} time={t.time} /> : null}

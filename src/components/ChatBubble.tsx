@@ -21,6 +21,15 @@ export function ChatBubble({ mine, text, time, quote, attachment }: Props) {
   const { c } = useTheme();
   const fg = mine ? 'ctaButtonText' : 'textHeadline';
   const media = !!attachment;
+  const inline = !!text && !media && !quote && text.length <= 24 && !text.includes('\n');
+  const meta = (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: inline ? 1 : 0 }}>
+      <Text variant="caption" weight={400} style={{ fontSize: 11, lineHeight: 14 }} color={mine ? 'rgba(255,255,255,0.8)' : 'textLightSecondary'}>
+        {time}
+      </Text>
+      {mine ? <Icon name="check-double" size={14} color="rgba(255,255,255,0.8)" /> : null}
+    </View>
+  );
   return (
     <View
       style={{
@@ -58,17 +67,24 @@ export function ChatBubble({ mine, text, time, quote, attachment }: Props) {
         </View>
       ) : null}
       {attachment}
-      {text ? (
-        <Text variant="body" color={fg} style={{ paddingHorizontal: media ? 10 : 0, paddingTop: media ? 8 : 0, lineHeight: 21 }}>
-          {text}
-        </Text>
-      ) : null}
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 4, marginTop: 2, paddingHorizontal: media ? 10 : 0 }}>
-        <Text variant="caption" weight={400} style={{ fontSize: 11, lineHeight: 14 }} color={mine ? 'rgba(255,255,255,0.8)' : 'textLightSecondary'}>
-          {time}
-        </Text>
-        {mine ? <Icon name="check-double" size={14} color="rgba(255,255,255,0.8)" /> : null}
-      </View>
+      {inline ? (
+        // Short one-liners ("OK", "Thanks!"): time sits on the same line, like in Telegram / WhatsApp.
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+          <Text variant="body" color={fg} style={{ lineHeight: 21, flexShrink: 1 }}>
+            {text}
+          </Text>
+          {meta}
+        </View>
+      ) : (
+        <>
+          {text ? (
+            <Text variant="body" color={fg} style={{ paddingHorizontal: media ? 10 : 0, paddingTop: media ? 8 : 0, lineHeight: 21 }}>
+              {text}
+            </Text>
+          ) : null}
+          <View style={{ alignSelf: 'flex-end', marginTop: 2, paddingHorizontal: media ? 10 : 0 }}>{meta}</View>
+        </>
+      )}
     </View>
   );
 }
