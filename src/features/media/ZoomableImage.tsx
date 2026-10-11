@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import type { ImageSourcePropType } from 'react-native';
+import { View, type ImageSourcePropType } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
@@ -76,7 +76,10 @@ export function ZoomableImage({ source, width, height, onZoom }: { source: Image
   return (
     <GestureDetector gesture={Gesture.Simultaneous(pinch, pan, doubleTap)}>
       <Animated.View style={[{ width, height, alignItems: 'center', justifyContent: 'center' }, style]}>
-        <Image source={source} contentFit="contain" style={{ width, height }} />
+        {/* pointerEvents none: on web a dragged <img> starts a native image drag and swallows the gesture. */}
+        <View pointerEvents="none">
+          <Image source={source} contentFit="contain" style={{ width, height }} />
+        </View>
       </Animated.View>
     </GestureDetector>
   );

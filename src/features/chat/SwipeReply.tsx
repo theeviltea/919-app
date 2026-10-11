@@ -43,7 +43,7 @@ export function SwipeReply({ mine, canReply, onReply, onLongPress, children }: {
   }));
 
   return (
-    <GestureDetector gesture={gesture}>
+    <GestureDetector gesture={gesture} touchAction="pan-y">
       <View collapsable={false} style={{ width: '100%' }} accessibilityHint={canReply ? 'Swipe right to reply, long press for actions' : 'Long press for actions'}>
         <Animated.View style={[{ position: 'absolute', left: 0, top: 0, bottom: 0, justifyContent: 'center' }, hint]} pointerEvents="none">
           <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' }}>

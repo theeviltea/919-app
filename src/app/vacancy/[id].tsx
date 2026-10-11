@@ -10,6 +10,7 @@ import { findVacancy } from '@/data/mock';
 import { matchRequirement, useSeeker } from '@/data/seeker';
 import { useSession } from '@/data/session';
 import { GuestAuthSheet } from '@/features/talent/GuestAuth';
+import { Pager } from '@/features/media/Pager';
 import { openPhotos } from '@/features/media/viewer';
 import { useApply } from '@/features/vacancies/useApply';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
@@ -87,19 +88,20 @@ export default function VacancyScreen() {
     <View style={{ flex: 1, backgroundColor: c.back }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
         <View style={{ height: 300, backgroundColor: c.labelBlueBack }}>
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / w))}
-            onScroll={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / w))}
-            scrollEventThrottle={64}>
-            {v.photos.map((ph, i) => (
-              <Pressable key={i} onPress={() => openPhotos({ photos: v.photos, index: i })} accessibilityRole="imagebutton" accessibilityLabel={`${v.title}, photo ${i + 1} of ${v.photos.length}`}>
-                <Image source={ph} contentFit="cover" style={{ width: w, height: 300 }} />
-              </Pressable>
-            ))}
-          </ScrollView>
+          <Pager
+            count={v.photos.length}
+            width={w}
+            height={300}
+            index={page}
+            onIndex={setPage}
+            onTap={(i) => openPhotos({ photos: v.photos, index: i })}
+            renderItem={(i) => (
+              // pointerEvents none: on web a dragged <img> starts a native image drag and swallows the swipe.
+              <View pointerEvents="none">
+                <Image source={v.photos[i]} contentFit="cover" style={{ width: w, height: 300 }} accessibilityLabel={`${v.title}, photo ${i + 1} of ${v.photos.length}`} />
+              </View>
+            )}
+          />
           <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 130, experimental_backgroundImage: 'linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0))' }} />
           <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 12, flexDirection: 'row', gap: 8 }}>
             <BackButton tone="onPhoto" />
@@ -242,13 +244,29 @@ export default function VacancyScreen() {
           <Section
             title="Photos"
             action={
-              <Text variant="body" weight={700} color="link" style={{ fontSize: 14 }}>
-                See all {v.photos.length}
-              </Text>
+              <Pressable onPress={() => openPhotos({ photos: v.photos, index: 0 })} accessibilityRole="button" hitSlop={8}>
+                <Text variant="body" weight={700} color="link" style={{ fontSize: 14 }}>
+                  See all {v.photos.length}
+                </Text>
+              </Pressable>
             }>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {v.photos.slice(0, 3).map((ph, i) => (
-                <Image key={i} source={ph} contentFit="cover" style={{ flex: 1, height: 96, borderRadius: 14, backgroundColor: c.backDarker }} />
+                <Pressable
+                  key={i}
+                  onPress={() => openPhotos({ photos: v.photos, index: i })}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel={`Open photo ${i + 1} of ${v.photos.length}`}
+                  style={{ flex: 1, height: 96, borderRadius: 14, overflow: 'hidden', backgroundColor: c.backDarker }}>
+                  <Image source={ph} contentFit="cover" style={{ width: '100%', height: '100%' }} />
+                  {i === 2 && v.photos.length > 3 ? (
+                    <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(14,26,43,0.45)', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text variant="bodyL" weight={700} color="#FFFFFF">
+                        +{v.photos.length - 3}
+                      </Text>
+                    </View>
+                  ) : null}
+                </Pressable>
               ))}
             </View>
           </Section>

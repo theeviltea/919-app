@@ -1,11 +1,12 @@
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, Share, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, Pressable, Text } from '@/components';
+import { Pager } from '@/features/media/Pager';
 import { currentPhotos } from '@/features/media/viewer';
 import { ZoomableImage } from '@/features/media/ZoomableImage';
 
@@ -18,8 +19,6 @@ export default function PhotoViewer() {
   const [set] = useState(currentPhotos);
   const [index, setIndex] = useState(set?.index ?? 0);
   const [zoomed, setZoomed] = useState(false);
-  const pager = useRef<ScrollView>(null);
-  const placed = useRef(false);
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   if (!set?.photos.length) {
@@ -36,37 +35,23 @@ export default function PhotoViewer() {
   const top = insets.top + 12 + 44 + 16;
   const bottom = many ? Math.max(insets.bottom, 24) + 16 + 52 + 40 : Math.max(insets.bottom, 24) + 16;
   const frameH = Math.max(240, height - top - bottom);
-  const go = (i: number) => {
-    setIndex(i);
-    pager.current?.scrollTo({ x: i * width, animated: true });
-  };
+  const go = (i: number) => setIndex(i);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000000' }}>
       <Stack.Screen options={{ animation: 'fade', contentStyle: { backgroundColor: '#000000' } }} />
       <StatusBar style="light" />
-      <ScrollView
-        ref={pager}
-        horizontal
-        pagingEnabled
-        scrollEnabled={!zoomed && many}
-        showsHorizontalScrollIndicator={false}
-        onLayout={() => {
-          // Open on the tapped photo (contentOffset is ignored on web).
-          if (placed.current) return;
-          placed.current = true;
-          pager.current?.scrollTo({ x: index * width, animated: false });
-        }}
-        onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
-        onScroll={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
-        scrollEventThrottle={64}
-        style={{ position: 'absolute', left: 0, right: 0, top, height: frameH }}>
-        {set.photos.map((p, i) => (
-          <View key={i} style={{ width, height: frameH, overflow: 'hidden' }}>
-            <ZoomableImage source={p} width={width} height={frameH} onZoom={setZoomed} />
-          </View>
-        ))}
-      </ScrollView>
+      <View style={{ position: 'absolute', left: 0, right: 0, top, height: frameH }}>
+        <Pager
+          count={set.photos.length}
+          width={width}
+          height={frameH}
+          index={index}
+          onIndex={setIndex}
+          enabled={!zoomed}
+          renderItem={(i) => <ZoomableImage key={i} source={set.photos[i]} width={width} height={frameH} onZoom={setZoomed} />}
+        />
+      </View>
 
       <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 12, flexDirection: 'row', alignItems: 'center' }}>
         <Pressable onPress={close} accessibilityRole="button" accessibilityLabel="Close" style={glass}>
