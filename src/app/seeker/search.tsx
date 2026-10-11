@@ -52,20 +52,29 @@ function chipsOf(f: VacancyFilters): { key: string; label: string; remove: (f: V
   return out;
 }
 
+function parseFilters(raw?: string): VacancyFilters {
+  if (!raw) return emptyFilters;
+  try {
+    return { ...emptyFilters, ...(JSON.parse(raw) as Partial<VacancyFilters>) };
+  } catch {
+    return emptyFilters;
+  }
+}
+
 export default function SeekerSearchScreen() {
-  const params = useLocalSearchParams<{ q?: string }>();
-  // A new ?q= (e.g. from a notification) starts a fresh search.
-  return <SeekerSearch key={params.q ?? ''} initialQ={params.q ?? ''} />;
+  const params = useLocalSearchParams<{ q?: string; f?: string }>();
+  // A new ?q= (e.g. from a notification) or ?f= (filters applied on the feed) starts a fresh search.
+  return <SeekerSearch key={`${params.q ?? ''}|${params.f ?? ''}`} initialQ={params.q ?? ''} initialFilters={parseFilters(params.f)} />;
 }
 
 /** Vacancy search (SeekSearch / SeekSearchResults / SeekSearchEmpty): recent and popular, then results with filter chips. */
-function SeekerSearch({ initialQ }: { initialQ: string }) {
+function SeekerSearch({ initialQ, initialFilters }: { initialQ: string; initialFilters: VacancyFilters }) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { recent, addRecent, removeRecent, clearRecent } = useSeeker();
   const [q, setQ] = useState(initialQ);
-  const [filters, setFilters] = useState<VacancyFilters>(emptyFilters);
+  const [filters, setFilters] = useState<VacancyFilters>(initialFilters);
   const [sort, setSort] = useState<Sort>('Newest');
   const [sheet, setSheet] = useState<'filters' | 'sort' | null>(null);
 
@@ -99,7 +108,7 @@ function SeekerSearch({ initialQ }: { initialQ: string }) {
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', width: '100%', maxWidth: 600, alignSelf: 'center' }}>
           <BackButton tone="onBlue" onPress={() => (router.canGoBack() ? router.back() : router.navigate('/seeker'))} />
           <View style={{ flex: 1 }}>
-            <SearchBar value={q} onChangeText={setQ} placeholder="Role, venue or area" onSubmit={remember} onFilterPress={() => setSheet('filters')} filterCount={nFilters} autoFocus={!initialQ} />
+            <SearchBar value={q} onChangeText={setQ} placeholder="Role, venue or area" onSubmit={remember} onFilterPress={() => setSheet('filters')} filterCount={nFilters} autoFocus={!initialQ && !countFilters(initialFilters)} />
           </View>
         </View>
       </PatternHeader>
@@ -211,7 +220,15 @@ function SeekerSearch({ initialQ }: { initialQ: string }) {
                 <Text variant="bodyS" weight={700} style={{ fontSize: 13 }}>
                   {results.length} vacanc{results.length === 1 ? 'y' : 'ies'}
                 </Text>
-                {q.trim() ? ` for “${q.trim()}”` : ''}
+                {q.trim() ? ` for “${q.trim()}”` : nFilters ? ` match ${nFilters} filter${nFilters > 1 ? 's' : ''}` : ''}
+                {nFilters ? (
+                  <>
+                    {' · '}
+                    <Text variant="bodyS" weight={700} color="link" style={{ fontSize: 13 }} onPress={() => setFilters(emptyFilters)} accessibilityRole="button">
+                      Clear
+                    </Text>
+                  </>
+                ) : null}
               </Text>
               <Pressable onPress={() => setSheet('sort')} accessibilityRole="button" accessibilityLabel={`Sort: ${sort}`} hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Icon name="sort" size={16} color="textHeadline" />
