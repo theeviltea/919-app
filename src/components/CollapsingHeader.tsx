@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import type { ReactNode } from 'react';
 import { Pressable as RNPressable, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
@@ -33,6 +34,8 @@ type Props = Layout & {
   iconAction?: { icon: IconName; label: string; onPress: () => void; dot?: boolean };
   /** Yellow filter button next to the search bar. */
   onFilter?: () => void;
+  /** Replaces the 919 logo in the top row (employer: company chip + plan). Fades out like the logo. */
+  brand?: ReactNode;
 };
 
 const ACTION_W = 84;
@@ -43,7 +46,7 @@ const BTN = 44;
  * into one compact row with the actions, the bottom radius tightens. Overscroll stretches the pattern.
  */
 export function CollapsingHeader(props: Props) {
-  const { scrollY, insetTop, title, eyebrowText, searchPlaceholder, onSearch, action, iconAction, onFilter } = props;
+  const { scrollY, insetTop, title, eyebrowText, searchPlaceholder, onSearch, action, iconAction, onFilter, brand } = props;
   const { c } = useTheme();
   const { expanded, collapsed, range, searchTop } = headerMetrics(insetTop, { titleLines: props.titleLines, eyebrow: !!eyebrowText });
   const tail = action ? ACTION_W + 8 : iconAction ? BTN + 8 : 0; // right-side space taken in the compact row
@@ -55,10 +58,7 @@ export function CollapsingHeader(props: Props) {
     borderBottomRightRadius: interpolate(scrollY.value, [0, range], [32, 24], Extrapolation.CLAMP),
   }));
   const pattern = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: interpolate(scrollY.value, [0, range], [0, -range * 0.35], Extrapolation.CLAMP) },
-      { scale: interpolate(scrollY.value, [-120, 0], [1.25, 1], Extrapolation.CLAMP) },
-    ],
+    transform: [{ translateY: interpolate(scrollY.value, [0, range], [0, -range * 0.35], Extrapolation.CLAMP) }, { scale: interpolate(scrollY.value, [-120, 0], [1.25, 1], Extrapolation.CLAMP) }],
   }));
   const logo = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [0, range * 0.35], [1, 0], Extrapolation.CLAMP),
@@ -66,10 +66,7 @@ export function CollapsingHeader(props: Props) {
   }));
   const titleStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [0, range * 0.55], [1, 0], Extrapolation.CLAMP),
-    transform: [
-      { translateY: interpolate(scrollY.value, [0, range], [0, -48], Extrapolation.CLAMP) },
-      { scale: interpolate(scrollY.value, [0, range], [1, 0.94], Extrapolation.CLAMP) },
-    ],
+    transform: [{ translateY: interpolate(scrollY.value, [0, range], [0, -48], Extrapolation.CLAMP) }, { scale: interpolate(scrollY.value, [0, range], [1, 0.94], Extrapolation.CLAMP) }],
   }));
   const rowTop = (from: number) => interpolate(scrollY.value, [0, range], [from, insetTop + 10], Extrapolation.CLAMP);
   const search = useAnimatedStyle(() => ({
@@ -95,9 +92,15 @@ export function CollapsingHeader(props: Props) {
         <Image source={require('@/assets/images/pattern-3d.jpg')} contentFit="cover" contentPosition="top" style={{ width: '100%', height: '100%', opacity: 0.5 }} />
       </Animated.View>
 
-      <Animated.View style={[{ position: 'absolute', left: 20, top: insetTop + 20 }, logo]} pointerEvents="none">
-        <Logo height={24} />
-      </Animated.View>
+      {brand ? (
+        <Animated.View style={[{ position: 'absolute', left: 20, right: 20 + tail, top: insetTop + 16, height: 36, flexDirection: 'row', alignItems: 'center' }, logo]} pointerEvents="box-none">
+          {brand}
+        </Animated.View>
+      ) : (
+        <Animated.View style={[{ position: 'absolute', left: 20, top: insetTop + 20 }, logo]} pointerEvents="none">
+          <Logo height={24} />
+        </Animated.View>
+      )}
       <Animated.View style={[{ position: 'absolute', left: 20, right: 20, top: insetTop + 70, transformOrigin: 'left center' }, titleStyle]} pointerEvents="none">
         {eyebrowText ? (
           <Text variant="body" weight={500} color="rgba(255,255,255,0.88)" style={{ fontSize: 15, lineHeight: 22 }}>
@@ -151,7 +154,9 @@ export function CollapsingHeader(props: Props) {
             ) : iconAction ? (
               <>
                 <Icon name={iconAction.icon} size={22} color="#FFFFFF" />
-                {iconAction.dot ? <View style={{ position: 'absolute', top: 10, right: 11, width: 9, height: 9, borderRadius: 5, backgroundColor: c.urgent, borderWidth: 1.5, borderColor: c.primary }} /> : null}
+                {iconAction.dot ? (
+                  <View style={{ position: 'absolute', top: 10, right: 11, width: 9, height: 9, borderRadius: 5, backgroundColor: c.urgent, borderWidth: 1.5, borderColor: c.primary }} />
+                ) : null}
               </>
             ) : null}
           </RNPressable>
