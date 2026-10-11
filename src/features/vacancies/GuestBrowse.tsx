@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
-import { Chip, EmptyState, SegmentedTabs, Text } from '@/components';
+import { Chip, EmptyState, LoadMoreFooter, SegmentedTabs, Text, useOnEndReached, usePaged } from '@/components';
 import { spheres, talentSpheres, vacancySpheres } from '@/data/dictionaries';
 import { feedVacancies as vacancies, talents } from '@/data/mock';
 import type { Sphere, Talent } from '@/data/types';
@@ -33,6 +33,10 @@ export function GuestBrowse({ tab: tabProp, onTab, query = '', onClearQuery, see
     () => vacancies.filter((v) => (filter === 'all' || (filter === 'urgent' ? v.urgent : v.sphere === filter)) && (!q || `${v.title} ${v.company.name} ${v.details.role}`.toLowerCase().includes(q))),
     [filter, q],
   );
+  const paged = usePaged(vList.length, `${tab}|${filter}|${q}`);
+  useOnEndReached(() => {
+    if (tab === 'vacancies') paged.loadMore();
+  });
   const tList = useMemo(() => talents.filter((t) => (filter === 'all' || t.sphere === filter) && (!q || `${t.role} ${t.name}`.toLowerCase().includes(q))), [filter, q]);
 
   const chips: { key: 'all' | 'urgent' | Sphere; label: string }[] =
@@ -94,7 +98,7 @@ export function GuestBrowse({ tab: tabProp, onTab, query = '', onClearQuery, see
           </View>
         ) : tab === 'vacancies' ? (
           <View style={{ gap: 12 }}>
-            {vList.map((v) => (
+            {vList.slice(0, paged.count).map((v) => (
               <VacancyListCard
                 key={v.id}
                 v={v}
@@ -107,6 +111,7 @@ export function GuestBrowse({ tab: tabProp, onTab, query = '', onClearQuery, see
                 }
               />
             ))}
+            <LoadMoreFooter loading={paged.loading} done={paged.done} total={vList.length} noun="vacancies" />
           </View>
         ) : (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>

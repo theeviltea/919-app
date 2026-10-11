@@ -21,3 +21,4 @@ export * from './IconButton';
 export * from './Screen';
 export * from './CollapsingHeader';
 export * from './TabBar';
+export * from './LoadMore';

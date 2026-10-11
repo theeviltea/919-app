@@ -10,6 +10,23 @@ const img = {
   misc: require('@/assets/images/mock/misc.jpg'),
   barber: require('@/assets/images/mock/barber.jpg'),
 };
+/** Extra covers for the long feed (photos from the team, Oct 2026). */
+const vac = {
+  band: require('@/assets/images/mock/vac/v01.jpg'),
+  dj2: require('@/assets/images/mock/vac/v02.jpg'),
+  hostess2: require('@/assets/images/mock/vac/v03.jpg'),
+  guitar: require('@/assets/images/mock/vac/v04.jpg'),
+  hostess3: require('@/assets/images/mock/vac/v05.jpg'),
+  barista: require('@/assets/images/mock/vac/v06.jpg'),
+  dj3: require('@/assets/images/mock/vac/v07.jpg'),
+  hostess4: require('@/assets/images/mock/vac/v08.jpg'),
+  hostess5: require('@/assets/images/mock/vac/v09.jpg'),
+  host: require('@/assets/images/mock/vac/v10.jpg'),
+  madinat: require('@/assets/images/mock/vac/v11.jpg'),
+  promo: require('@/assets/images/mock/vac/v12.jpg'),
+  model: require('@/assets/images/mock/vac/v13.jpg'),
+  burj: require('@/assets/images/mock/vac/v14.jpg'),
+};
 const p = (n: number) =>
   ({
     0: require('@/assets/images/mock/people/p0.jpg'),
@@ -79,7 +96,88 @@ export const vacancies: Vacancy[] = [
 ];
 
 /** Vacancies shown in feeds; the rest exist only in a seeker's history. */
-export const feedVacancies = vacancies.slice(0, 9);
+
+// ---------- long feed: 41 more vacancies so the list pages (20 at a time) like the real API.
+type Seed = [title: string, company: string, sphere: Vacancy['sphere'], contract: Vacancy['pay']['contract'], amount: number, cover: keyof typeof vac, extra?: (keyof typeof vac | keyof typeof img)[]];
+const seeds: Seed[] = [
+  ['Hostess, Michelin restaurant', 'Ossiano', 'hospitality', 'monthly', 9000, 'hostess2', ['hostess3']],
+  ['Live band for a gala dinner', 'Emaar Events', 'music', 'one-time', 18000, 'band', ['guitar']],
+  ['Resident DJ, rooftop bar', 'Sky Lounge', 'music', 'monthly', 14000, 'dj2', ['dj3']],
+  ['Guitarist for Friday brunch', 'Bla Bla Dubai', 'music', 'daily', 1500, 'guitar'],
+  ['Front desk hostess, business hotel', 'Address Downtown', 'hospitality', 'monthly', 8500, 'hostess3', ['hostess5']],
+  ['Barista, morning shift', 'Kava Coffee', 'fnb', 'hourly', 45, 'barista'],
+  ['DJ for a private yacht party', 'Xclusive Yachts', 'music', 'one-time', 4000, 'dj3', ['dj2']],
+  ['Restaurant hostess, evening shifts', 'Zuma Dubai', 'hospitality', 'monthly', 10000, 'hostess4'],
+  ['VIP hostess, product launch', 'Luxe Events', 'events', 'daily', 900, 'hostess5', ['promo']],
+  ['Host for a corporate conference', 'DWTC', 'events', 'fixed-term', 6000, 'host'],
+  ['Event staff, heritage festival', 'Madinat Jumeirah', 'events', 'daily', 600, 'madinat', ['burj']],
+  ['Promo hostess, mall activation', 'Promo Pro', 'events', 'hourly', 80, 'promo'],
+  ['Fashion model, lookbook shoot', 'Studio Noir', 'modeling', 'one-time', 3500, 'model'],
+  ['Hostess, observation deck', 'At The Top', 'hospitality', 'hourly', 70, 'burj', ['hostess2']],
+  ['Waiter, beach club', 'Nikki Beach', 'fnb', 'monthly', 6500, 'hostess4'],
+  ['Saxophonist for sunset sessions', 'White Beach', 'music', 'daily', 1800, 'guitar', ['band']],
+  ['Brand ambassador, car show', 'Prestige Events', 'events', 'daily', 1100, 'promo', ['hostess5']],
+  ['Commercial model, beauty campaign', 'Glow Agency', 'modeling', 'fixed-term', 5000, 'model'],
+  ['Hostess, art gallery opening', 'Alserkal Avenue', 'events', 'one-time', 700, 'hostess3'],
+  ['Bartender, speakeasy', 'Fibber Magees', 'fnb', 'monthly', 7000, 'barista'],
+  ['MC for a wedding expo', 'Expo Weddings', 'events', 'one-time', 2500, 'host'],
+  ['Cover band for a hotel lobby', 'Atlantis The Royal', 'music', 'weekly', 9000, 'band'],
+  ['Guest relations, luxury resort', 'One&Only', 'hospitality', 'monthly', 11000, 'hostess2'],
+  ['Hostess, Formula 1 hospitality', 'Yas Marina', 'events', 'daily', 1300, 'hostess5', ['burj']],
+  ['Coffee bar attendant, expo stand', 'Gulfood', 'fnb', 'daily', 500, 'barista'],
+  ['DJ, ladies night', 'Cavalli Club', 'music', 'weekly', 5000, 'dj2'],
+  ['Runway model, fashion week', 'Arab Fashion Council', 'modeling', 'fixed-term', 7000, 'model'],
+  ['Concierge hostess, residence', 'Emaar Properties', 'hospitality', 'monthly', 8000, 'hostess4'],
+  ['Tour host, Old Dubai', 'Frying Pan Tours', 'events', 'hourly', 90, 'madinat'],
+  ['Promoter, energy drink launch', 'Red Bull', 'events', 'daily', 650, 'promo'],
+  ['Host, new year countdown', 'Burj Park', 'events', 'one-time', 3000, 'burj', ['host']],
+  ['Hostess, padel tournament', 'Padel Pro', 'events', 'daily', 750, 'hostess3'],
+  ['Pianist, hotel lounge', 'Jumeirah Al Qasr', 'music', 'monthly', 12000, 'guitar'],
+  ['Waitress, Arabic restaurant', 'Al Hadheerah', 'fnb', 'monthly', 6000, 'hostess4'],
+  ['Hostess, golf championship', 'Emirates Golf Club', 'events', 'daily', 1000, 'hostess5'],
+  ['Barista, specialty pop-up', 'Raw Coffee', 'fnb', 'daily', 450, 'barista'],
+  ['Event host, tech summit', 'GITEX', 'events', 'fixed-term', 7500, 'host', ['promo']],
+  ['Hostess, cruise terminal', 'Port Rashid', 'hospitality', 'hourly', 65, 'hostess2'],
+  ['DJ, beach festival', 'Soundstorm', 'music', 'one-time', 9000, 'dj3', ['band']],
+  ['Image model, hotel campaign', 'Five Hotels', 'modeling', 'one-time', 4000, 'model'],
+  ['Event crew, desert camp', 'Platinum Heritage', 'events', 'weekly', 2800, 'madinat'],
+];
+const cities: [string, string][] = [
+  ['Dubai', 'United Arab Emirates'],
+  ['Dubai', 'United Arab Emirates'],
+  ['Abu Dhabi', 'United Arab Emirates'],
+  ['Dubai', 'United Arab Emirates'],
+  ['Sharjah', 'United Arab Emirates'],
+  ['Riyadh', 'Saudi Arabia'],
+  ['Dubai', 'United Arab Emirates'],
+  ['Doha', 'Qatar'],
+];
+const ago = ['20 min ago', '45 min ago', '1 h ago', '2 h ago', '3 h ago', '5 h ago', '8 h ago', 'Yesterday', '2 d ago', '3 d ago', '4 d ago', '1 w ago'];
+const pic = (k: keyof typeof vac | keyof typeof img) => (k in vac ? vac[k as keyof typeof vac] : img[k as keyof typeof img]);
+
+const generated: Vacancy[] = seeds.map(([title, company, sphere, contract, amount, cover, extra], i) => {
+  const [city, country] = cities[i % cities.length];
+  const id = company.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  return base({
+    id: `v${18 + i}`,
+    title,
+    company: { id, name: company, initials: company.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase(), verified: i % 5 !== 3 },
+    sphere,
+    city,
+    country,
+    urgent: i % 6 === 0,
+    postedAgo: ago[Math.min(ago.length - 1, Math.floor(i / 3.5))],
+    views: 300 + ((i * 137) % 2400),
+    pay: { amount, currency: 'AED', contract },
+    cover: vac[cover],
+    photos: [vac[cover], ...(extra ?? []).map(pic), img.misc, img.dubai1].slice(0, 4),
+    details: { role: title.split(',')[0] },
+  });
+});
+
+export const allVacancies: Vacancy[] = [...vacancies, ...generated];
+/** Public feed: 9 hand-made + 41 generated = 50 vacancies. */
+export const feedVacancies = [...vacancies.slice(0, 9), ...generated];
 
 export const talents: Talent[] = [
   { id: 't1', name: 'Angela R.', role: 'Hostess', city: 'Dubai', verified: true, premium: true, sphere: 'hospitality', photo: p(1), placeholder: 1 },
@@ -92,4 +190,4 @@ export const talents: Talent[] = [
   { id: 't8', name: 'Wakako T.', role: 'Promo, hostess', city: 'Dubai', verified: true, premium: true, sphere: 'events', photo: p(3), placeholder: 3 },
 ];
 
-export const findVacancy = (id: string) => vacancies.find((v) => v.id === id);
+export const findVacancy = (id: string) => allVacancies.find((v) => v.id === id);

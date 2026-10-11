@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import Animated, { scrollTo, useAnimatedRef, useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import Animated, { runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Chip, CollapsingHeader, EmptyState, headerMetrics, TAB_BAR_SPACE, Text } from '@/components';
+import { Chip, CollapsingHeader, EmptyState, END_THRESHOLD, headerMetrics, LoadMoreFooter, TAB_BAR_SPACE, Text, usePaged } from '@/components';
 import { spheres, vacancySpheres } from '@/data/dictionaries';
 import { feedVacancies } from '@/data/mock';
 import { useSeeker } from '@/data/seeker';
@@ -28,6 +28,17 @@ export default function SeekerHome() {
   const [filters, setFilters] = useState<VacancyFilters>(emptyFilters);
   const [sheet, setSheet] = useState(false);
   const { expanded, range } = headerMetrics(insets.top, { titleLines: 1, eyebrow: true });
+  const list = useMemo(() => {
+    const byQuick = feedVacancies.filter((v) => quick === 'all' || (quick === 'urgent' ? v.urgent : v.sphere === quick));
+    return applyFilters(byQuick, filters).sort((a, b) => Number(b.urgent) - Number(a.urgent));
+  }, [quick, filters]);
+  const paged = usePaged(list.length, `${quick}|${JSON.stringify(filters)}`);
+  // Stable entry point for the UI-thread scroll handler; always calls the latest loadMore.
+  const loadRef = useRef(paged.loadMore);
+  useEffect(() => {
+    loadRef.current = paged.loadMore;
+  });
+  const loadMore = useCallback(() => loadRef.current(), []);
   const ref = useAnimatedRef<Animated.ScrollView>();
   const y = useSharedValue(0);
   const settle = (v: number) => {
@@ -37,6 +48,7 @@ export default function SeekerHome() {
   const onScroll = useAnimatedScrollHandler({
     onScroll: (e) => {
       y.value = e.contentOffset.y;
+      if (e.contentSize.height - e.contentOffset.y - e.layoutMeasurement.height < END_THRESHOLD) runOnJS(loadMore)();
     },
     onEndDrag: (e) => {
       if (Math.abs(e.velocity?.y ?? 0) < 0.2) settle(e.contentOffset.y);
@@ -44,10 +56,6 @@ export default function SeekerHome() {
     onMomentumEnd: (e) => settle(e.contentOffset.y),
   });
 
-  const list = useMemo(() => {
-    const byQuick = feedVacancies.filter((v) => quick === 'all' || (quick === 'urgent' ? v.urgent : v.sphere === quick));
-    return applyFilters(byQuick, filters).sort((a, b) => Number(b.urgent) - Number(a.urgent));
-  }, [quick, filters]);
   const nFilters = countFilters(filters);
 
   return (
@@ -72,10 +80,11 @@ export default function SeekerHome() {
         </View>
         <View style={{ paddingHorizontal: 20, gap: 12 }}>
           {list.length ? (
-            list.map((v) => <VacancyListCard key={v.id} v={v} onPress={() => router.push({ pathname: '/vacancy/[id]', params: { id: v.id } })} right={<SaveButton vacancyId={v.id} />} />)
+            list.slice(0, paged.count).map((v) => <VacancyListCard key={v.id} v={v} onPress={() => router.push({ pathname: '/vacancy/[id]', params: { id: v.id } })} right={<SaveButton vacancyId={v.id} />} />)
           ) : (
             <EmptyState icon="search" title="No vacancies match" text="Try another sphere or clear the filters. New vacancies appear every hour." action={{ label: 'Clear filters', onPress: () => (setFilters(emptyFilters), setQuick('all')) }} />
           )}
+          {list.length ? <LoadMoreFooter loading={paged.loading} done={paged.done} total={list.length} noun="vacancies" /> : null}
         </View>
       </Animated.ScrollView>
       <CollapsingHeader

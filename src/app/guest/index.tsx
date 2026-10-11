@@ -1,10 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
-import Animated, { scrollTo, useAnimatedRef, useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import Animated, { runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CollapsingHeader, headerMetrics } from '@/components';
+import { CollapsingHeader, END_THRESHOLD, EndReachedProvider, headerMetrics, useEndReachedHub } from '@/components';
 import { GuestBrowse, type GuestTab } from '@/features/vacancies/GuestBrowse';
 import { useTheme } from '@/theme';
 
@@ -15,6 +15,7 @@ export default function GuestHome() {
   const params = useLocalSearchParams<{ tab?: GuestTab }>();
   const [tab, setTab] = useState<GuestTab>(params.tab === 'talent' ? 'talent' : 'vacancies');
   const { expanded, range } = headerMetrics(insets.top);
+  const { hub, notify } = useEndReachedHub();
   const ref = useAnimatedRef<Animated.ScrollView>();
   const y = useSharedValue(0);
 
@@ -26,6 +27,7 @@ export default function GuestHome() {
   const onScroll = useAnimatedScrollHandler({
     onScroll: (e) => {
       y.value = e.contentOffset.y;
+      if (e.contentSize.height - e.contentOffset.y - e.layoutMeasurement.height < END_THRESHOLD) runOnJS(notify)();
     },
     onEndDrag: (e) => {
       if (Math.abs(e.velocity?.y ?? 0) < 0.2) settle(e.contentOffset.y);
@@ -40,7 +42,9 @@ export default function GuestHome() {
         onScroll={onScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingTop: expanded + 18, minHeight: '100%', width: '100%', maxWidth: 640, alignSelf: 'center' }}>
-        <GuestBrowse tab={tab} onTab={setTab} />
+        <EndReachedProvider value={hub}>
+          <GuestBrowse tab={tab} onTab={setTab} />
+        </EndReachedProvider>
       </Animated.ScrollView>
       <CollapsingHeader
         scrollY={y}
