@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useRef, useState } from 'react';
+import { ScrollView, View } from 'react-native';
 
 import { BottomSheet, Button, Icon, IconButton, Pressable, Text } from '@/components';
 import { ageFrom } from '@/data/registration';
@@ -7,8 +7,10 @@ import { useTheme } from '@/theme';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DOW = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+const OLDEST = 100;
+const ROW = 52; // year cell 44 + gap 8
 
-/** Date of birth — month calendar with month / year jump. Minimum age 18. */
+/** Date of birth — month calendar. Tap the title: year (all ages 18–100) → month → day. Minimum age 18. */
 type Props = { visible: boolean; value?: Date; onClose: () => void; onSelect: (d: Date) => void };
 
 export function DateSheet(props: Props) {
@@ -25,7 +27,8 @@ function Calendar({ value, onClose, onSelect }: Props) {
   const initial = value ?? new Date(new Date().getFullYear() - 25, 9, 12);
   const [view, setView] = useState({ y: initial.getFullYear(), m: initial.getMonth() });
   const [sel, setSel] = useState<Date | undefined>(value);
-  const [yearMode, setYearMode] = useState(false);
+  const [mode, setMode] = useState<'days' | 'years' | 'months'>('days');
+  const years = useRef<ScrollView>(null);
 
   const maxYear = new Date().getFullYear() - 18;
   const first = new Date(view.y, view.m, 1);
@@ -36,6 +39,8 @@ function Calendar({ value, onClose, onSelect }: Props) {
   for (let i = lead - 1; i >= 0; i--) cells.push({ d: prevDays - i, cur: false });
   for (let d = 1; d <= days; d++) cells.push({ d, cur: true });
   while (cells.length % 7) cells.push({ d: cells.length - lead - days + 1, cur: false });
+  const nowY = new Date().getFullYear();
+  const yearList = Array.from({ length: OLDEST - 18 + 1 }, (_, i) => maxYear - i);
   const shift = (n: number) => setView((v) => ({ y: v.y + Math.floor((v.m + n) / 12), m: (v.m + n + 12) % 12 }));
   const age = ageFrom(sel);
   const tooYoung = age !== undefined && age < 18;
@@ -43,24 +48,69 @@ function Calendar({ value, onClose, onSelect }: Props) {
   return (
     <>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <IconButton icon="arrow-left" label="Previous month" tone="filled" size={40} onPress={() => shift(-1)} />
-        <Pressable onPress={() => setYearMode(!yearMode)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8 }}>
+        {/* Arrows step a month on the calendar and a year on the month grid; hidden on the year grid. */}
+        <View style={{ opacity: mode === 'years' ? 0 : 1 }} pointerEvents={mode === 'years' ? 'none' : 'auto'}>
+          <IconButton icon="arrow-left" label={mode === 'months' ? 'Previous year' : 'Previous month'} tone="filled" size={40} onPress={() => (mode === 'months' ? setView((v) => ({ ...v, y: v.y - 1 })) : shift(-1))} />
+        </View>
+        <Pressable
+          onPress={() => setMode(mode === 'days' ? 'years' : 'days')}
+          accessibilityRole="button"
+          accessibilityLabel={mode === 'days' ? `${MONTHS[view.m]} ${view.y}, choose year and month` : 'Back to calendar'}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8 }}>
           <Text variant="bodyL" weight={700}>
-            {MONTHS[view.m]} {view.y}
+            {mode === 'years' ? 'Choose year' : mode === 'months' ? view.y : `${MONTHS[view.m]} ${view.y}`}
           </Text>
-          <Icon name="chevron-down" size={16} color="textBody" />
+          <View style={{ transform: [{ rotate: mode === 'days' ? '0deg' : '180deg' }] }}>
+            <Icon name="chevron-down" size={16} color="textBody" />
+          </View>
         </Pressable>
-        <IconButton icon="arrow-right" label="Next month" tone="filled" size={40} onPress={() => shift(1)} />
+        <View style={{ opacity: mode === 'years' ? 0 : 1 }} pointerEvents={mode === 'years' ? 'none' : 'auto'}>
+          <IconButton
+            icon="arrow-right"
+            label={mode === 'months' ? 'Next year' : 'Next month'}
+            tone="filled"
+            size={40}
+            onPress={() => (mode === 'months' ? setView((v) => ({ ...v, y: Math.min(maxYear, v.y + 1) })) : shift(1))}
+          />
+        </View>
       </View>
-      {yearMode ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, maxHeight: 290, overflow: 'hidden' }}>
-          {Array.from({ length: 20 }, (_, i) => maxYear - i).map((y) => (
+      {mode === 'years' ? (
+        <ScrollView
+          ref={years}
+          style={{ height: 290 }}
+          contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() => {
+            // Open on the current year, a row of context above it.
+            const row = Math.floor(yearList.indexOf(view.y) / 4);
+            years.current?.scrollTo({ y: Math.max(0, (row - 1) * ROW), animated: false });
+          }}>
+          {yearList.map((y) => (
             <Pressable
               key={y}
-              onPress={() => (setView((v) => ({ ...v, y })), setYearMode(false))}
-              style={{ width: '22.5%', height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: y === view.y ? c.primary : c.input }}>
-              <Text variant="body" weight={600} color={y === view.y ? 'ctaButtonText' : 'textHeadline'}>
+              onPress={() => (setView((v) => ({ ...v, y })), setMode('months'))}
+              accessibilityRole="button"
+              accessibilityLabel={`${y}, ${nowY - y} years`}
+              accessibilityState={{ selected: y === view.y }}
+              style={{ width: '22.9%', height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: y === view.y ? c.primary : c.input }}>
+              <Text variant="body" weight={y === view.y ? 700 : 600} color={y === view.y ? 'ctaButtonText' : 'textHeadline'}>
                 {y}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      ) : mode === 'months' ? (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, height: 290, alignContent: 'flex-start' }}>
+          {MONTHS.map((name, m) => (
+            <Pressable
+              key={name}
+              onPress={() => (setView((v) => ({ ...v, m })), setMode('days'))}
+              accessibilityRole="button"
+              accessibilityLabel={`${name} ${view.y}`}
+              accessibilityState={{ selected: m === view.m }}
+              style={{ width: '31.6%', height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: m === view.m ? c.primary : c.input }}>
+              <Text variant="body" weight={m === view.m ? 700 : 600} color={m === view.m ? 'ctaButtonText' : 'textHeadline'} style={{ fontSize: 15 }}>
+                {name.slice(0, 3)}
               </Text>
             </Pressable>
           ))}

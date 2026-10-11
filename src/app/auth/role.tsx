@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon, Logo, PatternHeader, Pressable, Text, type IconName } from '@/components';
+import { BackButton, Icon, Logo, PatternHeader, Pressable, Text, type IconName } from '@/components';
 import { useSession, type Role as RoleT } from '@/data/session';
 import { useTheme } from '@/theme';
 
@@ -51,7 +51,10 @@ export default function Role() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: c.back }} contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 24 }}>
       <PatternHeader style={{ paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 96, gap: 22 }}>
-        <Logo height={26} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <BackButton tone="onBlue" />
+          <Logo height={26} />
+        </View>
         <View style={{ gap: 10 }}>
           <Text variant="displayXl" color="#FFFFFF" accessibilityRole="header" style={{ fontSize: 27, lineHeight: 31 }}>
             {'Find work.\nFind people.'}
