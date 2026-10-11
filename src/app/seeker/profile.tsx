@@ -8,6 +8,7 @@ import { Button, Icon, IconButton, Pressable, TAB_BAR_SPACE, Text } from '@/comp
 import { fieldByKey } from '@/data/registration';
 import { completeness, jobPeriod, linkKinds, studyPeriod, totalExperience, useSeeker } from '@/data/seeker';
 import type { FieldEntry } from '@/data/signup';
+import { openPhotos, openVideo } from '@/features/media/viewer';
 import { CodeTile, Completeness, Panel, TimelineItem } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
 
@@ -148,7 +149,9 @@ export default function Profile() {
           <View style={{ height: p.photo ? 88 : 72, backgroundColor: c.primarySecondary }} />
           <View style={{ paddingHorizontal: 18, paddingBottom: 18, alignItems: 'center' }}>
             {p.photo ? (
-              <Image source={p.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ marginTop: -52, width: 104, height: 104, borderRadius: 52, borderWidth: 4, borderColor: c.surface, backgroundColor: c.avatar3 }} />
+              <Pressable onPress={() => openPhotos({ photos: [p.photo!], index: 0 })} accessibilityRole="imagebutton" accessibilityLabel="Open profile photo" style={{ marginTop: -52 }}>
+                <Image source={p.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 104, height: 104, borderRadius: 52, borderWidth: 4, borderColor: c.surface, backgroundColor: c.avatar3 }} />
+              </Pressable>
             ) : (
               <Pressable
                 onPress={() => router.push('/profile/edit')}
@@ -224,10 +227,10 @@ export default function Profile() {
           </View>
           {photos.length ? (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -4 }}>
-              {photos.slice(0, 9).map((ph) => (
-                <View key={ph.id} style={{ width: '33.333%', padding: 4 }}>
+              {photos.slice(0, 9).map((ph, i) => (
+                <Pressable key={ph.id} onPress={() => openPhotos({ photos: photos.map((x) => x.source), index: i })} accessibilityRole="imagebutton" accessibilityLabel={`Photo ${i + 1} of ${photos.length}`} style={{ width: '33.333%', padding: 4 }}>
                   <Image source={ph.source} contentFit="cover" contentPosition={{ top: '25%' }} style={{ height: 136, borderRadius: 16, backgroundColor: c.avatar4 }} />
-                </View>
+                </Pressable>
               ))}
             </View>
           ) : null}
@@ -244,7 +247,23 @@ export default function Profile() {
                 </Text>
               </View>
             }>
-            <View style={{ height: 200, borderRadius: 18, overflow: 'hidden', backgroundColor: '#232426', alignItems: 'center' }}>
+            <Pressable
+              onPress={() =>
+                openVideo({
+                  own: true,
+                  poster: p.video!.poster,
+                  duration: p.video!.duration,
+                  label: 'Your video presentation',
+                  name,
+                  verified: p.verified,
+                  avatar: p.photo,
+                  subtitle: [p.occupations[0]?.roles[0], p.city, `${p.stats.videoViews} views`].filter(Boolean).join(' · '),
+                  text: p.about,
+                })
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Play video presentation"
+              style={{ height: 200, borderRadius: 18, overflow: 'hidden', backgroundColor: '#232426', alignItems: 'center' }}>
               <Image source={p.video.poster} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 130, height: 200, backgroundColor: '#2C2140' }} />
               <View style={{ position: 'absolute', top: 74, width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.92)', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name="play" size={22} color="#18191C" />
@@ -254,7 +273,7 @@ export default function Profile() {
                   {p.video.duration}
                 </Text>
               </View>
-            </View>
+            </Pressable>
           </Panel>
         ) : null}
 

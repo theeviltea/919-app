@@ -12,6 +12,7 @@ import { clockNow, useSeeker, type Msg, type NewMsg } from '@/data/seeker';
 import { SAMPLE_PHOTOS, VIDEO_POSTER } from '@/features/auth/media';
 import { pickImages } from '@/features/auth/pickImage';
 import { SwipeReply } from '@/features/chat/SwipeReply';
+import { openPhotos, openVideo } from '@/features/media/viewer';
 import { fontFamily, useTheme } from '@/theme';
 
 type Quote = { author: string; text: string };
@@ -33,16 +34,18 @@ function PhotoGrid({ photos }: { photos: ImageSourcePropType[] }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 3, borderRadius: 16, overflow: 'hidden' }}>
       {photos.slice(0, 4).map((p, i) => (
-        <Image key={i} source={p} contentFit="cover" style={{ width: one ? 242 : 119.5, height: one ? 260 : 119.5, backgroundColor: c.backDarker }} />
+        <Pressable key={i} onPress={() => openPhotos({ photos, index: i })} accessibilityRole="imagebutton" accessibilityLabel={`Open photo ${i + 1}`}>
+          <Image source={p} contentFit="cover" style={{ width: one ? 242 : 119.5, height: one ? 260 : 119.5, backgroundColor: c.backDarker }} />
+        </Pressable>
       ))}
     </View>
   );
 }
 
-function VideoTile({ poster, duration }: { poster: ImageSourcePropType; duration: string }) {
+function VideoTile({ poster, duration, onOpen }: { poster: ImageSourcePropType; duration: string; onOpen: () => void }) {
   const { c } = useTheme();
   return (
-    <View style={{ borderRadius: 16, overflow: 'hidden' }}>
+    <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel="Play video" style={{ borderRadius: 16, overflow: 'hidden' }}>
       <Image source={poster} contentFit="cover" style={{ width: 242, height: 300, backgroundColor: c.backDarker }} />
       <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: c.mediaOverlay, alignItems: 'center', justifyContent: 'center' }}>
@@ -55,7 +58,7 @@ function VideoTile({ poster, duration }: { poster: ImageSourcePropType; duration
           {duration}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -262,7 +265,21 @@ export default function ChatScreen() {
         {t.messages.map((m) => {
           if (m.kind === 'date') return <ChatDate key={m.id} label={m.label} />;
           if (m.kind === 'system') return <ChatSystemLine key={m.id} text={m.text} time={m.time} tone={m.tone} />;
-          const attachment = m.kind === 'photos' ? <PhotoGrid photos={m.photos} /> : m.kind === 'video' ? <VideoTile poster={m.poster} duration={m.duration} /> : m.kind === 'contact' ? <ContactCard m={m} /> : undefined;
+          const attachment = m.kind === 'photos' ? <PhotoGrid photos={m.photos} /> : m.kind === 'video' ? <VideoTile
+                poster={m.poster}
+                duration={m.duration}
+                onOpen={() =>
+                  openVideo({
+                    poster: m.poster,
+                    duration: m.duration,
+                    label: `Chat · ${t.company.name}`,
+                    name: m.mine ? me : t.person.name,
+                    avatar: m.mine ? profile.photo : t.person.photo,
+                    subtitle: m.mine ? `Sent to ${t.company.name} · ${m.time}` : `${t.person.role} · ${m.time}`,
+                    text: m.text,
+                  })
+                }
+              /> : m.kind === 'contact' ? <ContactCard m={m} /> : undefined;
           const body = m.kind === 'text' || m.kind === 'photos' || m.kind === 'video' ? m.text : undefined;
           return (
             <SwipeReply

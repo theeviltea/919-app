@@ -10,6 +10,7 @@ import { findVacancy } from '@/data/mock';
 import { matchRequirement, useSeeker } from '@/data/seeker';
 import { useSession } from '@/data/session';
 import { GuestAuthSheet } from '@/features/talent/GuestAuth';
+import { openPhotos } from '@/features/media/viewer';
 import { useApply } from '@/features/vacancies/useApply';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
 import { useTheme } from '@/theme';
@@ -94,7 +95,9 @@ export default function VacancyScreen() {
             onScroll={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / w))}
             scrollEventThrottle={64}>
             {v.photos.map((ph, i) => (
-              <Image key={i} source={ph} contentFit="cover" style={{ width: w, height: 300 }} accessibilityLabel={i === 0 ? v.title : undefined} />
+              <Pressable key={i} onPress={() => openPhotos({ photos: v.photos, index: i })} accessibilityRole="imagebutton" accessibilityLabel={`${v.title}, photo ${i + 1} of ${v.photos.length}`}>
+                <Image source={ph} contentFit="cover" style={{ width: w, height: 300 }} />
+              </Pressable>
             ))}
           </ScrollView>
           <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 130, experimental_backgroundImage: 'linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0))' }} />

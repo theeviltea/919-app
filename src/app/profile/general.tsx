@@ -10,6 +10,7 @@ import { MAX_PHOTOS, SAMPLE_PHOTOS } from '@/features/auth/media';
 import { PhotoSheet } from '@/features/auth/PhotoSheet';
 import { SelectSheet } from '@/features/auth/SelectSheet';
 import { VideoSheet } from '@/features/auth/VideoSheet';
+import { openPhotos } from '@/features/media/viewer';
 import { CodeTile, DashedButton, Panel, SubScreen } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
 
@@ -57,7 +58,7 @@ export default function General() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -4 }}>
           {photos.map((ph, i) => (
             <View key={ph.id} style={{ width: '33.333%', padding: 4 }}>
-              <Pressable onLongPress={() => i && makeCover(ph.id)} delayLongPress={350} accessibilityHint={i ? 'Long press to make it the cover' : undefined} style={{ height: 132, borderRadius: 14, overflow: 'hidden', backgroundColor: c.avatar1 }}>
+              <Pressable onPress={() => openPhotos({ photos: photos.map((x) => x.source), index: i })} onLongPress={() => i && makeCover(ph.id)} delayLongPress={350} accessibilityHint={i ? 'Long press to make it the cover' : undefined} style={{ height: 132, borderRadius: 14, overflow: 'hidden', backgroundColor: c.avatar1 }}>
                 <Image source={ph.source} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} />
                 {ph.progress !== undefined ? (
                   <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(24,25,27,0.45)', alignItems: 'center', justifyContent: 'center' }}>
@@ -99,7 +100,7 @@ export default function General() {
           ) : null}
         </View>
         <Text variant="bodyS" color="textBody" style={{ fontSize: 13 }}>
-          Hold a photo to make it your cover. The first one is shown in search.
+          Tap to view, hold to make it your cover. The first one is shown in search.
         </Text>
       </Panel>
 
