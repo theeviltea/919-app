@@ -315,6 +315,15 @@ export function completeness(p: SeekerProfile) {
   return { percent, items, search, next, nextPercent };
 }
 
+// ---------- recent searches
+
+export type RecentSearch = { id: string; q: string; filters: import('@/features/vacancies/FiltersSheet').VacancyFilters };
+const initialRecent: RecentSearch[] = [
+  { id: 'r1', q: 'Hostess', filters: { urgent: false, spheres: [], contracts: ['hourly', 'daily'], country: 'United Arab Emirates', city: 'Dubai', min: '100' } },
+  { id: 'r2', q: 'Promo model', filters: { urgent: false, spheres: [], contracts: ['one-time'], country: 'United Arab Emirates', city: 'Dubai' } },
+  { id: 'r3', q: 'Waiter, beach club', filters: { urgent: false, spheres: [], contracts: ['monthly'], country: 'United Arab Emirates', city: 'Dubai' } },
+];
+
 // ---------- notifications
 
 export type NotifKind = 'request' | 'accepted' | 'declined' | 'vacancies' | 'urgent' | 'viewed' | 'saved' | 'views' | 'video';
@@ -410,6 +419,10 @@ type Store = {
   /** Contact request (Premium employer): accept opens the chat, decline hides it. */
   acceptRequest: (threadId: string) => void;
   declineRequest: (threadId: string) => void;
+  recent: RecentSearch[];
+  addRecent: (r: Omit<RecentSearch, 'id'>) => void;
+  removeRecent: (id: string) => void;
+  clearRecent: () => void;
   notifs: Notif[];
   readNotif: (id: string) => void;
   readAllNotifs: () => void;
@@ -437,6 +450,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const [saved, setSaved] = useState<string[]>(['v13', 'v10', 'v11', 'v12']);
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [notifs, setNotifs] = useState<Notif[]>(initialNotifs);
+  const [recent, setRecent] = useState<RecentSearch[]>(initialRecent);
 
   const profile = useMemo<SeekerProfile>(() => {
     const base = draft.demo ? demoProfile : null;
@@ -516,13 +530,18 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
         updateThread(id, () => ({ state: 'declined', unread: 0, archived: true }));
         setNotifs((ns) => ns.filter((n) => !(n.kind === 'request' && n.threadId === id)));
       },
+      recent,
+      addRecent: (r) =>
+        setRecent((rs) => [{ ...r, id: `r${Date.now()}` }, ...rs.filter((x) => x.q.trim().toLowerCase() !== r.q.trim().toLowerCase() || JSON.stringify(x.filters) !== JSON.stringify(r.filters))].slice(0, 6)),
+      removeRecent: (id) => setRecent((rs) => rs.filter((x) => x.id !== id)),
+      clearRecent: () => setRecent([]),
       notifs,
       readNotif: (id) => setNotifs((ns) => ns.map((n) => (n.id === id ? { ...n, unread: false } : n))),
       readAllNotifs: () => setNotifs((ns) => ns.map((n) => ({ ...n, unread: false }))),
       removeNotif: (id) => setNotifs((ns) => ns.filter((n) => n.id !== id)),
       unreadNotifs: notifs.filter((n) => n.unread).length,
     }),
-    [profile, hidden, prefs, apps, saved, threads, notifs, updateThread],
+    [profile, hidden, prefs, apps, saved, threads, notifs, recent, updateThread],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

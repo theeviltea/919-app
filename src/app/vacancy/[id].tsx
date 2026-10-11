@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Share, useWindowDimensions, View } from 'react-native';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton, BottomSheet, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text, useToast } from '@/components';
@@ -12,6 +12,7 @@ import { useSession } from '@/data/session';
 import { GuestAuthSheet } from '@/features/talent/GuestAuth';
 import { Pager } from '@/features/media/Pager';
 import { openPhotos } from '@/features/media/viewer';
+import { ShareSheet } from '@/features/vacancies/ShareSheet';
 import { useApply } from '@/features/vacancies/useApply';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
 import { useTheme } from '@/theme';
@@ -56,6 +57,7 @@ export default function VacancyScreen() {
   const toast = useToast();
   const [page, setPage] = useState(0);
   const [more, setMore] = useState(false);
+  const [share, setShare] = useState(false);
   const [auth, setAuth] = useState(false);
   const [sheet, setSheet] = useState<'more' | null>(null);
   const seeker = useSeeker();
@@ -106,10 +108,11 @@ export default function VacancyScreen() {
           <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 12, flexDirection: 'row', gap: 8 }}>
             <BackButton tone="onPhoto" />
             <View style={{ flex: 1 }} />
-            <IconButton tone="onPhoto" icon="share" label="Share" onPress={() => Share.share({ message: `${v.title} · ${v.company.name} — 919` })} />
+            <IconButton tone="onPhoto" icon="share" label="Share" onPress={() => setShare(true)} />
             <IconButton
               tone="onPhoto"
-              icon="bookmark"
+              icon={saved ? 'bookmark-filled' : 'bookmark'}
+              color={saved ? c.primary : undefined}
               label={saved ? 'Remove from saved' : 'Save vacancy'}
               onPress={() => {
                 if (guest) return setAuth(true);
@@ -314,12 +317,12 @@ export default function VacancyScreen() {
         <>
           {apply.sheets}
           <BottomSheet visible={sheet === 'more'} onClose={() => setSheet(null)}>
-            <Button variant="neutral" icon="share" label="Share vacancy" onPress={() => (setSheet(null), Share.share({ message: `${v.title} · ${v.company.name} — 919` }))} />
             <Button variant="danger" icon="alert-circle" label="Report vacancy" onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will check this vacancy', kind: 'neutral', icon: 'alert-circle' }))} />
           </BottomSheet>
         </>
       )}
 
+      <ShareSheet v={v} visible={share} onClose={() => setShare(false)} />
       <GuestAuthSheet
         visible={auth}
         onClose={() => setAuth(false)}

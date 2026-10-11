@@ -4,6 +4,7 @@ import { fontFamily, useTheme } from '@/theme';
 
 import { Icon } from './Icon';
 import { Pressable } from './Pressable';
+import { Text } from './Text';
 
 type Props = {
   value: string;
@@ -11,6 +12,8 @@ type Props = {
   placeholder?: string;
   /** Yellow 44×44 filter button next to the bar (blue headers). */
   onFilterPress?: () => void;
+  /** Active filters: number badge on the filter button. */
+  filterCount?: number;
   /** `header` — white on brand blue; `page` — white with stroke on back; `sheet` — `input` fill. */
   variant?: 'header' | 'page' | 'sheet';
   onSubmit?: () => void;
@@ -21,7 +24,7 @@ type Props = {
  * SearchBar — 44px, magnifier left, clear button when filled.
  * Input text is 16px: iOS Safari zooms the page into any input below 16px.
  */
-export function SearchBar({ value, onChangeText, placeholder = 'Search', onFilterPress, variant = 'header', onSubmit, autoFocus }: Props) {
+export function SearchBar({ value, onChangeText, placeholder = 'Search', onFilterPress, filterCount, variant = 'header', onSubmit, autoFocus }: Props) {
   const { c } = useTheme();
   return (
     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -70,9 +73,16 @@ export function SearchBar({ value, onChangeText, placeholder = 'Search', onFilte
         <Pressable
           onPress={onFilterPress}
           accessibilityRole="button"
-          accessibilityLabel="Filters"
+          accessibilityLabel={filterCount ? `Filters, ${filterCount} active` : 'Filters'}
           style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: c.urgent, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="filter" size={20} color="onUrgent" />
+          {filterCount ? (
+            <View style={{ position: 'absolute', top: -5, right: -5, minWidth: 20, height: 20, paddingHorizontal: 5, borderRadius: 10, borderWidth: 2, borderColor: c.urgent, backgroundColor: c.inverse, alignItems: 'center', justifyContent: 'center' }}>
+              <Text variant="caption" weight={700} color="onInverse" style={{ fontSize: 10, lineHeight: 12 }}>
+                {filterCount}
+              </Text>
+            </View>
+          ) : null}
         </Pressable>
       ) : null}
     </View>

@@ -94,7 +94,7 @@ export default function SeekerHome() {
         eyebrowText={`${greeting()}, ${profile.firstName}`}
         title="Find your next shift"
         searchPlaceholder="Role, venue or area"
-        onSearch={() => router.push({ pathname: '/guest/search', params: { tab: 'vacancies' } })}
+        onSearch={() => router.push('/seeker/search')}
         onFilter={() => setSheet(true)}
         iconAction={{ icon: 'notification', label: unreadNotifs ? `Notifications, ${unreadNotifs} new` : 'Notifications', dot: unreadNotifs > 0, onPress: () => router.push('/notifications') }}
       />

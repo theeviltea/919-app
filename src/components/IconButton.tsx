@@ -8,7 +8,7 @@ import { Pressable } from './Pressable';
 type Tone = 'outline' | 'filled' | 'onBlue' | 'onPhoto';
 
 /** Square icon button 44×44 (40 in sheets). `outline` = back button on `back`. */
-export function IconButton({ icon, label, onPress, tone = 'outline', size = 44 }: { icon: IconName; label: string; onPress: () => void; tone?: Tone; size?: number }) {
+export function IconButton({ icon, label, onPress, tone = 'outline', size = 44, color }: { icon: IconName; label: string; onPress: () => void; tone?: Tone; size?: number; color?: string }) {
   const { c } = useTheme();
   const look = {
     outline: { bg: c.surface, border: c.stroke, fg: 'textHeadline' },
@@ -33,7 +33,7 @@ export function IconButton({ icon, label, onPress, tone = 'outline', size = 44 }
         justifyContent: 'center',
         backdropFilter: tone === 'onPhoto' || tone === 'onBlue' ? 'blur(12px)' : undefined,
       } as object}>
-      <Icon name={icon} size={22} color={look.fg} />
+      <Icon name={icon} size={22} color={color ?? look.fg} />
     </Pressable>
   );
 }

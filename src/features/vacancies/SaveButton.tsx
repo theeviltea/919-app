@@ -19,7 +19,7 @@ export function SaveButton({ vacancyId, size = 40 }: { vacancyId: string; size?:
       accessibilityState={{ selected: on }}
       hitSlop={6}
       style={{ width: size, height: size, borderRadius: 12, borderWidth: on ? 0 : 1, borderColor: c.stroke, backgroundColor: on ? c.primarySecondary : c.surface, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name="bookmark" size={20} color={on ? 'primary' : 'textBody'} />
+      <Icon name={on ? 'bookmark-filled' : 'bookmark'} size={20} color={on ? 'primary' : 'textBody'} />
     </Pressable>
   );
 }

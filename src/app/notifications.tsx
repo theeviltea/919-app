@@ -88,9 +88,9 @@ export default function Notifications() {
       case 'accepted':
         return { pathname: '/chat/[id]', params: { id: n.threadId! } };
       case 'vacancies':
-        return { pathname: '/guest/search', params: { q: 'DJ' } };
+        return { pathname: '/seeker/search', params: { q: 'DJ' } };
       case 'declined':
-        return { pathname: '/guest/search', params: { q: 'Waitress' } };
+        return { pathname: '/seeker/search', params: { q: 'Waitress' } };
       case 'viewed':
       case 'saved':
         return '/seeker/applications';

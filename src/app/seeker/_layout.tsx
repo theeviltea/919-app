@@ -13,10 +13,12 @@ export default function SeekerTabs() {
   if (!user) return <Redirect href="/guest" />;
   return (
     <Tabs
+      backBehavior="history"
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: c.back }, animation: 'fade' }}
       tabBar={(props) => (
         <TabBar
           {...props}
+          aliases={{ search: 'index' }}
           meta={{
             index: { label: 'Vacancies', icon: 'star' },
             applications: { label: 'Applications', icon: 'briefcase' },
@@ -29,6 +31,8 @@ export default function SeekerTabs() {
       <Tabs.Screen name="applications" />
       <Tabs.Screen name="messages" />
       <Tabs.Screen name="profile" />
+      {/* Search belongs to Vacancies: no tab of its own, the tab bar keeps Vacancies active. */}
+      <Tabs.Screen name="search" options={{ href: null }} />
     </Tabs>
   );
 }

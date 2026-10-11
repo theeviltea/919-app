@@ -15,8 +15,10 @@ export type TabMeta = Record<string, { label: string; icon: IconName; badge?: nu
  * 919 tab bar: `surface-panel` with blur and a top divider. Active item is recoloured `primary` on a
  * `primary-secondary` pill; the icon stays stroke (never filled). Badge = unread count.
  */
-export function TabBar({ state, navigation, insets, meta }: TabBarProps & { meta: TabMeta }) {
+export function TabBar({ state, navigation, insets, meta, aliases = {} }: TabBarProps & { meta: TabMeta; aliases?: Record<string, string> }) {
   const { c } = useTheme();
+  const current = state.routes[state.index]?.name;
+  const activeName = aliases[current] ?? current;
   return (
     <View
       style={[
@@ -38,7 +40,7 @@ export function TabBar({ state, navigation, insets, meta }: TabBarProps & { meta
       {state.routes.map((route, i) => {
         const m = meta[route.name];
         if (!m) return null;
-        const focused = state.index === i;
+        const focused = route.name === activeName;
         const col = focused ? 'primary' : 'textBody';
         return (
           <Pressable
@@ -48,7 +50,7 @@ export function TabBar({ state, navigation, insets, meta }: TabBarProps & { meta
             accessibilityLabel={m.badge ? `${m.label}, ${m.badge} unread` : m.label}
             onPress={() => {
               const e = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-              if (!focused && !e.defaultPrevented) navigation.navigate(route.name);
+              if (state.index !== i && !e.defaultPrevented) navigation.navigate(route.name);
             }}
             style={{ flex: 1, alignItems: 'center', gap: 4 }}>
             <View style={{ width: 56, height: 30, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: focused ? c.primarySecondary : 'transparent' }}>
