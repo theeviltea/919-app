@@ -2,10 +2,11 @@ import { View } from 'react-native';
 
 import { Row, Toggle } from '@/components';
 import { useSeeker } from '@/data/seeker';
+import { useSession } from '@/data/session';
 import { GroupLabel, SubScreen } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
 
-const GROUPS: { label?: string; items: { key: string; title: string; subtitle?: string; icon?: 'notification' }[] }[] = [
+const SEEKER_GROUPS: { label?: string; items: { key: string; title: string; subtitle?: string; icon?: 'notification' }[] }[] = [
   { items: [{ key: 'push', title: 'Push notifications', subtitle: 'Allow 919 to send notifications to this phone', icon: 'notification' }] },
   {
     label: 'Vacancies',
@@ -38,10 +39,45 @@ const GROUPS: { label?: string; items: { key: string; title: string; subtitle?: 
   },
 ];
 
+const EMPLOYER_GROUPS: typeof SEEKER_GROUPS = [
+  { items: [{ key: 'push', title: 'Push notifications', subtitle: 'Allow 919 to send notifications to this phone', icon: 'notification' }] },
+  {
+    label: 'Vacancies',
+    items: [
+      { key: 'empApplicants', title: 'New applicants', subtitle: 'As soon as someone applies' },
+      { key: 'empDigest', title: 'Daily applicants digest', subtitle: 'One summary at 9:00 instead of each applicant' },
+      { key: 'empStatus', title: 'Vacancy status', subtitle: 'Approved, rejected by moderation or expiring soon' },
+    ],
+  },
+  {
+    label: 'Messages',
+    items: [
+      { key: 'messages', title: 'New messages' },
+      { key: 'preview', title: 'Show message preview', subtitle: 'Text of the message on the lock screen' },
+    ],
+  },
+  {
+    label: 'Company',
+    items: [
+      { key: 'empJoin', title: 'Join requests', subtitle: 'Recruiters asking to join your company' },
+      { key: 'empTeam', title: 'Team changes', subtitle: 'Someone joined, left or changed role' },
+    ],
+  },
+  {
+    label: 'Email',
+    items: [
+      { key: 'empWeekly', title: 'Weekly report', subtitle: 'Views and applicants for your vacancies' },
+      { key: 'news', title: 'Product news and offers' },
+    ],
+  },
+];
+
 /** Notification switches. Everything except push is grouped by what triggers it. */
 export default function Notifications() {
   const { c } = useTheme();
   const { prefs, setPref } = useSeeker();
+  const { user } = useSession();
+  const GROUPS = user?.role === 'employer' ? EMPLOYER_GROUPS : SEEKER_GROUPS;
   return (
     <SubScreen title="Notifications">
       {GROUPS.map((g, gi) => (

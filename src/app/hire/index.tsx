@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CollapsingHeader, headerMetrics, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
 import { router } from 'expo-router';
 
-import { company, talentRows, useEmployer, videoRows } from '@/data/employer';
+import { initialsOf, talentRows, useEmployer, videoRows } from '@/data/employer';
 import { candidates, countTalentFilters, emptyTalentFilters } from '@/data/talentPool';
 import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
 import { RowHeader, TalentTileCard, useSoon, VideoTileCard } from '@/features/hire/ui';
@@ -22,7 +22,7 @@ export default function TalentHome() {
   const soon = useSoon();
   const [tab, setTab] = useState<View2>('profiles');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const { unreadNotifs: unread } = useEmployer();
+  const { unreadNotifs: unread, info, plan } = useEmployer();
 
   const { expanded, range } = headerMetrics(insets.top, { titleLines: 1 });
   const ref = useAnimatedRef<Animated.ScrollView>();
@@ -98,16 +98,16 @@ export default function TalentHome() {
               ]}>
               <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
                 <Text variant="caption" weight={700} color="#18191C" style={{ fontSize: 10 }}>
-                  {company.initials}
+                  {initialsOf(info.name)}
                 </Text>
               </View>
               <Text variant="bodyS" weight={600} color="#FFFFFF" numberOfLines={1} style={{ fontSize: 13, flexShrink: 1 }}>
-                {company.name}
+                {info.name}
               </Text>
             </View>
-            {company.plan === 'premium' ? (
+            {plan !== 'free' ? (
               <Pressable
-                onPress={() => soon('Subscription')}
+                onPress={() => router.push('/company/subscription')}
                 accessibilityRole="button"
                 accessibilityLabel="Premium plan"
                 style={{ height: 24, paddingLeft: 7, paddingRight: 9, borderRadius: 999, backgroundColor: c.labelOrangeText, flexDirection: 'row', alignItems: 'center', gap: 4 }}>

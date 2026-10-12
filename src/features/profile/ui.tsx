@@ -115,13 +115,13 @@ export function CodeTile({ code, size = 32, tone = 'neutral' }: { code: string; 
 }
 
 /** 8px progress bar with "Profile completeness  85%". */
-export function Completeness({ percent, tone = 'brand', hint }: { percent: number; tone?: 'brand' | 'warning'; hint?: string }) {
+export function Completeness({ percent, tone = 'brand', hint, label = 'Profile completeness' }: { percent: number; tone?: 'brand' | 'warning'; hint?: string; label?: string }) {
   const { c } = useTheme();
   return (
     <View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text variant="bodyS" color="textBody" style={{ fontSize: 13 }}>
-          Profile completeness
+          {label}
         </Text>
         <Text variant="bodyS" weight={700} style={{ fontSize: 13 }}>
           {percent}%

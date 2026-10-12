@@ -35,7 +35,7 @@ export function LogoutSheet({ visible, onClose }: { visible: boolean; onClose: (
 
 const LOSSES = ['Your profile, photos, video, applications and chats', 'Your Premium subscription will be canceled', 'Payments for the current period are not refunded'];
 
-export function DeleteAccountSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export function DeleteAccountSheet({ visible, onClose, losses = LOSSES }: { visible: boolean; onClose: () => void; losses?: string[] }) {
   const { c } = useTheme();
   const leave = useLeave();
   const [sure, setSure] = useState(false);
@@ -44,7 +44,7 @@ export function DeleteAccountSheet({ visible, onClose }: { visible: boolean; onC
     <BottomSheet visible={visible} onClose={close}>
       <SheetHero icon="trash" tone="danger" title="Delete account?" text="This can’t be undone. Everything linked to your account will be deleted for good." />
       <View style={{ backgroundColor: c.input, borderRadius: 16, padding: 14, gap: 8 }}>
-        {LOSSES.map((t) => (
+        {losses.map((t) => (
           <View key={t} style={{ flexDirection: 'row', gap: 10 }}>
             <View style={{ marginTop: 2 }}>
               <Icon name="cancel" size={16} color="dangerText" />

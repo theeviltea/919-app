@@ -1,11 +1,11 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Linking, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Icon, PatternHeader, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast } from '@/components';
-import { company, me, myVacancies, team, useEmployer } from '@/data/employer';
+import { initialsOf, myVacancies, useEmployer } from '@/data/employer';
 import { useSession } from '@/data/session';
 import { GlassButton, Pill, Round, Section, useSoon } from '@/features/hire/ui';
 import { useTheme } from '@/theme';
@@ -15,7 +15,7 @@ type Tab = 'recruiters' | 'company' | 'vacancies';
 function Recruiters() {
   const { c } = useTheme();
   const toast = useToast();
-  const { joinRequests, resolveJoin } = useEmployer();
+  const { joinRequests, resolveJoin, members: team, addMember } = useEmployer();
   return (
     <>
       {joinRequests.length ? (
@@ -47,7 +47,7 @@ function Recruiters() {
               </View>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <Button variant="secondary" label="Decline" onPress={() => (resolveJoin(j.id), toast({ text: 'Request declined', icon: 'cancel', aboveTabBar: true }))} style={{ flex: 1 }} />
-                <Button label="Accept" onPress={() => (resolveJoin(j.id), toast({ text: `${j.name.split(' ')[0]} joined the team`, icon: 'check', aboveTabBar: true }))} style={{ flex: 1 }} />
+                <Button label="Accept" onPress={() => (resolveJoin(j.id), addMember({ id: j.id, name: j.name, role: 'Recruiter', title: 'Recruiter', photo: j.photo }), toast({ text: `${j.name.split(' ')[0]} joined the team`, icon: 'check', aboveTabBar: true }))} style={{ flex: 1 }} />
               </View>
             </View>
           ))}
@@ -75,10 +75,10 @@ function Recruiters() {
                   ) : null}
                 </Text>
                 <Text variant="bodyS" color="textBody" numberOfLines={1} style={{ marginTop: 2, fontSize: 13 }}>
-                  {m.role}
+                  {m.you ? m.title : `${m.role} · ${m.title}`}
                 </Text>
               </View>
-              {m.admin ? <Pill label="Admin" bg={c.primarySecondary} fg={c.link} h={24} /> : null}
+              {m.role === 'Admin' ? <Pill label="Admin" bg={c.primarySecondary} fg={c.link} h={24} /> : null}
             </View>
           ))}
         </View>
@@ -114,7 +114,22 @@ function LinkRow({ badge, icon, label, value, last, onPress }: { badge?: string 
 }
 
 function About() {
-  const soon = useSoon();
+  const { info } = useEmployer();
+  const links = [
+    { key: 'web', badge: null, label: 'Website', value: info.website },
+    { key: 'ig', badge: 'IG', label: 'Instagram', value: info.instagram },
+    { key: 'in', badge: 'IN', label: 'LinkedIn', value: info.linkedin },
+    { key: 'fb', badge: 'FB', label: 'Facebook', value: info.facebook },
+  ].filter((l) => l.value.trim());
+  const contacts = [
+    { key: 'phone', icon: 'call' as const, label: 'Phone', value: info.phone },
+    { key: 'email', icon: 'mail' as const, label: 'Email', value: info.email },
+    { key: 'office', icon: 'location' as const, label: 'Office', value: info.office },
+  ].filter((l) => l.value.trim());
+  const open = (key: string, value: string) => {
+    const url = key === 'phone' ? `tel:${value.replace(/\s/g, '')}` : key === 'email' ? `mailto:${value}` : key === 'office' ? `https://maps.google.com/?q=${encodeURIComponent(value)}` : key === 'web' ? `https://${value}` : null;
+    if (url) Linking.openURL(url);
+  };
   return (
     <>
       <Section>
@@ -122,23 +137,23 @@ function About() {
           About the company
         </Text>
         <Text variant="body" color="textPrimary" style={{ fontSize: 15, lineHeight: 23 }}>
-          {company.about}
+          {info.about}
         </Text>
       </Section>
       <Section style={{ gap: 4 }}>
         <Text variant="body" weight={700} style={{ fontSize: 16, marginBottom: 4 }}>
           Website and social
         </Text>
-        {company.links.map((l, i) => (
-          <LinkRow key={l.key} badge={l.badge} icon="globe" label={l.label} value={l.value} last={i === company.links.length - 1} onPress={() => soon(l.label)} />
+        {links.map((l, i) => (
+          <LinkRow key={l.key} badge={l.badge} icon="globe" label={l.label} value={l.value} last={i === links.length - 1} onPress={() => open(l.key, l.value)} />
         ))}
       </Section>
       <Section style={{ gap: 4 }}>
         <Text variant="body" weight={700} style={{ fontSize: 16, marginBottom: 4 }}>
           Contacts
         </Text>
-        {company.contacts.map((l, i) => (
-          <LinkRow key={l.key} icon={l.icon} label={l.label} value={l.value} last={i === company.contacts.length - 1} onPress={() => soon(l.label)} />
+        {contacts.map((l, i) => (
+          <LinkRow key={l.key} icon={l.icon} label={l.label} value={l.value} last={i === contacts.length - 1} onPress={() => open(l.key, l.value)} />
         ))}
       </Section>
     </>
@@ -191,27 +206,27 @@ function Vacancies() {
 export default function HireCompany() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const soon = useSoon();
   const { user } = useSession();
+  const { info, rep, plan } = useEmployer();
   const [tab, setTab] = useState<Tab>('recruiters');
   const pending = user?.company?.status === 'pending';
-  const name = user?.company?.name ?? company.name;
+  const name = info.name;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: c.back }} contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE + 16 }}>
       <PatternHeader style={{ paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 20, gap: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Image source={me.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)', backgroundColor: c.backDarker }} />
+          <Image source={rep.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)', backgroundColor: c.backDarker }} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text variant="body" color="rgba(255,255,255,0.9)" style={{ fontSize: 14 }}>
               Hello,
             </Text>
             <Text variant="displayM" color="#FFFFFF" numberOfLines={1} style={{ fontSize: 22, lineHeight: 26 }}>
-              {user?.firstName ?? me.firstName}
+              {rep.firstName}
             </Text>
           </View>
-          <GlassButton icon="edit" label="Edit company profile" onPress={() => soon('Edit profile')} />
-          <GlassButton icon="settings" label="Settings" onPress={() => router.push('/profile/settings')} />
+          <GlassButton icon="edit" label="Edit company profile" onPress={() => router.push('/company/edit')} />
+          <GlassButton icon="settings" label="Settings" onPress={() => router.push('/company/settings')} />
         </View>
         <Pressable
           onPress={() => setTab('company')}
@@ -219,16 +234,20 @@ export default function HireCompany() {
           accessibilityLabel={`Company profile: ${name}`}
           style={[{ height: 52, paddingLeft: 8, paddingRight: 10, borderRadius: 16, backgroundColor: c.onMediaPill, flexDirection: 'row', alignItems: 'center', gap: 10 }, { backdropFilter: 'blur(8px)' } as object]}>
           <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: '#18191C', alignItems: 'center', justifyContent: 'center' }}>
-            <Text variant="caption" weight={600} color="#FFFFFF" style={{ fontSize: 11 }}>
-              {company.initials}
-            </Text>
+            {info.logo ? (
+              <Image source={info.logo} contentFit="cover" style={{ width: 36, height: 36, borderRadius: 12 }} />
+            ) : (
+              <Text variant="caption" weight={600} color="#FFFFFF" style={{ fontSize: 11 }}>
+                {initialsOf(info.name)}
+              </Text>
+            )}
           </View>
           <Text variant="body" weight={700} color="#FFFFFF" numberOfLines={1} style={{ flex: 1, fontSize: 15 }}>
             {name}
           </Text>
           {pending ? (
             <Pill label="Under review" icon="clock" bg={c.surface} fg={c.textBody} h={26} />
-          ) : company.plan === 'premium' ? (
+          ) : plan !== 'free' ? (
             <Pill label="Premium" icon="star" bg={c.labelOrangeBack} fg={c.labelOrangeText} h={26} />
           ) : (
             <Pill label="Verified" icon="verified" bg={c.successBack} fg={c.successText} h={26} />

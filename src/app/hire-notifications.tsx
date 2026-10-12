@@ -96,7 +96,7 @@ export default function EmployerNotifications() {
         return toast({ text: 'Promo model, car launch relaunched for 7 days', icon: 'flash' });
       case 'premiumSoon':
       case 'premiumOver':
-        return soon('Subscription');
+        return router.push('/company/subscription');
       default:
         return soon('Vacancy editing');
     }

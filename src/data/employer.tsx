@@ -209,6 +209,68 @@ export const initialEmpNotifs: EmpNotif[] = [
   { id: 'en12', kind: 'premiumOver', group: 'subscription', title: 'Premium has expired', text: 'You’re on the Free plan: 1 active vacancy, chats only via applications', time: '2 Oct', day: 'earlier', unread: false, action: 'Get Premium' },
 ];
 
+export type Plan = 'free' | 'premium' | 'canceled';
+export type Rep = { firstName: string; lastName: string; position: string; email: string; phone: string; photo: ImageSourcePropType };
+export type CompanyInfo = {
+  name: string;
+  logo?: ImageSourcePropType;
+  industry: string;
+  size: string;
+  founded: string;
+  about: string;
+  country: string;
+  city: string;
+  phone: string;
+  email: string;
+  office: string;
+  website: string;
+  instagram: string;
+  linkedin: string;
+  facebook: string;
+};
+export type Member = { id: string; name: string; role: 'Admin' | 'Recruiter'; title: string; you?: boolean; photo: ImageSourcePropType; vacancies?: number };
+
+export const initialRep: Rep = { firstName: 'Emanuel', lastName: 'Brooks', position: 'HR director', email: 'emanuel@skylinehospitality.ae', phone: '+971 50 123 4567', photo: p(10) };
+export const initialInfo: CompanyInfo = {
+  name: 'Skyline Hospitality',
+  industry: 'Hospitality',
+  size: '50–200 employees',
+  founded: '2014',
+  about:
+    'Skyline Hospitality runs rooftop lounges, beach clubs and restaurants across Dubai and Abu Dhabi. We hire hosts, waiters, bartenders and event staff for our venues and private events.',
+  country: 'United Arab Emirates',
+  city: 'Dubai',
+  phone: '+971 4 555 0199',
+  email: 'hr@skylinehospitality.ae',
+  office: 'Bay Square 7, Business Bay, Dubai',
+  website: 'skylinehospitality.ae',
+  instagram: '@skyline.dxb',
+  linkedin: '',
+  facebook: 'Skyline Hospitality Dubai',
+};
+export const initialMembers: Member[] = [
+  { id: 'u1', name: 'Emanuel Brooks', role: 'Admin', title: 'HR director', you: true, photo: p(10) },
+  { id: 'u2', name: 'Sara Haddad', role: 'Recruiter', title: 'Rooftop lounges', photo: p(2), vacancies: 6 },
+  { id: 'u3', name: 'Omar Rahman', role: 'Recruiter', title: 'Events', photo: p(9), vacancies: 2 },
+];
+/** What deleting an employer account removes (EmpDeleteAccount). */
+export const EMPLOYER_LOSSES = ['Your profile, company vacancies, applicants and chats', 'Your Premium subscription will be canceled', 'Payments for the current period are not refunded'];
+
+/** Company initials for the logo tile: "Skyline Hospitality" → "SH". */
+export const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('') || '—';
+/** Profile completeness for the Edit profile hub. */
+export function companyCompleteness(info: CompanyInfo, rep: Rep) {
+  const checks = [info.name, info.about, info.industry, info.city, info.phone, info.email, info.office, info.website, info.instagram, info.linkedin, info.facebook, rep.position, rep.email];
+  const done = checks.filter((x) => x.trim()).length;
+  return Math.round((done / checks.length) * 100);
+}
+
 type Store = {
   threads: EmpThread[];
   moveThread: (id: string, box: EmpThread['box']) => void;
@@ -220,6 +282,16 @@ type Store = {
   readNotif: (id: string) => void;
   readAllNotifs: () => void;
   unreadNotifs: number;
+  rep: Rep;
+  setRep: (u: Partial<Rep>) => void;
+  info: CompanyInfo;
+  setInfo: (u: Partial<CompanyInfo>) => void;
+  plan: Plan;
+  setPlan: (p: Plan) => void;
+  members: Member[];
+  addMember: (m: Member) => void;
+  updateMember: (id: string, u: Partial<Member>) => void;
+  removeMember: (id: string) => void;
   /** Bookmarked candidates (search results). */
   savedIds: string[];
   toggleSaved: (id: string) => boolean;
@@ -233,6 +305,10 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [joinRequests, setJoin] = useState(initialJoinRequests);
   const [savedIds, setSaved] = useState<string[]>([]);
   const [notifs, setNotifs] = useState(initialEmpNotifs);
+  const [rep, setRepState] = useState(initialRep);
+  const [info, setInfoState] = useState(initialInfo);
+  const [plan, setPlan] = useState<Plan>('premium');
+  const [members, setMembers] = useState(initialMembers);
   const value = useMemo<Store>(
     () => ({
       threads,
@@ -245,6 +321,17 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       readNotif: (id) => setNotifs((ns) => ns.map((n) => (n.id === id ? { ...n, unread: false } : n))),
       readAllNotifs: () => setNotifs((ns) => ns.map((n) => ({ ...n, unread: false }))),
       unreadNotifs: notifs.filter((n) => n.unread).length,
+      rep,
+      setRep: (u) => setRepState((x) => ({ ...x, ...u })),
+      info,
+      setInfo: (u) => setInfoState((x) => ({ ...x, ...u })),
+      plan,
+      setPlan,
+      // "You" in the team always mirrors Your profile.
+      members: members.map((m) => (m.you ? { ...m, name: `${rep.firstName} ${rep.lastName}`, title: rep.position, photo: rep.photo } : m)),
+      addMember: (m) => setMembers((ms) => [...ms, m]),
+      updateMember: (id, u) => setMembers((ms) => ms.map((m) => (m.id === id ? { ...m, ...u } : m))),
+      removeMember: (id) => setMembers((ms) => ms.filter((m) => m.id !== id)),
       savedIds,
       toggleSaved: (id) => {
         const on = !savedIds.includes(id);
@@ -252,7 +339,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         return on;
       },
     }),
-    [threads, joinRequests, savedIds, notifs],
+    [threads, joinRequests, savedIds, notifs, rep, info, plan, members],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

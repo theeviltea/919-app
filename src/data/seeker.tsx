@@ -448,6 +448,8 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const [hidden, setHidden] = useState(false);
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     push: true, newVacancies: true, savedClosing: true, urgentNearby: false, appStatus: true, invites: true, messages: true, preview: true, digest: true, news: false, faceId: true, showAge: true, readReceipts: true,
+    // Employer account switches (EmpNotifications / EmpPrivacy).
+    empApplicants: true, empDigest: false, empStatus: true, empJoin: true, empTeam: false, empWeekly: true, showName: true, showPhone: false,
   });
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [saved, setSaved] = useState<string[]>(['v13', 'v10', 'v11', 'v12']);

@@ -7,7 +7,34 @@ import { useTheme } from '@/theme';
 
 type Doc = { title: string; intro: string; sections: [string, string[]][] };
 
-const DOCS: Record<'privacy' | 'terms', Doc> = {
+type DocKey = 'privacy' | 'terms' | 'bizTerms' | 'bizPrivacy';
+
+const DOCS: Record<DocKey, Doc> = {
+  bizTerms: {
+    title: 'User agreement',
+    intro: 'This agreement sets the rules for using 919 by companies and recruiters who post vacancies and contact candidates in the UAE. By creating a business account you accept these terms.',
+    sections: [
+      ['Who can use 919 for business', ['You must represent a company registered in the UAE or work as a licensed private recruiter. One person can belong to one company at a time.', 'The company admin is responsible for the team: who joins, which role they get and what they publish.']],
+      ['Company verification', ['Before your first vacancy we check the trade licence and the contact person. Until verification is complete you can browse talent but cannot publish vacancies.']],
+      ['Vacancies and content', ['Vacancies must describe a real job with the actual pay, location and schedule. Discriminatory requirements, fees charged to candidates and misleading offers are not allowed.', 'We may hide or remove a vacancy that breaks these rules and will tell you why.']],
+      ['Contacting candidates', ['Use candidate contacts and video presentations only to discuss work you offer. Do not share them outside your company or use them for advertising.']],
+      ['Subscription and payments', ['Premium is purchased in the app through Apple Pay and renews automatically each period. You can cancel any time in your Apple ID settings; access stays until the end of the paid period.', 'Refunds are handled by Apple under its rules.']],
+      ['Suspension and termination', ['We may limit or close an account that violates this agreement, the law or the safety of candidates. You can delete your account at any time in Privacy and security.']],
+      ['Changes to the agreement', ['We will notify you in the app at least 14 days before material changes take effect.']],
+    ],
+  },
+  bizPrivacy: {
+    title: 'Privacy policy',
+    intro: 'This policy explains which data 919 collects from business accounts, why we need it and how you can control it.',
+    sections: [
+      ['Data we collect', ['Account data: your name, phone number, email and role in the company.', 'Company data: name, trade licence, logo, address and links you add.', 'Activity: vacancies you post, applicants you review and messages you send in 919.']],
+      ['How we use it', ['To verify your company, show your vacancies to candidates, deliver messages and notifications, and keep the service safe from fraud.']],
+      ['What candidates see', ['Candidates see your company profile, your vacancies and, if you allow it in Privacy and security, your name and phone number.']],
+      ['Sharing with third parties', ['We do not sell personal data. We share it only with providers that run 919 for us — hosting, SMS delivery and analytics — under contracts that protect it, and with authorities when the law requires.']],
+      ['Storage and security', ['Data is stored on servers in the UAE and encrypted in transit and at rest. We keep it while your account is active and up to 12 months after deletion for legal reasons.']],
+      ['Your rights', ['You can view, correct or download your data and delete your account at any time. Write to us and we will reply within 30 days.']],
+    ],
+  },
   privacy: {
     title: 'Privacy policy',
     intro: 'This policy explains which data 919 collects from job seekers, why we need it and how you can control it.',
@@ -36,7 +63,7 @@ const DOCS: Record<'privacy' | 'terms', Doc> = {
 
 /** User agreement / Privacy policy. */
 export default function Legal() {
-  const { doc = 'privacy' } = useLocalSearchParams<{ doc?: 'privacy' | 'terms' }>();
+  const { doc = 'privacy' } = useLocalSearchParams<{ doc?: DocKey }>();
   const { c } = useTheme();
   const d = DOCS[doc] ?? DOCS.privacy;
   return (
