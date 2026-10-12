@@ -177,6 +177,38 @@ export const initialEmpThreads: EmpThread[] = [
   { id: 'e11', name: 'Kira L.', photo: p(3), time: '12 Sep', subtitle: 'Promo model · Dubai', last: 'See you next time 🙂', unread: 0, box: 'archive' },
 ];
 
+export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver';
+export type EmpNotif = {
+  id: string;
+  kind: EmpNotifKind;
+  group: 'applicants' | 'vacancies' | 'messages' | 'subscription';
+  title: string;
+  text: string;
+  time: string;
+  day: 'today' | 'earlier';
+  unread: boolean;
+  /** Candidate photo or vacancy cover; tiles are drawn for the rest. */
+  photo?: ImageSourcePropType;
+  cover?: ImageSourcePropType;
+  action?: string;
+};
+
+/** EmpNotificationCenter: New · 4, Today, Earlier. */
+export const initialEmpNotifs: EmpNotif[] = [
+  { id: 'en1', kind: 'applicants', group: 'applicants', title: '3 new applicants for Hostess, rooftop lounge', text: 'Angela R., Sveta V. and 1 more applied', time: '5 min', day: 'today', unread: true, photo: p(12), action: 'View applicants' },
+  { id: 'en2', kind: 'accepted', group: 'messages', title: 'Mia D. accepted your contact request', text: 'Direct chat is open — you can write now', time: '20 min', day: 'today', unread: true, photo: p(1), action: 'Open chat' },
+  { id: 'en3', kind: 'changes', group: 'vacancies', title: 'Changes needed: European female waitresses', text: '3 corrections from the 919 team — cover photo, working hours, salary', time: '1 h', day: 'today', unread: true, cover: img.waiter, action: 'Fix and resubmit' },
+  { id: 'en4', kind: 'urgent', group: 'vacancies', title: 'Urgent ends in 2 hours', text: 'DJ for a boat party · 9 new applicants since it went urgent', time: '2 h', day: 'today', unread: true },
+  { id: 'en5', kind: 'approved', group: 'vacancies', title: 'Vacancy approved', text: 'Hostess, rooftop lounge is live for 7 days, until 16 Oct', time: '10:40', day: 'today', unread: false, cover: img.hostess },
+  { id: 'en6', kind: 'rejected', group: 'vacancies', title: 'Vacancy rejected: Promoters, training included', text: 'Violates 919 rules. Urgent hiring $2.99 will be refunded within 3 business days.', time: '10:15', day: 'today', unread: false, cover: img.misc },
+  { id: 'en7', kind: 'expires', group: 'vacancies', title: 'Promo model, car launch expires tomorrow', text: 'Relaunch it for another 7 days to keep receiving applicants', time: '09:00', day: 'today', unread: false, action: 'Relaunch' },
+  { id: 'en8', kind: 'declined', group: 'messages', title: 'Mira K. declined your contact request', text: 'You can still invite her through a vacancy', time: '08:12', day: 'today', unread: false, photo: p(4) },
+  { id: 'en9', kind: 'premiumSoon', group: 'subscription', title: 'Premium expires in 3 days', text: 'Your subscription was canceled. Premium features stay until 9 Nov', time: 'Mon', day: 'earlier', unread: false, action: 'Renew' },
+  { id: 'en10', kind: 'archived', group: 'vacancies', title: 'Vacancy moved to archive', text: 'Barista, specialty coffee was live for 7 days and got 14 applicants', time: 'Sun', day: 'earlier', unread: false },
+  { id: 'en11', kind: 'applicant', group: 'applicants', title: 'New applicant for Barista, specialty coffee', text: 'Sveta V. · 2 years of experience', time: 'Sat', day: 'earlier', unread: false, photo: p(8) },
+  { id: 'en12', kind: 'premiumOver', group: 'subscription', title: 'Premium has expired', text: 'You’re on the Free plan: 1 active vacancy, chats only via applications', time: '2 Oct', day: 'earlier', unread: false, action: 'Get Premium' },
+];
+
 type Store = {
   threads: EmpThread[];
   moveThread: (id: string, box: EmpThread['box']) => void;
@@ -184,6 +216,13 @@ type Store = {
   unreadTotal: number;
   joinRequests: typeof initialJoinRequests;
   resolveJoin: (id: string) => void;
+  notifs: EmpNotif[];
+  readNotif: (id: string) => void;
+  readAllNotifs: () => void;
+  unreadNotifs: number;
+  /** Bookmarked candidates (search results). */
+  savedIds: string[];
+  toggleSaved: (id: string) => boolean;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -192,6 +231,8 @@ const Ctx = createContext<Store | null>(null);
 export function EmployerProvider({ children }: { children: ReactNode }) {
   const [threads, setThreads] = useState(initialEmpThreads);
   const [joinRequests, setJoin] = useState(initialJoinRequests);
+  const [savedIds, setSaved] = useState<string[]>([]);
+  const [notifs, setNotifs] = useState(initialEmpNotifs);
   const value = useMemo<Store>(
     () => ({
       threads,
@@ -200,8 +241,18 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       unreadTotal: threads.filter((t) => t.box === 'active').reduce((n, t) => n + t.unread, 0),
       joinRequests,
       resolveJoin: (id) => setJoin((js) => js.filter((j) => j.id !== id)),
+      notifs,
+      readNotif: (id) => setNotifs((ns) => ns.map((n) => (n.id === id ? { ...n, unread: false } : n))),
+      readAllNotifs: () => setNotifs((ns) => ns.map((n) => ({ ...n, unread: false }))),
+      unreadNotifs: notifs.filter((n) => n.unread).length,
+      savedIds,
+      toggleSaved: (id) => {
+        const on = !savedIds.includes(id);
+        setSaved((xs) => (on ? [id, ...xs] : xs.filter((x) => x !== id)));
+        return on;
+      },
     }),
-    [threads, joinRequests],
+    [threads, joinRequests, savedIds, notifs],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

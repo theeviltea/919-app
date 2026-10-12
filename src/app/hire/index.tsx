@@ -4,7 +4,11 @@ import Animated, { scrollTo, useAnimatedRef, useAnimatedScrollHandler, useShared
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CollapsingHeader, headerMetrics, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
-import { company, talentRows, videoRows } from '@/data/employer';
+import { router } from 'expo-router';
+
+import { company, talentRows, useEmployer, videoRows } from '@/data/employer';
+import { candidates, countTalentFilters, emptyTalentFilters } from '@/data/talentPool';
+import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
 import { RowHeader, TalentTileCard, useSoon, VideoTileCard } from '@/features/hire/ui';
 import { openVideo } from '@/features/media/viewer';
 import { useTheme } from '@/theme';
@@ -17,6 +21,8 @@ export default function TalentHome() {
   const insets = useSafeAreaInsets();
   const soon = useSoon();
   const [tab, setTab] = useState<View2>('profiles');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const { unreadNotifs: unread } = useEmployer();
 
   const { expanded, range } = headerMetrics(insets.top, { titleLines: 1 });
   const ref = useAnimatedRef<Animated.ScrollView>();
@@ -114,9 +120,21 @@ export default function TalentHome() {
           </View>
         }
         searchPlaceholder="Name, role or skill"
-        onSearch={() => soon('Talent search')}
-        onFilter={() => soon('Talent filters')}
-        iconAction={{ icon: 'notification', label: 'Notifications, new', dot: true, onPress: () => soon('Notifications') }}
+        onSearch={() => router.push('/hire/search')}
+        onFilter={() => setFiltersOpen(true)}
+        iconAction={{ icon: 'notification', label: unread ? `Notifications, ${unread} new` : 'Notifications', dot: unread > 0, onPress: () => router.push('/hire-notifications') }}
+      />
+      {/* Like the seeker feed: filters from the home open the search screen with the results, chips and count. */}
+      <TalentFiltersModal
+        key={String(filtersOpen)}
+        visible={filtersOpen}
+        value={emptyTalentFilters}
+        source={candidates}
+        onClose={() => setFiltersOpen(false)}
+        onApply={(f) => {
+          setFiltersOpen(false);
+          if (countTalentFilters(f)) router.push({ pathname: '/hire/search', params: { f: JSON.stringify(f) } });
+        }}
       />
     </View>
   );

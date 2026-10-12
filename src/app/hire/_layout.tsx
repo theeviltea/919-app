@@ -18,6 +18,7 @@ export default function EmployerTabs() {
       tabBar={(props) => (
         <TabBar
           {...props}
+          aliases={{ search: 'index' }}
           center={{ after: 'vacancies', label: 'Post a new vacancy', icon: 'add', onPress: () => router.push('/post/category') }}
           meta={{
             index: { label: 'Talent', icon: 'users' },
@@ -31,6 +32,8 @@ export default function EmployerTabs() {
       <Tabs.Screen name="vacancies" />
       <Tabs.Screen name="messages" />
       <Tabs.Screen name="company" />
+      {/* Search belongs to Talent: no tab of its own, the tab bar keeps Talent active. */}
+      <Tabs.Screen name="search" options={{ href: null }} />
     </Tabs>
   );
 }
