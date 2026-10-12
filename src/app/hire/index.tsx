@@ -6,20 +6,25 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CollapsingHeader, headerMetrics, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
 import { router } from 'expo-router';
 
-import { initialsOf, talentRows, useEmployer, videoRows } from '@/data/employer';
-import { candidates, countTalentFilters, emptyTalentFilters } from '@/data/talentPool';
+import { initialsOf, useEmployer } from '@/data/employer';
+import { candidates, countTalentFilters, emptyTalentFilters, talentSphereLabels, talentSphereOrder, type TalentSphere } from '@/data/talentPool';
 import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
-import { RowHeader, TalentTileCard, useSoon, VideoTileCard } from '@/features/hire/ui';
+import { RowHeader, TalentTileCard, VideoTileCard } from '@/features/hire/ui';
 import { openVideo } from '@/features/media/viewer';
 import { useTheme } from '@/theme';
 
 type View2 = 'profiles' | 'videos';
 
+const ROW = 10;
+/** One row per field, all seven (Hospitality, F&B, Events, Modeling, Music, Beauty, Service). */
+const profileRows = talentSphereOrder.map((k) => ({ key: k, title: talentSphereLabels[k], list: candidates.filter((x) => x.sphere === k) })).filter((r) => r.list.length);
+const videoRows = profileRows.map((r) => ({ ...r, list: r.list.filter((x) => x.video) })).filter((r) => r.list.length);
+const seeAll = (sphere: TalentSphere, tab?: 'videos') => router.push({ pathname: '/hire/search', params: { f: JSON.stringify({ ...emptyTalentFilters, spheres: [sphere] }), ...(tab ? { tab } : {}) } });
+
 /** Employer home — Find talent (TalentProfiles / TalentVideos): rows of candidates per field. */
 export default function TalentHome() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const soon = useSoon();
   const [tab, setTab] = useState<View2>('profiles');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { unreadNotifs: unread, info, plan } = useEmployer();
@@ -57,26 +62,30 @@ export default function TalentHome() {
         </View>
 
         {tab === 'profiles'
-          ? talentRows.map((row) => (
+          ? profileRows.map((row) => (
               <View key={row.key} style={{ paddingTop: 16 }}>
-                <RowHeader title={row.title} count={row.count} onAll={() => soon(`${row.title} category`)} />
+                <RowHeader title={row.title} count={String(row.list.length)} onAll={() => seeAll(row.key)} />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: 20 }}>
-                  {row.people.map((t) => (
-                    <TalentTileCard key={t.id} t={t} onPress={() => soon('Candidate profile')} />
+                  {row.list.slice(0, ROW).map((t) => (
+                    <TalentTileCard
+                      key={t.id}
+                      t={{ id: t.id, name: t.name.split(' ')[0], role: t.role.split(',')[0], city: t.city, photo: t.photo, premium: t.premium, placeholder: t.placeholder }}
+                      onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })}
+                    />
                   ))}
                 </ScrollView>
               </View>
             ))
           : videoRows.map((row) => (
               <View key={row.key} style={{ paddingTop: 16 }}>
-                <RowHeader title={row.title} count={row.count} onAll={() => soon(`${row.title} videos`)} />
+                <RowHeader title={row.title} count={String(row.list.length)} onAll={() => seeAll(row.key, 'videos')} />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: 20 }}>
-                  {row.videos.map((v) => (
+                  {row.list.slice(0, ROW).map((t) => (
                     <VideoTileCard
-                      key={v.id}
-                      v={v}
+                      key={t.id}
+                      v={{ id: t.id, name: t.name, city: t.city, photo: t.photo, duration: t.video!.duration, views: t.video!.views, tint: t.tint }}
                       onPress={() =>
-                        openVideo({ poster: v.photo, duration: v.duration, label: 'Video presentation', name: v.name, verified: true, avatar: v.photo, subtitle: `${row.title} · ${v.city}` })
+                        openVideo({ poster: t.photo, duration: t.video!.duration, label: 'Video presentation', name: t.name, verified: t.verified, avatar: t.photo, subtitle: `${t.role} · ${t.city}` })
                       }
                     />
                   ))}

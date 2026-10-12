@@ -21,7 +21,6 @@ import {
 } from '@/data/talentPool';
 import { SelectSheet } from '@/features/auth/SelectSheet';
 import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
-import { useSoon } from '@/features/hire/ui';
 import { openVideo } from '@/features/media/viewer';
 import { useTheme } from '@/theme';
 
@@ -66,10 +65,9 @@ function SaveButton({ id, label }: { id: string; label: string }) {
 /** Profile tile in the results grid (TalentSearch): photo 150, Premium, save, video length. */
 function ProfileCard({ t }: { t: Candidate }) {
   const { c } = useTheme();
-  const soon = useSoon();
   const ph = [c.avatar1, c.avatar2, c.avatar3, c.avatar4, c.avatar5][t.placeholder - 1];
   return (
-    <Pressable onPress={() => soon('Candidate profile')} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`} style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+    <Pressable onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`} style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
       <View style={{ height: 150, backgroundColor: ph }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
         {t.premium ? (

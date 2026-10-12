@@ -1,16 +1,18 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
-import { hireStats, myVacancies, savedTalent, type HireStatus, type MyVacancy } from '@/data/employer';
+import { hireStats, myVacancies, savedLabels, useEmployer, type HireStatus, type MyVacancy } from '@/data/employer';
+import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '@/data/talentPool';
 import { PageTitle, Pill, useSoon } from '@/features/hire/ui';
 import { useTheme } from '@/theme';
 
 type Tab = 'mine' | 'saved';
 type Filter = 'all' | HireStatus;
-type SavedFilter = 'all' | 'hospitality' | 'model' | 'events';
+type SavedFilter = 'all' | TalentSphere;
 
 function Stat({ n, label }: { n: number; label: string }) {
   return (
@@ -119,12 +121,11 @@ function VacancyCard({ v }: { v: MyVacancy }) {
   );
 }
 
-function SavedCard({ t }: { t: (typeof savedTalent)[number] }) {
+function SavedCard({ t }: { t: Candidate }) {
   const { c } = useTheme();
-  const soon = useSoon();
   const ph = [c.avatar1, c.avatar2, c.avatar3, c.avatar4, c.avatar5][t.placeholder - 1];
   return (
-    <Pressable onPress={() => soon('Candidate profile')} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`} style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+    <Pressable onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`} style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
       <View style={{ height: 150, backgroundColor: ph }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
         {t.premium ? (
@@ -147,7 +148,7 @@ function SavedCard({ t }: { t: (typeof savedTalent)[number] }) {
           {t.role} · {t.city}
         </Text>
         <Text variant="caption" weight={400} color="textLightSecondary" style={{ marginTop: 8, fontSize: 11 }}>
-          {t.saved}
+          {savedLabels[t.id] ?? 'Saved today'}
         </Text>
       </View>
     </Pressable>
@@ -164,8 +165,10 @@ export default function HireVacancies() {
   const [savedFilter, setSavedFilter] = useState<SavedFilter>('all');
   const count = (s: HireStatus) => myVacancies.filter((v) => v.status === s).length;
   const list = myVacancies.filter((v) => filter === 'all' || v.status === filter);
-  const saved = savedTalent.filter((t) => savedFilter === 'all' || t.field === savedFilter);
-  const savedCount = (f: SavedFilter) => savedTalent.filter((t) => f === 'all' || t.field === f).length;
+  const { savedIds } = useEmployer();
+  const savedAll = savedIds.map(findCandidate).filter((x): x is Candidate => !!x);
+  const saved = savedAll.filter((t) => savedFilter === 'all' || t.sphere === savedFilter);
+  const savedCount = (f: SavedFilter) => savedAll.filter((t) => f === 'all' || t.sphere === f).length;
   const rows = Array.from({ length: Math.ceil(saved.length / 2) }, (_, i) => saved.slice(i * 2, i * 2 + 2));
 
   return (
@@ -174,7 +177,7 @@ export default function HireVacancies() {
       <SegmentedTabs<Tab>
         items={[
           { key: 'mine', label: 'My vacancies', count: myVacancies.length },
-          { key: 'saved', label: 'Saved talent', count: savedTalent.length },
+          { key: 'saved', label: 'Saved talent', count: savedAll.length },
         ]}
         value={tab}
         onChange={setTab}
@@ -202,14 +205,7 @@ export default function HireVacancies() {
       ) : (
         <>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
-            {(
-              [
-                ['all', 'All'],
-                ['hospitality', 'Hospitality'],
-                ['model', 'Model Business'],
-                ['events', 'Events'],
-              ] as [SavedFilter, string][]
-            ).map(([k, l]) => (
+            {([['all', 'All'], ...talentSphereOrder.filter((k) => savedCount(k)).map((k) => [k, talentSphereLabels[k]])] as [SavedFilter, string][]).map(([k, l]) => (
               <Chip key={k} label={`${l} ${savedCount(k)}`} selected={savedFilter === k} onPress={() => setSavedFilter(k)} />
             ))}
           </ScrollView>

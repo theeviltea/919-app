@@ -4,13 +4,19 @@ import { ScrollView, View } from 'react-native';
 
 import { Chip, EmptyState, LoadMoreFooter, SegmentedTabs, Text, useOnEndReached, usePaged } from '@/components';
 import { spheres, talentSpheres, vacancySpheres } from '@/data/dictionaries';
-import { feedVacancies as vacancies, talents } from '@/data/mock';
+import { feedVacancies as vacancies } from '@/data/mock';
+import { candidates } from '@/data/talentPool';
 import type { Sphere, Talent } from '@/data/types';
 import { GuestAuthSheet } from '@/features/talent/GuestAuth';
 import { TalentCard } from '@/features/talent/TalentCard';
 
 import { SaveButton } from './SaveButton';
 import { VacancyListCard } from './VacancyListCard';
+
+/** Guests see the same candidate pool as employers (closed profiles: tap asks to sign in). */
+const talents: Talent[] = candidates
+  .filter((c) => c.sphere !== 'service')
+  .map((c) => ({ id: c.id, name: c.name, role: c.role, city: c.city, verified: c.verified, premium: c.premium, sphere: c.sphere as Sphere, photo: c.photo, placeholder: c.placeholder }));
 
 export type GuestTab = 'vacancies' | 'talent';
 

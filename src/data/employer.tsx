@@ -38,67 +38,6 @@ export const team = [
 ];
 export const initialJoinRequests = [{ id: 'j1', name: 'Lina Morozova', email: 'lina.m@skylinehospitality.ae', when: '2 h ago', photo: p(4) }];
 
-/** Talent home: one horizontal row per field (TalentProfiles). */
-export const talentRows: { key: string; title: string; count: string; people: TalentTile[] }[] = [
-  {
-    key: 'hospitality',
-    title: 'Hospitality',
-    count: '1 459',
-    people: [
-      { id: 'h1', name: 'Angela', role: 'Hostess', city: 'Dubai', photo: p(1), placeholder: 4 },
-      { id: 'h2', name: 'Ibrahim', role: 'Waiter', city: 'Dubai', photo: p(10), premium: true, placeholder: 2 },
-      { id: 'h3', name: 'Layla', role: 'Hostess', city: 'Dubai', photo: p(2), placeholder: 1 },
-      { id: 'h4', name: 'Mira', role: 'Bartender', city: 'Dubai', photo: p(4), placeholder: 3 },
-    ],
-  },
-  {
-    key: 'model',
-    title: 'Model Business',
-    count: '842',
-    people: [
-      { id: 'm1', name: 'Sofia', role: 'Model', city: 'Dubai', photo: p(13), premium: true, placeholder: 3 },
-      { id: 'm2', name: 'Wakako', role: 'Model', city: 'Kyoto', photo: p(14), placeholder: 5 },
-      { id: 'm3', name: 'Nadia', role: 'Model', city: 'Dubai', photo: p(0), placeholder: 4 },
-      { id: 'm4', name: 'Kira', role: 'Promo model', city: 'Dubai', photo: p(3), placeholder: 1 },
-    ],
-  },
-  {
-    key: 'service',
-    title: 'Service',
-    count: '3 509',
-    people: [
-      { id: 's1', name: 'Anna', role: 'Barista', city: 'Moscow', photo: p(8), placeholder: 1 },
-      { id: 's2', name: 'Zaurbek', role: 'Driver', city: 'Almaty', photo: p(9), placeholder: 4 },
-      { id: 's3', name: 'Omar', role: 'Valet', city: 'Dubai', photo: p(10), placeholder: 2 },
-      { id: 's4', name: 'Sveta', role: 'Hostess', city: 'Dubai', photo: p(5), placeholder: 3 },
-    ],
-  },
-];
-
-/** Talent home, Videos tab (TalentVideos). */
-export const videoRows: { key: string; title: string; count: string; videos: VideoTile[] }[] = [
-  {
-    key: 'model',
-    title: 'Model Business',
-    count: '312',
-    videos: [
-      { id: 'v1', name: 'Elena Sokolova', city: 'Dubai', photo: p(1), duration: '0:42', views: '12.4k', tint: '#2C2140' },
-      { id: 'v2', name: 'Chen', city: 'Dubai', photo: p(2), duration: '0:30', views: '9.1k', tint: '#1B2A44' },
-      { id: 'v3', name: 'Tara', city: 'Dubai', photo: p(13), duration: '0:55', views: '8.6k', tint: '#3A2418' },
-    ],
-  },
-  {
-    key: 'hospitality',
-    title: 'Hospitality',
-    count: '527',
-    videos: [
-      { id: 'v4', name: 'Masha', city: 'Dubai', photo: p(14), duration: '0:38', views: '6.2k', tint: '#13302A' },
-      { id: 'v5', name: 'Boris Azat', city: 'Dubai', photo: p(10), duration: '1:04', views: '4.9k', tint: '#1A1F2B' },
-      { id: 'v6', name: 'Zoey', city: 'Dubai', photo: p(0), duration: '0:27', views: '3.7k', tint: '#1B2A44' },
-    ],
-  },
-];
-
 export type HireStatus = 'active' | 'review' | 'archive';
 export type MyVacancy = {
   id: string;
@@ -126,22 +65,6 @@ export const myVacancies: MyVacancy[] = [
 ];
 
 export const hireStats = { active: 2, fresh: 7, hired: 4 };
-
-/** EmpHiringSaved: 12 saved candidates. */
-export const savedTalent: (TalentTile & { field: 'hospitality' | 'model' | 'events'; saved: string })[] = [
-  { id: 'st1', name: 'Angela R.', role: 'Hostess', city: 'Dubai', photo: p(1), premium: true, placeholder: 4, field: 'hospitality', saved: 'Saved today' },
-  { id: 'st2', name: 'Ibrahim K.', role: 'Bartender', city: 'Dubai', photo: p(10), placeholder: 2, field: 'hospitality', saved: 'Saved yesterday' },
-  { id: 'st3', name: 'Elena S.', role: 'Promo model', city: 'Dubai', photo: p(13), premium: true, placeholder: 3, field: 'model', saved: 'Saved 2 days ago' },
-  { id: 'st4', name: 'Akmed V.', role: 'Waiter', city: 'Dubai', photo: p(9), placeholder: 4, field: 'hospitality', saved: 'Saved 3 days ago' },
-  { id: 'st5', name: 'Sveta V.', role: 'Hostess', city: 'Dubai', photo: p(5), placeholder: 1, field: 'hospitality', saved: 'Saved 5 days ago' },
-  { id: 'st6', name: 'Lucas M.', role: 'Head bartender', city: 'Dubai', photo: p(14), placeholder: 5, field: 'hospitality', saved: 'Saved 1 week ago' },
-  { id: 'st7', name: 'Sofia L.', role: 'Model', city: 'Dubai', photo: p(8), placeholder: 3, field: 'model', saved: 'Saved 1 week ago' },
-  { id: 'st8', name: 'Kira L.', role: 'Promo model', city: 'Dubai', photo: p(3), placeholder: 1, field: 'model', saved: 'Saved 2 weeks ago' },
-  { id: 'st9', name: 'Nadia O.', role: 'Model', city: 'Dubai', photo: p(0), placeholder: 4, field: 'model', saved: 'Saved 2 weeks ago' },
-  { id: 'st10', name: 'Mira K.', role: 'Hostess, events', city: 'Dubai', photo: p(4), placeholder: 2, field: 'events', saved: 'Saved 3 weeks ago' },
-  { id: 'st11', name: 'Omar H.', role: 'Event host', city: 'Abu Dhabi', photo: p(6), placeholder: 5, field: 'events', saved: 'Saved 1 month ago' },
-  { id: 'st12', name: 'Wakako T.', role: 'Promo, hostess', city: 'Dubai', photo: p(2), premium: true, placeholder: 3, field: 'events', saved: 'Saved 1 month ago' },
-];
 
 export type EmpThread = {
   id: string;
@@ -271,10 +194,29 @@ export function companyCompleteness(info: CompanyInfo, rep: Rep) {
   return Math.round((done / checks.length) * 100);
 }
 
+/** Saved talent at start (EmpHiringSaved): candidate ids from the pool and when they were saved. */
+export const DEFAULT_SAVED = ['c2', 'c1', 'c3', 'c5', 'c25', 'c13', 'c11', 'c16', 'c22', 'c10', 'c33', 'c32'];
+export const savedLabels: Record<string, string> = {
+  c2: 'Saved today',
+  c1: 'Saved yesterday',
+  c3: 'Saved 2 days ago',
+  c5: 'Saved 3 days ago',
+  c25: 'Saved 5 days ago',
+  c13: 'Saved 1 week ago',
+  c11: 'Saved 1 week ago',
+  c16: 'Saved 2 weeks ago',
+  c22: 'Saved 2 weeks ago',
+  c10: 'Saved 3 weeks ago',
+  c33: 'Saved 1 month ago',
+  c32: 'Saved 1 month ago',
+};
+
 type Store = {
   threads: EmpThread[];
   moveThread: (id: string, box: EmpThread['box']) => void;
   deleteThread: (id: string) => void;
+  /** Direct contact request from a candidate profile (EmpContactSheet → EmpMessagesRequest). */
+  addThread: (t: EmpThread) => void;
   unreadTotal: number;
   joinRequests: typeof initialJoinRequests;
   resolveJoin: (id: string) => void;
@@ -303,7 +245,7 @@ const Ctx = createContext<Store | null>(null);
 export function EmployerProvider({ children }: { children: ReactNode }) {
   const [threads, setThreads] = useState(initialEmpThreads);
   const [joinRequests, setJoin] = useState(initialJoinRequests);
-  const [savedIds, setSaved] = useState<string[]>([]);
+  const [savedIds, setSaved] = useState<string[]>(DEFAULT_SAVED);
   const [notifs, setNotifs] = useState(initialEmpNotifs);
   const [rep, setRepState] = useState(initialRep);
   const [info, setInfoState] = useState(initialInfo);
@@ -314,6 +256,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       threads,
       moveThread: (id, box) => setThreads((ts) => ts.map((t) => (t.id === id ? { ...t, box } : t))),
       deleteThread: (id) => setThreads((ts) => ts.filter((t) => t.id !== id)),
+      addThread: (t) => setThreads((ts) => [t, ...ts.filter((x) => x.id !== t.id)]),
       unreadTotal: threads.filter((t) => t.box === 'active').reduce((n, t) => n + t.unread, 0),
       joinRequests,
       resolveJoin: (id) => setJoin((js) => js.filter((j) => j.id !== id)),
