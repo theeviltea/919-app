@@ -36,7 +36,15 @@ export default function VacancyBasic() {
   const { c } = useTheme();
   const { d, set } = useDraft();
   const [sheet, setSheet] = useState<Sheet>(null);
-  const ok = !!d.cover && d.title.trim().length >= 3 && d.description.trim().length >= 20 && !!d.startDate && !!d.country && !!d.city && d.photos.length > 0;
+  const missing = [
+    !d.cover && 'cover',
+    !d.title.trim() && 'title',
+    !d.description.trim() && 'description',
+    !d.startDate && 'start date',
+    !d.city && 'city',
+    !d.photos.length && 'at least one photo',
+  ].filter(Boolean) as string[];
+  const ok = missing.length === 0;
   const dateLabel = startDates.find((x) => x.iso === d.startDate)?.label;
 
   return (
@@ -44,7 +52,16 @@ export default function VacancyBasic() {
       top={<StepProgress label="New vacancy" step={2} of={4} />}
       title="Basic information"
       subtitle="Fill in all the fields — this is what candidates see first."
-      footer={<Button size="l" label="Proceed" disabled={!ok} onPress={() => router.push('/post/salary')} />}>
+      footer={
+        <View style={{ gap: 8 }}>
+          {!ok ? (
+            <Text variant="bodyS" color="textBody" align="center" style={{ fontSize: 13 }}>
+              {`Add ${missing.join(', ')} to continue`}
+            </Text>
+          ) : null}
+          <Button size="l" label="Proceed" disabled={!ok} onPress={() => router.push('/post/salary')} />
+        </View>
+      }>
       <Panel title="Cover">
         {d.cover ? (
           <View style={{ height: 180, borderRadius: 16, overflow: 'hidden', backgroundColor: c.backDarker }}>
