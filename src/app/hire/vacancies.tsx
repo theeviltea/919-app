@@ -5,7 +5,7 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
-import { hireStats, myVacancies, savedLabels, useEmployer, type HireStatus, type MyVacancy } from '@/data/employer';
+import { hireStats, savedLabels, useEmployer, type HireStatus, type MyVacancy } from '@/data/employer';
 import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '@/data/talentPool';
 import { PageTitle, Pill, useSoon } from '@/features/hire/ui';
 import { useTheme } from '@/theme';
@@ -32,7 +32,13 @@ function Faces({ faces }: { faces: MyVacancy['faces'] }) {
   return (
     <View style={{ flexDirection: 'row' }}>
       {(faces ?? []).map((f, i) => (
-        <Image key={i} source={f} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: c.surface, marginLeft: i ? -10 : 0, backgroundColor: c.backDarker }} />
+        <Image
+          key={i}
+          source={f}
+          contentFit="cover"
+          contentPosition={{ top: '25%' }}
+          style={{ width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: c.surface, marginLeft: i ? -10 : 0, backgroundColor: c.backDarker }}
+        />
       ))}
     </View>
   );
@@ -57,7 +63,11 @@ function VacancyCard({ v }: { v: MyVacancy }) {
             </Text>
           </View>
         </Pressable>
-        <Pressable onPress={() => soon('Vacancy actions')} accessibilityRole="button" accessibilityLabel="Vacancy actions" style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: c.input, alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable
+          onPress={() => soon('Vacancy actions')}
+          accessibilityRole="button"
+          accessibilityLabel="Vacancy actions"
+          style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: c.input, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="more" size={20} color="textHeadline" />
         </Pressable>
       </View>
@@ -125,11 +135,27 @@ function SavedCard({ t }: { t: Candidate }) {
   const { c } = useTheme();
   const ph = [c.avatar1, c.avatar2, c.avatar3, c.avatar4, c.avatar5][t.placeholder - 1];
   return (
-    <Pressable onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`} style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+    <Pressable
+      onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`}
+      style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
       <View style={{ height: 150, backgroundColor: ph }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
         {t.premium ? (
-          <View style={{ position: 'absolute', left: 8, top: 8, height: 24, paddingHorizontal: 8, borderRadius: 999, backgroundColor: c.labelOrangeBack, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <View
+            style={{
+              position: 'absolute',
+              left: 8,
+              top: 8,
+              height: 24,
+              paddingHorizontal: 8,
+              borderRadius: 999,
+              backgroundColor: c.labelOrangeBack,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+            }}>
             <Icon name="star" size={12} color="labelOrangeText" />
             <Text variant="caption" weight={700} color="labelOrangeText" style={{ fontSize: 11 }}>
               Premium
@@ -163,6 +189,7 @@ export default function HireVacancies() {
   const [tab, setTab] = useState<Tab>('mine');
   const [filter, setFilter] = useState<Filter>('all');
   const [savedFilter, setSavedFilter] = useState<SavedFilter>('all');
+  const { vacancies: myVacancies } = useEmployer();
   const count = (s: HireStatus) => myVacancies.filter((v) => v.status === s).length;
   const list = myVacancies.filter((v) => filter === 'all' || v.status === filter);
   const { savedIds } = useEmployer();
@@ -172,7 +199,9 @@ export default function HireVacancies() {
   const rows = Array.from({ length: Math.ceil(saved.length / 2) }, (_, i) => saved.slice(i * 2, i * 2 + 2));
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: c.back }} contentContainerStyle={{ paddingTop: insets.top + 20, paddingHorizontal: 16, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: c.back }}
+      contentContainerStyle={{ paddingTop: insets.top + 20, paddingHorizontal: 16, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
       <PageTitle title="Vacancies" action={{ icon: 'search', label: 'Search vacancies', onPress: () => soon('Vacancy search') }} />
       <SegmentedTabs<Tab>
         items={[
@@ -186,7 +215,7 @@ export default function HireVacancies() {
       {tab === 'mine' ? (
         <>
           <View style={{ backgroundColor: c.surface, borderRadius: 20, padding: 16, flexDirection: 'row', gap: 12 }}>
-            <Stat n={hireStats.active} label={'Active\nvacancies'} />
+            <Stat n={count('active')} label={'Active\nvacancies'} />
             <View style={{ width: 1, backgroundColor: c.divider }} />
             <Stat n={hireStats.fresh} label={'New\napplicants'} />
             <View style={{ width: 1, backgroundColor: c.divider }} />

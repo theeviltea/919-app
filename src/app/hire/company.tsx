@@ -5,7 +5,8 @@ import { Linking, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Icon, PatternHeader, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast } from '@/components';
-import { initialsOf, myVacancies, useEmployer } from '@/data/employer';
+import { initialsOf, useEmployer } from '@/data/employer';
+import { useStartVacancy } from '@/features/post/gate';
 import { useSession } from '@/data/session';
 import { GlassButton, Pill, Round, Section, useSoon } from '@/features/hire/ui';
 import { useTheme } from '@/theme';
@@ -47,7 +48,15 @@ function Recruiters() {
               </View>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <Button variant="secondary" label="Decline" onPress={() => (resolveJoin(j.id), toast({ text: 'Request declined', icon: 'cancel', aboveTabBar: true }))} style={{ flex: 1 }} />
-                <Button label="Accept" onPress={() => (resolveJoin(j.id), addMember({ id: j.id, name: j.name, role: 'Recruiter', title: 'Recruiter', photo: j.photo }), toast({ text: `${j.name.split(' ')[0]} joined the team`, icon: 'check', aboveTabBar: true }))} style={{ flex: 1 }} />
+                <Button
+                  label="Accept"
+                  onPress={() => (
+                    resolveJoin(j.id),
+                    addMember({ id: j.id, name: j.name, role: 'Recruiter', title: 'Recruiter', photo: j.photo }),
+                    toast({ text: `${j.name.split(' ')[0]} joined the team`, icon: 'check', aboveTabBar: true })
+                  )}
+                  style={{ flex: 1 }}
+                />
               </View>
             </View>
           ))}
@@ -87,10 +96,28 @@ function Recruiters() {
   );
 }
 
-function LinkRow({ badge, icon, label, value, last, onPress }: { badge?: string | null; icon?: 'globe' | 'call' | 'mail' | 'location'; label: string; value: string; last: boolean; onPress: () => void }) {
+function LinkRow({
+  badge,
+  icon,
+  label,
+  value,
+  last,
+  onPress,
+}: {
+  badge?: string | null;
+  icon?: 'globe' | 'call' | 'mail' | 'location';
+  label: string;
+  value: string;
+  last: boolean;
+  onPress: () => void;
+}) {
   const { c } = useTheme();
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} style={{ minHeight: 60, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: last ? 0 : 1, borderColor: c.divider }}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}`}
+      style={{ minHeight: 60, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: last ? 0 : 1, borderColor: c.divider }}>
       <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
         {badge ? (
           <Text variant="caption" weight={700} color="link" style={{ fontSize: 11, letterSpacing: 0.4 }}>
@@ -127,7 +154,16 @@ function About() {
     { key: 'office', icon: 'location' as const, label: 'Office', value: info.office },
   ].filter((l) => l.value.trim());
   const open = (key: string, value: string) => {
-    const url = key === 'phone' ? `tel:${value.replace(/\s/g, '')}` : key === 'email' ? `mailto:${value}` : key === 'office' ? `https://maps.google.com/?q=${encodeURIComponent(value)}` : key === 'web' ? `https://${value}` : null;
+    const url =
+      key === 'phone'
+        ? `tel:${value.replace(/\s/g, '')}`
+        : key === 'email'
+          ? `mailto:${value}`
+          : key === 'office'
+            ? `https://maps.google.com/?q=${encodeURIComponent(value)}`
+            : key === 'web'
+              ? `https://${value}`
+              : null;
     if (url) Linking.openURL(url);
   };
   return (
@@ -163,11 +199,18 @@ function About() {
 function Vacancies() {
   const { c } = useTheme();
   const soon = useSoon();
-  const list = myVacancies.filter((v) => v.status !== 'archive');
+  const { vacancies } = useEmployer();
+  const startVacancy = useStartVacancy();
+  const list = vacancies.filter((v) => v.status !== 'archive');
   return (
     <View style={{ gap: 10 }}>
       {list.map((v) => (
-        <Pressable key={v.id} onPress={() => soon('Vacancy page')} accessibilityRole="button" accessibilityLabel={v.title} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: c.surface, borderRadius: 20, padding: 12 }}>
+        <Pressable
+          key={v.id}
+          onPress={() => soon('Vacancy page')}
+          accessibilityRole="button"
+          accessibilityLabel={v.title}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: c.surface, borderRadius: 20, padding: 12 }}>
           <Image source={v.cover} contentFit="cover" style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: c.backDarker }} />
           <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
             <Text variant="body" weight={700} numberOfLines={1} style={{ fontSize: 15 }}>
@@ -192,7 +235,7 @@ function Vacancies() {
           {v.fresh ? <Pill label={`+${v.fresh} new`} bg={c.primary} fg={c.ctaButtonText} h={24} /> : null}
         </Pressable>
       ))}
-      <Pressable onPress={() => router.push('/post/category')} accessibilityRole="button" style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 12 }}>
+      <Pressable onPress={startVacancy} accessibilityRole="button" style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 12 }}>
         <Icon name="add" size={18} color="link" />
         <Text variant="body" weight={700} color="link" style={{ fontSize: 15 }}>
           Post a new vacancy
@@ -216,7 +259,12 @@ export default function HireCompany() {
     <ScrollView style={{ flex: 1, backgroundColor: c.back }} contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE + 16 }}>
       <PatternHeader style={{ paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 20, gap: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Image source={rep.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)', backgroundColor: c.backDarker }} />
+          <Image
+            source={rep.photo}
+            contentFit="cover"
+            contentPosition={{ top: '25%' }}
+            style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)', backgroundColor: c.backDarker }}
+          />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text variant="body" color="rgba(255,255,255,0.9)" style={{ fontSize: 14 }}>
               Hello,
@@ -232,7 +280,10 @@ export default function HireCompany() {
           onPress={() => setTab('company')}
           accessibilityRole="button"
           accessibilityLabel={`Company profile: ${name}`}
-          style={[{ height: 52, paddingLeft: 8, paddingRight: 10, borderRadius: 16, backgroundColor: c.onMediaPill, flexDirection: 'row', alignItems: 'center', gap: 10 }, { backdropFilter: 'blur(8px)' } as object]}>
+          style={[
+            { height: 52, paddingLeft: 8, paddingRight: 10, borderRadius: 16, backgroundColor: c.onMediaPill, flexDirection: 'row', alignItems: 'center', gap: 10 },
+            { backdropFilter: 'blur(8px)' } as object,
+          ]}>
           <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: '#18191C', alignItems: 'center', justifyContent: 'center' }}>
             {info.logo ? (
               <Image source={info.logo} contentFit="cover" style={{ width: 36, height: 36, borderRadius: 12 }} />

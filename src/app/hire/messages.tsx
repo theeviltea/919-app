@@ -26,7 +26,9 @@ function Row({ t, last }: { t: EmpThread; last: boolean }) {
       <View style={{ flexDirection: 'row', gap: 12, paddingVertical: 14, borderBottomWidth: last ? 0 : 1, borderColor: c.divider }}>
         <View style={{ width: 56, height: 56, opacity: t.box === 'inactive' ? 0.5 : 1 }}>
           <Round source={t.photo} size={56} />
-          {t.online ? <View style={{ position: 'absolute', right: 1, bottom: 1, width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: c.surface, backgroundColor: c.success }} /> : null}
+          {t.online ? (
+            <View style={{ position: 'absolute', right: 1, bottom: 1, width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: c.surface, backgroundColor: c.success }} />
+          ) : null}
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -47,7 +49,11 @@ function Row({ t, last }: { t: EmpThread; last: boolean }) {
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, overflow: 'hidden' }}>
               {shown.map((x) =>
-                x === 'direct' ? <Pill key={x} label="Direct" icon="message" bg={c.primarySecondary} fg={c.link} /> : <Pill key={x} label={x} icon="briefcase" bg={c.input} fg={c.textPrimary} shrink />,
+                x === 'direct' ? (
+                  <Pill key={x} label="Direct" icon="message" bg={c.primarySecondary} fg={c.link} />
+                ) : (
+                  <Pill key={x} label={x} icon="briefcase" bg={c.input} fg={c.textPrimary} shrink />
+                ),
               )}
               {more > 0 ? <Pill label={`+${more}`} bg={c.input} fg={c.textBody} /> : null}
             </View>
@@ -129,7 +135,9 @@ export default function HireMessages() {
           onChange={(k) => (setOpenId(null), setTab(k))}
         />
       </View>
-      <ScrollView onScrollBeginDrag={() => setOpenId(null)} contentContainerStyle={{ paddingTop: 12, paddingHorizontal: 16, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
+      <ScrollView
+        onScrollBeginDrag={() => setOpenId(null)}
+        contentContainerStyle={{ paddingTop: 12, paddingHorizontal: 16, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
         {tab !== 'active' && list.length ? (
           <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 4 }}>
             <Icon name="alert-circle" size={16} color="textBody" />
@@ -153,7 +161,12 @@ export default function HireMessages() {
             ))}
           </View>
         ) : (
-          <EmptyState icon={tab === 'archive' ? 'clock' : 'message'} title={tab === 'active' ? 'No messages yet' : tab === 'archive' ? 'Archive is empty' : 'Nothing here'} text="Chats with candidates appear here when they apply or when you write first." passive />
+          <EmptyState
+            icon={tab === 'archive' ? 'clock' : 'message'}
+            title={tab === 'active' ? 'No messages yet' : tab === 'archive' ? 'Archive is empty' : 'Nothing here'}
+            text="Chats with candidates appear here when they apply or when you write first."
+            passive
+          />
         )}
       </ScrollView>
 

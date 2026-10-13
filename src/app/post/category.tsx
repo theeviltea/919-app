@@ -1,18 +1,19 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button, Chip, FormScreen, Icon, Pressable, StepProgress, Text } from '@/components';
 import { fields, type Field } from '@/data/registration';
-import { useSoon } from '@/features/hire/ui';
+import { useDraft } from '@/features/post/draft';
 import { useTheme } from '@/theme';
 
 /** New vacancy, step 1 of 4 — field and role (VacCategory / VacCategoryOpen). One field, any of its roles. */
 export default function VacancyCategory() {
   const { c } = useTheme();
-  const soon = useSoon();
-  const [open, setOpen] = useState<Field | undefined>();
-  const [field, setField] = useState<Field | undefined>();
-  const [roles, setRoles] = useState<string[]>([]);
+  const { d, set } = useDraft();
+  const [open, setOpen] = useState<Field | undefined>(d.field);
+  const [field, setField] = useState<Field | undefined>(d.field);
+  const [roles, setRoles] = useState<string[]>(d.roles);
 
   const toggle = (f: Field, r: string) => {
     if (field !== f) {
@@ -30,7 +31,7 @@ export default function VacancyCategory() {
       top={<StepProgress label="New vacancy" step={1} of={4} />}
       title="Add vacancy"
       subtitle="Choose the field and the role you are hiring for."
-      footer={<Button size="l" label="Proceed" disabled={!field || !roles.length} onPress={() => soon('Step 2 · Basic information')} />}>
+      footer={<Button size="l" label="Proceed" disabled={!field || !roles.length} onPress={() => (set({ field, roles }), router.push('/post/basic'))} />}>
       <View style={{ backgroundColor: c.surface, borderRadius: 24, paddingHorizontal: 18, paddingBottom: 8 }}>
         <Text variant="caption" weight={700} color="textBody" style={{ letterSpacing: 0.7, paddingTop: 16, paddingBottom: 4 }}>
           FIELDS
@@ -39,12 +40,28 @@ export default function VacancyCategory() {
           const isOpen = open === f.key;
           const selected = field === f.key;
           return (
-            <View key={f.key} style={{ borderRadius: 18, backgroundColor: isOpen ? c.input : 'transparent', marginHorizontal: isOpen ? -8 : 0, marginVertical: isOpen ? 4 : 0, paddingHorizontal: isOpen ? 12 : 0, paddingBottom: isOpen ? 14 : 0 }}>
+            <View
+              key={f.key}
+              style={{
+                borderRadius: 18,
+                backgroundColor: isOpen ? c.input : 'transparent',
+                marginHorizontal: isOpen ? -8 : 0,
+                marginVertical: isOpen ? 4 : 0,
+                paddingHorizontal: isOpen ? 12 : 0,
+                paddingBottom: isOpen ? 14 : 0,
+              }}>
               <Pressable
                 onPress={() => setOpen(isOpen ? undefined : f.key)}
                 accessibilityRole="button"
                 accessibilityState={{ expanded: isOpen }}
-                style={{ height: 64, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: !isOpen && i < fields.length - 1 && open !== fields[i + 1]?.key ? 1 : 0, borderColor: c.divider }}>
+                style={{
+                  height: 64,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  borderBottomWidth: !isOpen && i < fields.length - 1 && open !== fields[i + 1]?.key ? 1 : 0,
+                  borderColor: c.divider,
+                }}>
                 <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isOpen ? c.surface : c.input, alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name={f.icon} size={20} color={isOpen || selected ? 'primary' : 'textBody'} />
                 </View>

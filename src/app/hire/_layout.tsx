@@ -1,8 +1,9 @@
-import { Redirect, router, Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 
 import { TabBar } from '@/components';
 import { hireStats, useEmployer } from '@/data/employer';
 import { useSession } from '@/data/session';
+import { useStartVacancy } from '@/features/post/gate';
 import { useTheme } from '@/theme';
 
 /** Employer app: Talent · Vacancies · (+ Post a vacancy) · Messages · Company. */
@@ -10,6 +11,7 @@ export default function EmployerTabs() {
   const { c } = useTheme();
   const { user } = useSession();
   const { unreadTotal } = useEmployer();
+  const startVacancy = useStartVacancy();
   if (!user) return <Redirect href="/guest" />;
   return (
     <Tabs
@@ -19,7 +21,7 @@ export default function EmployerTabs() {
         <TabBar
           {...props}
           aliases={{ search: 'index' }}
-          center={{ after: 'vacancies', label: 'Post a new vacancy', icon: 'add', onPress: () => router.push('/post/category') }}
+          center={{ after: 'vacancies', label: 'Post a new vacancy', icon: 'add', onPress: startVacancy }}
           meta={{
             index: { label: 'Talent', icon: 'users' },
             vacancies: { label: 'Vacancies', icon: 'briefcase', badge: hireStats.fresh },

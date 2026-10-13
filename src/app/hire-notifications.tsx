@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton, Icon, IconButton, Pressable, Text, useToast, type IconName } from '@/components';
 import { useEmployer, type EmpNotif, type EmpNotifKind } from '@/data/employer';
 import { useSoon } from '@/features/hire/ui';
+import { useStartVacancy } from '@/features/post/gate';
 import { useTheme, type Colors } from '@/theme';
 
 type Filter = 'all' | EmpNotif['group'];
@@ -46,7 +47,20 @@ function Avatar({ n }: { n: EmpNotif }) {
     <View style={{ width: 44, height: 44 }}>
       <Image source={n.photo ?? n.cover} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: c.backDarker }} />
       {b ? (
-        <View style={{ position: 'absolute', right: -3, bottom: -3, width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: c.surface, backgroundColor: c[b.bg], alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{
+            position: 'absolute',
+            right: -3,
+            bottom: -3,
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            borderWidth: 2,
+            borderColor: c.surface,
+            backgroundColor: c[b.bg],
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Icon name={b.icon} size={10} color={b.fg ?? '#FFFFFF'} />
         </View>
       ) : null}
@@ -69,6 +83,7 @@ export default function EmployerNotifications() {
   const toast = useToast();
   const soon = useSoon();
   const { notifs, readNotif, readAllNotifs } = useEmployer();
+  const startVacancy = useStartVacancy();
   const [filter, setFilter] = useState<Filter>('all');
 
   const shown = notifs.filter((n) => filter === 'all' || n.group === filter);
@@ -104,7 +119,8 @@ export default function EmployerNotifications() {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.back }}>
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1, width: '100%', maxWidth: 600, alignSelf: 'center' }}>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 40, gap: 12, flexGrow: 1, width: '100%', maxWidth: 600, alignSelf: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <BackButton onPress={() => (router.canGoBack() ? router.back() : router.navigate('/hire'))} />
           <Text variant="bodyL" weight={700} align="center" accessibilityRole="header" style={{ flex: 1, fontSize: 17 }}>
@@ -124,7 +140,15 @@ export default function EmployerNotifications() {
                   onPress={() => setFilter(k)}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: on }}
-                  style={{ height: 36, paddingHorizontal: 14, borderRadius: 999, borderWidth: on ? 0 : 1, borderColor: c.stroke, backgroundColor: on ? c.inverse : c.surface, justifyContent: 'center' }}>
+                  style={{
+                    height: 36,
+                    paddingHorizontal: 14,
+                    borderRadius: 999,
+                    borderWidth: on ? 0 : 1,
+                    borderColor: c.stroke,
+                    backgroundColor: on ? c.inverse : c.surface,
+                    justifyContent: 'center',
+                  }}>
                   <Text variant="bodyS" weight={600} color={on ? 'onInverse' : 'textHeadline'} style={{ fontSize: 13 }}>
                     {label}
                     {n ? (
@@ -152,7 +176,7 @@ export default function EmployerNotifications() {
               Here you’ll see new applicants, replies to contact requests, moderation results and reminders about your vacancies and subscription.
             </Text>
             <Pressable
-              onPress={() => router.push('/post/category')}
+              onPress={startVacancy}
               accessibilityRole="button"
               style={{ marginTop: 24, height: 48, paddingHorizontal: 20, borderRadius: 16, backgroundColor: c.primarySecondary, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Icon name="add" size={18} color="link" />

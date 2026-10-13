@@ -8,6 +8,7 @@ import { BottomSheet, Button, EmptyState, Icon, IconButton, Pressable, Text, use
 import { profileOf, sphereChip } from '@/data/candidateProfile';
 import { useEmployer } from '@/data/employer';
 import { findCandidate } from '@/data/talentPool';
+import { PremiumSheet } from '@/features/hire/PremiumSheet';
 import { openPhotos, openVideo } from '@/features/media/viewer';
 import { CodeTile, Panel, TimelineItem } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
@@ -44,7 +45,9 @@ export default function CandidateProfileScreen() {
   const saved = savedIds.includes(cand.id);
   const sent = threads.some((t) => t.id === `req-${cand.id}`);
   const open = (v: string, kind: string) =>
-    Linking.openURL(kind === 'ig' ? `https://instagram.com/${v.slice(1)}` : kind === 'sc' ? `https://soundcloud.com/${v.slice(1)}` : kind === 'fb' ? 'https://facebook.com' : `https://${v}`).catch(() => {});
+    Linking.openURL(kind === 'ig' ? `https://instagram.com/${v.slice(1)}` : kind === 'sc' ? `https://soundcloud.com/${v.slice(1)}` : kind === 'fb' ? 'https://facebook.com' : `https://${v}`).catch(
+      () => {},
+    );
 
   const contact = () => {
     if (sent) return router.navigate('/hire/messages');
@@ -88,7 +91,12 @@ export default function CandidateProfileScreen() {
           <View style={{ height: 88, backgroundColor: c.primarySecondary }} />
           <View style={{ paddingHorizontal: 18, paddingBottom: 18, alignItems: 'center' }}>
             <Pressable onPress={() => openPhotos({ photos: [cand.photo], index: 0 })} accessibilityRole="imagebutton" accessibilityLabel="Open profile photo" style={{ marginTop: -52 }}>
-              <Image source={cand.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 104, height: 104, borderRadius: 52, borderWidth: 4, borderColor: c.surface, backgroundColor: c.avatar3 }} />
+              <Image
+                source={cand.photo}
+                contentFit="cover"
+                contentPosition={{ top: '25%' }}
+                style={{ width: 104, height: 104, borderRadius: 52, borderWidth: 4, borderColor: c.surface, backgroundColor: c.avatar3 }}
+              />
             </Pressable>
             <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Text variant="title" style={{ fontSize: 20, lineHeight: 26 }}>
@@ -139,7 +147,12 @@ export default function CandidateProfileScreen() {
           </View>
           <View style={{ flexDirection: 'row', marginHorizontal: -4 }}>
             {p.gallery.map((src, i) => (
-              <Pressable key={i} onPress={() => openPhotos({ photos: p.gallery, index: i })} accessibilityRole="imagebutton" accessibilityLabel={`Photo ${i + 1} of ${p.gallery.length}`} style={{ width: '33.333%', padding: 4 }}>
+              <Pressable
+                key={i}
+                onPress={() => openPhotos({ photos: p.gallery, index: i })}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={`Photo ${i + 1} of ${p.gallery.length}`}
+                style={{ width: '33.333%', padding: 4 }}>
                 <View style={{ height: 136, borderRadius: 16, overflow: 'hidden', backgroundColor: c.avatar4 }}>
                   <Image source={src} contentFit="cover" contentPosition={CROPS[i]?.pos ?? 'center'} style={{ width: '100%', height: '100%', transform: [{ scale: CROPS[i]?.scale ?? 1 }] }} />
                 </View>
@@ -160,7 +173,18 @@ export default function CandidateProfileScreen() {
               </View>
             }>
             <Pressable
-              onPress={() => openVideo({ poster: cand.photo, duration: cand.video!.duration, label: 'Video presentation', name: p.fullName, verified: cand.verified, avatar: cand.photo, subtitle: `${cand.role} · ${cand.city}`, text: p.about })}
+              onPress={() =>
+                openVideo({
+                  poster: cand.photo,
+                  duration: cand.video!.duration,
+                  label: 'Video presentation',
+                  name: p.fullName,
+                  verified: cand.verified,
+                  avatar: cand.photo,
+                  subtitle: `${cand.role} · ${cand.city}`,
+                  text: p.about,
+                })
+              }
               accessibilityRole="button"
               accessibilityLabel="Play video presentation"
               style={{ height: 200, borderRadius: 18, overflow: 'hidden', backgroundColor: '#232426', alignItems: 'center' }}>
@@ -238,7 +262,9 @@ export default function CandidateProfileScreen() {
           </View>
           <View>
             {p.field.rows.map(([k, v], i) => (
-              <View key={k} style={{ height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: i < p.field.rows.length - 1 ? 1 : 0, borderColor: c.divider }}>
+              <View
+                key={k}
+                style={{ height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: i < p.field.rows.length - 1 ? 1 : 0, borderColor: c.divider }}>
                 <Text variant="body" color="textBody" style={{ fontSize: 15 }}>
                   {k}
                 </Text>
@@ -344,77 +370,17 @@ export default function CandidateProfileScreen() {
       </BottomSheet>
 
       {/* EmpPaywallContact */}
-      <BottomSheet visible={sheet === 'paywall'} onClose={() => setSheet(null)}>
-        <View style={{ alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: c.labelOrangeBack, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="star" size={30} color="labelOrangeText" />
-          </View>
-          <View style={{ height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.labelOrangeBack, justifyContent: 'center' }}>
-            <Text variant="caption" weight={700} color="labelOrangeText">
-              919 Premium
-            </Text>
-          </View>
-          <Text variant="title" align="center">
-            Write to {first} directly
-          </Text>
-          <Text variant="body" color="textBody" align="center" style={{ fontSize: 14, lineHeight: 21 }}>
-            On the Free plan you can chat only with candidates who applied to your vacancy.
-          </Text>
-        </View>
-        {(
-          [
-            ['Message any candidate directly', 'From their profile, video or search — without waiting for an application'],
-            ['Unlimited active vacancies', 'Free plan includes 1 active vacancy at a time'],
-          ] as const
-        ).map(([t, d]) => (
-          <View key={t} style={{ flexDirection: 'row', gap: 12 }}>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: c.labelOrangeBack, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="check" size={14} color="labelOrangeText" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text variant="body" weight={700} style={{ fontSize: 15 }}>
-                {t}
-              </Text>
-              <Text variant="bodyS" color="textBody" style={{ fontSize: 13, lineHeight: 18 }}>
-                {d}
-              </Text>
-            </View>
-          </View>
-        ))}
-        <View style={{ padding: 14, borderRadius: 16, backgroundColor: c.input, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Text variant="body" weight={700} style={{ fontSize: 15 }}>
-              Monthly
-            </Text>
-            <Text variant="caption" weight={400} color="textBody" style={{ fontSize: 12 }}>
-              Renews automatically · cancel any time
-            </Text>
-          </View>
-          <Text variant="displayM" style={{ fontSize: 20 }}>
-            $3.99
-          </Text>
-          <Text variant="bodyS" weight={600} color="textBody" style={{ fontSize: 13 }}>
-            / month
-          </Text>
-        </View>
-        <Pressable
-          onPress={() => {
-            setPlan('premium');
-            toast({ text: 'Premium is active. Welcome!', kind: 'paid', icon: 'star' });
-            setSheet('contact');
-          }}
-          accessibilityRole="button"
-          style={{ height: 56, borderRadius: 18, backgroundColor: c.inverse, alignItems: 'center', justifyContent: 'center' }}>
-          <Text variant="bodyL" weight={700} color="onInverse" style={{ fontSize: 16 }}>
-            Subscribe with Apple Pay
-          </Text>
-        </Pressable>
-        <Pressable onPress={() => setSheet(null)} accessibilityRole="button" style={{ alignSelf: 'center', paddingVertical: 8 }}>
-          <Text variant="body" weight={700} color="textBody">
-            Not now
-          </Text>
-        </Pressable>
-      </BottomSheet>
+      <PremiumSheet
+        visible={sheet === 'paywall'}
+        title={`Write to ${first} directly`}
+        text="On the Free plan you can chat only with candidates who applied to your vacancy."
+        onClose={() => setSheet(null)}
+        onSubscribe={() => {
+          setPlan('premium');
+          toast({ text: 'Premium is active. Welcome!', kind: 'paid', icon: 'star' });
+          setSheet('contact');
+        }}
+      />
     </View>
   );
 }

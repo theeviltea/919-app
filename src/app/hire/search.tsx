@@ -39,7 +39,14 @@ function parseFilters(raw?: string): TalentFilters {
 export default function TalentSearchScreen() {
   const params = useLocalSearchParams<{ q?: string; f?: string; tab?: Tab }>();
   // A new ?q= / ?f= (e.g. filters applied on the Talent home) starts a fresh search.
-  return <TalentSearch key={`${params.q ?? ''}|${params.f ?? ''}|${params.tab ?? ''}`} initialQ={params.q ?? ''} initialFilters={parseFilters(params.f)} initialTab={params.tab === 'videos' ? 'videos' : 'profiles'} />;
+  return (
+    <TalentSearch
+      key={`${params.q ?? ''}|${params.f ?? ''}|${params.tab ?? ''}`}
+      initialQ={params.q ?? ''}
+      initialFilters={parseFilters(params.f)}
+      initialTab={params.tab === 'videos' ? 'videos' : 'profiles'}
+    />
+  );
 }
 
 function SaveButton({ id, label }: { id: string; label: string }) {
@@ -67,11 +74,27 @@ function ProfileCard({ t }: { t: Candidate }) {
   const { c } = useTheme();
   const ph = [c.avatar1, c.avatar2, c.avatar3, c.avatar4, c.avatar5][t.placeholder - 1];
   return (
-    <Pressable onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`} style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+    <Pressable
+      onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`}
+      style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
       <View style={{ height: 150, backgroundColor: ph }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
         {t.premium ? (
-          <View style={{ position: 'absolute', left: 8, top: 8, height: 24, paddingHorizontal: 8, borderRadius: 999, backgroundColor: c.labelOrangeBack, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <View
+            style={{
+              position: 'absolute',
+              left: 8,
+              top: 8,
+              height: 24,
+              paddingHorizontal: 8,
+              borderRadius: 999,
+              backgroundColor: c.labelOrangeBack,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+            }}>
             <Icon name="star" size={12} color="labelOrangeText" />
             <Text variant="caption" weight={700} color="labelOrangeText" style={{ fontSize: 11 }}>
               Premium
@@ -80,7 +103,19 @@ function ProfileCard({ t }: { t: Candidate }) {
         ) : null}
         <SaveButton id={t.id} label={`Save ${t.name}`} />
         {t.video ? (
-          <View style={{ position: 'absolute', left: 8, bottom: 8, height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: 'rgba(14,26,43,0.6)', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <View
+            style={{
+              position: 'absolute',
+              left: 8,
+              bottom: 8,
+              height: 22,
+              paddingHorizontal: 8,
+              borderRadius: 999,
+              backgroundColor: 'rgba(14,26,43,0.6)',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+            }}>
             <Icon name="play-filled" size={10} color="#FFFFFF" />
             <Text variant="caption" weight={600} color="#FFFFFF" style={{ fontSize: 11 }}>
               {t.video.duration}
@@ -334,19 +369,36 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
         ) : (
           // TalentSearchEmpty
           <View style={{ paddingHorizontal: 16 }}>
-            <EmptyBlock
-              icon="search"
-              title={`Nothing found for\n“${q.trim()}”`}
-              text={`No profiles or videos${where} match this search. Check the spelling, use fewer words or widen the location.`}>
-              {filters.city ? <LinkButton icon="location" label={`Search in all ${filters.country === 'United Arab Emirates' ? 'UAE' : (filters.country ?? 'countries')}`} onPress={() => setFilters({ ...filters, city: undefined })} /> : null}
+            <EmptyBlock icon="search" title={`Nothing found for\n“${q.trim()}”`} text={`No profiles or videos${where} match this search. Check the spelling, use fewer words or widen the location.`}>
+              {filters.city ? (
+                <LinkButton
+                  icon="location"
+                  label={`Search in all ${filters.country === 'United Arab Emirates' ? 'UAE' : (filters.country ?? 'countries')}`}
+                  onPress={() => setFilters({ ...filters, city: undefined })}
+                />
+              ) : null}
               <Button variant="secondary" size="l" icon="cancel" label="Clear search" onPress={() => setQ('')} />
             </EmptyBlock>
           </View>
         )}
       </ScrollView>
 
-      <TalentFiltersModal key={String(sheet === 'filters')} visible={sheet === 'filters'} value={filters} source={byQuery} onClose={() => setSheet(null)} onApply={(f) => (setFilters(f), setSheet(null))} />
-      <SelectSheet visible={sheet === 'sort'} title="Sort by" options={['Best match', 'Newest', 'Most viewed']} value={sort} onClose={() => setSheet(null)} onSelect={(v) => (setSort(v as Sort), setSheet(null))} />
+      <TalentFiltersModal
+        key={String(sheet === 'filters')}
+        visible={sheet === 'filters'}
+        value={filters}
+        source={byQuery}
+        onClose={() => setSheet(null)}
+        onApply={(f) => (setFilters(f), setSheet(null))}
+      />
+      <SelectSheet
+        visible={sheet === 'sort'}
+        title="Sort by"
+        options={['Best match', 'Newest', 'Most viewed']}
+        value={sort}
+        onClose={() => setSheet(null)}
+        onSelect={(v) => (setSort(v as Sort), setSheet(null))}
+      />
     </View>
   );
 }

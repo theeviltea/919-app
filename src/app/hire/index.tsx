@@ -19,7 +19,8 @@ const ROW = 10;
 /** One row per field, all seven (Hospitality, F&B, Events, Modeling, Music, Beauty, Service). */
 const profileRows = talentSphereOrder.map((k) => ({ key: k, title: talentSphereLabels[k], list: candidates.filter((x) => x.sphere === k) })).filter((r) => r.list.length);
 const videoRows = profileRows.map((r) => ({ ...r, list: r.list.filter((x) => x.video) })).filter((r) => r.list.length);
-const seeAll = (sphere: TalentSphere, tab?: 'videos') => router.push({ pathname: '/hire/search', params: { f: JSON.stringify({ ...emptyTalentFilters, spheres: [sphere] }), ...(tab ? { tab } : {}) } });
+const seeAll = (sphere: TalentSphere, tab?: 'videos') =>
+  router.push({ pathname: '/hire/search', params: { f: JSON.stringify({ ...emptyTalentFilters, spheres: [sphere] }), ...(tab ? { tab } : {}) } });
 
 /** Employer home — Find talent (TalentProfiles / TalentVideos): rows of candidates per field. */
 export default function TalentHome() {

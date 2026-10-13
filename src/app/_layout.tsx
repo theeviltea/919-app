@@ -11,6 +11,7 @@ import { EmployerProvider } from '@/data/employer';
 import { SessionProvider } from '@/data/session';
 import { SeekerProvider } from '@/data/seeker';
 import { SignupProvider } from '@/data/signup';
+import { PostGateProvider } from '@/features/post/gate';
 import { fontAssets, ThemeProvider, useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -20,7 +21,9 @@ function Root() {
   return (
     <ToastProvider>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.back } }} />
+      <PostGateProvider>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.back } }} />
+      </PostGateProvider>
     </ToastProvider>
   );
 }
