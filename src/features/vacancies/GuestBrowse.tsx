@@ -10,6 +10,7 @@ import type { Sphere, Talent } from '@/data/types';
 import { GuestAuthSheet } from '@/features/talent/GuestAuth';
 import { TalentCard } from '@/features/talent/TalentCard';
 
+import { JoinBanner } from './JoinBanner';
 import { SaveButton } from './SaveButton';
 import { VacancyListCard } from './VacancyListCard';
 
@@ -67,6 +68,11 @@ export function GuestBrowse({ tab: tabProp, onTab, query = '', onClearQuery, see
               onTab(t);
             }}
           />
+        </View>
+      )}
+      {seeker ? null : (
+        <View style={{ paddingHorizontal: 20 }}>
+          <JoinBanner key={tab} role={tab === 'talent' ? 'employer' : 'seeker'} />
         </View>
       )}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
