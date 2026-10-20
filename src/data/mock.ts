@@ -280,6 +280,8 @@ const seeds: Seed[] = [
   ['DJ, beach festival', 'Soundstorm', 'music', 'one-time', 9000, 'dj3', ['band']],
   ['Image model, hotel campaign', 'Five Hotels', 'modeling', 'one-time', 4000, 'model'],
   ['Event crew, desert camp', 'Platinum Heritage', 'events', 'weekly', 2800, 'madinat'],
+  ['Waiter, fine dining', 'Skyline Hospitality', 'fnb', 'monthly', 9000, 'hostess4'],
+  ['Bartender, beach club', 'Skyline Hospitality', 'fnb', 'monthly', 8500, 'barista'],
 ];
 const cities: [string, string][] = [
   ['Dubai', 'United Arab Emirates'],
@@ -325,7 +327,7 @@ const generated: Vacancy[] = seeds.map(([title, company, sphere, contract, amoun
 });
 
 export const allVacancies: Vacancy[] = [...vacancies, ...generated];
-/** Public feed: 9 hand-made + 41 generated = 50 vacancies. */
+/** Public feed: 9 hand-made + 43 generated = 52 vacancies. */
 export const feedVacancies = [...vacancies.slice(0, 9), ...generated];
 
 export const talents: Talent[] = [
