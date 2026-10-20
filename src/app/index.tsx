@@ -23,7 +23,7 @@ export default function Splash() {
         entering={ZoomIn.duration(600)
           .delay(150)
           .easing(Easing.out(Easing.back(1.6)))}
-        style={{ backgroundColor: '#3F94FF', paddingHorizontal: 8 }}>
+       >
         <Logo height={100} />
       </Animated.View>
       <Animated.View entering={FadeInDown.duration(500).delay(550)} style={{ position: 'absolute', bottom: insets.bottom + 48 }}>
