@@ -21,7 +21,20 @@ export function LogoTile({ info, size, onPress }: { info: Pick<CompanyInfo, 'nam
         )}
       </View>
       {onPress ? (
-        <View style={{ position: 'absolute', right: -6, bottom: -6, width: 36, height: 36, borderRadius: 18, borderWidth: 3, borderColor: c.surface, backgroundColor: c.input, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{
+            position: 'absolute',
+            right: -6,
+            bottom: -6,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            borderWidth: 3,
+            borderColor: c.surface,
+            backgroundColor: c.input,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Icon name="camera" size={16} color="textBody" />
         </View>
       ) : null}

@@ -4,15 +4,15 @@ import { useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BackButton, BottomSheet, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text, useToast } from '@/components';
+import { BackButton, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text } from '@/components';
 import { contractTypes, formatAmount } from '@/data/dictionaries';
 import { initialsOf, useEmployer } from '@/data/employer';
-import { asPublicVacancy, candidateOf } from '@/data/hiring';
+import { candidateOf } from '@/data/hiring';
 import { useSoon } from '@/features/hire/ui';
+import { useVacancyActions } from '@/features/hire/VacancyActions';
 import { Pager } from '@/features/media/Pager';
 import { openPhotos } from '@/features/media/viewer';
 import { DetailRow, Meta, Section } from '@/features/vacancies/detail';
-import { ShareSheet } from '@/features/vacancies/ShareSheet';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
 import { useTheme } from '@/theme';
 
@@ -22,12 +22,11 @@ export default function MyVacancyScreen() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const toast = useToast();
   const soon = useSoon();
-  const { vacancies, applicants, info, removeVacancy } = useEmployer();
+  const { vacancies, applicants, info } = useEmployer();
   const [page, setPage] = useState(0);
   const [more, setMore] = useState(false);
-  const [sheet, setSheet] = useState<'share' | 'delete' | null>(null);
+  const actions = useVacancyActions({ onDeleted: () => router.back() });
   const w = Math.min(width, 640);
   const v = vacancies.find((x) => x.id === id);
   const d = v?.detail;
@@ -70,9 +69,9 @@ export default function MyVacancyScreen() {
           <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 12, flexDirection: 'row', gap: 8 }}>
             <BackButton tone="onPhoto" />
             <View style={{ flex: 1 }} />
-            <IconButton tone="onPhoto" icon="share" label="Share" onPress={() => setSheet('share')} />
+            <IconButton tone="onPhoto" icon="share" label="Share" onPress={() => actions.open(v.id, 'share')} />
             <IconButton tone="onPhoto" icon="edit" label="Edit vacancy" onPress={() => soon('Vacancy editing')} />
-            <IconButton tone="onPhoto" icon="trash" color={c.dangerText} label="Delete vacancy" onPress={() => setSheet('delete')} />
+            <IconButton tone="onPhoto" icon="trash" color={c.dangerText} label="Delete vacancy" onPress={() => actions.open(v.id, 'delete')} />
           </View>
           <View style={{ position: 'absolute', right: 16, bottom: 52, height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.mediaOverlay, justifyContent: 'center' }}>
             <Text variant="caption" weight={600} color="#FFFFFF">
@@ -149,7 +148,7 @@ export default function MyVacancyScreen() {
           {/* Owner state */}
           {live && !urgent ? (
             <Pressable
-              onPress={() => soon('Urgent hiring')}
+              onPress={() => actions.open(v.id, 'urgent')}
               accessibilityRole="button"
               accessibilityLabel="Make it urgent for $2.99"
               style={{ backgroundColor: c.surface, borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -415,36 +414,7 @@ export default function MyVacancyScreen() {
         </View>
       ) : null}
 
-      <ShareSheet v={asPublicVacancy(v, d, company)} visible={sheet === 'share'} onClose={() => setSheet(null)} />
-      <BottomSheet visible={sheet === 'delete'} onClose={() => setSheet(null)}>
-        <View style={{ alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: c.dangerBack, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="trash" size={28} color="dangerText" />
-          </View>
-          <Text variant="title" align="center">
-            Delete this vacancy?
-          </Text>
-          <Text variant="body" color="textBody" align="center" style={{ fontSize: 14, lineHeight: 21 }}>
-            “{v.title}” disappears from the feed and search{list.length ? `, and its ${list.length} applicants get a notice that it’s closed` : ''}. This can’t be undone.
-          </Text>
-        </View>
-        <Button
-          size="l"
-          variant="danger"
-          label="Delete vacancy"
-          onPress={() => {
-            setSheet(null);
-            router.back();
-            removeVacancy(v.id);
-            toast({ text: 'Vacancy deleted', kind: 'neutral', icon: 'trash' });
-          }}
-        />
-        <Pressable onPress={() => setSheet(null)} accessibilityRole="button" style={{ alignSelf: 'center', paddingVertical: 8 }}>
-          <Text variant="body" weight={700} color="textBody">
-            Cancel
-          </Text>
-        </Pressable>
-      </BottomSheet>
+      {actions.sheets}
     </View>
   );
 }

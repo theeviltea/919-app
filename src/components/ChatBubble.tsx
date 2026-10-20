@@ -90,14 +90,34 @@ export function ChatBubble({ mine, text, time, quote, attachment }: Props) {
 }
 
 /** Centered system line: "You accepted the request". */
-export function ChatSystemLine({ text, time, tone = 'success', icon }: { text: string; time?: string; tone?: 'success' | 'danger'; icon?: IconName }) {
+export function ChatSystemLine({ text, time, tone = 'success', icon }: { text: string; time?: string; tone?: 'success' | 'danger' | 'info'; icon?: IconName }) {
   const { c } = useTheme();
   return (
-    <View style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 16, backgroundColor: c.surface, boxShadow: '0 1px 2px rgba(14,26,43,0.06)' }}>
-      <View style={{ width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: tone === 'success' ? c.successBack : c.dangerBack }}>
-        <Icon name={icon ?? (tone === 'success' ? 'check' : 'cancel')} size={14} color={tone === 'success' ? 'successText' : 'dangerText'} />
+    <View
+      style={{
+        alignSelf: 'center',
+        maxWidth: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 16,
+        backgroundColor: c.surface,
+        boxShadow: '0 1px 2px rgba(14,26,43,0.06)',
+      }}>
+      <View
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: tone === 'success' ? c.successBack : tone === 'info' ? c.primarySecondary : c.dangerBack,
+        }}>
+        <Icon name={icon ?? (tone === 'success' ? 'check' : tone === 'info' ? 'user' : 'cancel')} size={14} color={tone === 'success' ? 'successText' : tone === 'info' ? 'link' : 'dangerText'} />
       </View>
-      <Text variant="body" weight={600} style={{ fontSize: 14 }}>
+      <Text variant="body" weight={600} style={{ fontSize: 14, flexShrink: 1 }}>
         {text}
       </Text>
       {time ? (

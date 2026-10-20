@@ -1,8 +1,10 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 
+import { initialChats, withId, type EmpMsg, type NewEmpMsg } from './empChat';
 import { initialApplicants, initialDetails, type Applicant, type ApplicantStatus, type VacancyDetail } from './hiring';
 import { mockImg as img, personPhoto as p } from './mock';
+import { findCandidate } from './talentPool';
 
 // Employer-side mock for the prototype (demo account: Emanuel Brooks, Skyline Hospitality). Mirrors the canvas
 // screens TalentProfiles / TalentVideos / EmpHiring / EmpHiringSaved / EmpMessages* / Company*. Replaced by the API later.
@@ -145,12 +147,21 @@ export type EmpThread = {
   unread: number;
   box: 'active' | 'inactive' | 'archive';
   reason?: 'Declined' | 'Blocked';
+  /** Pool candidate behind the chat (profile card, photo). */
+  candidateId?: string;
+  /** Messages per context: 'direct' or a vacancy id (EmpChat / EmpChatDirect). */
+  chats?: Record<string, EmpMsg[]>;
+  /** Blocked by you (EmpChatBlocked) or the candidate deleted the account (EmpChatDeleted). */
+  state?: 'blocked' | 'deleted';
+  /** Direct contact request from Talent (EmpChatRequestPending / Accepted). */
+  request?: 'pending' | 'accepted';
 };
 
 /** EmpMessages / Inactive / Archive. */
-export const initialEmpThreads: EmpThread[] = [
+const rawThreads: EmpThread[] = [
   {
     id: 'e1',
+    candidateId: 'c2',
     name: 'Angela R.',
     photo: p(12),
     online: true,
@@ -161,17 +172,67 @@ export const initialEmpThreads: EmpThread[] = [
     unread: 2,
     box: 'active',
   },
-  { id: 'e2', name: 'Ibrahim K.', photo: p(10), time: '12:08', direct: true, last: 'Video presentation', lastIcon: 'video', unread: 1, box: 'active' },
-  { id: 'e3', name: 'Elena Sokolova', photo: p(1), time: '10:41', vacancies: ['Promo model, car launch'], last: 'Thank you! See you on Monday at Expo City', mine: true, unread: 0, box: 'active' },
-  { id: 'e4', name: 'Sveta V.', photo: p(13), online: true, time: 'Yesterday', vacancies: ['Hostess, rooftop lounge'], last: 'What is the dress code?', unread: 0, box: 'active' },
-  { id: 'e5', name: 'Lucas M.', photo: p(14), time: 'Mon', vacancies: ['DJ for a boat party'], direct: true, last: 'Great, I will send the contract tonight', mine: true, unread: 0, box: 'active' },
+  { id: 'e2', candidateId: 'c1', name: 'Ibrahim K.', photo: p(10), time: '12:08', direct: true, last: 'Video presentation', lastIcon: 'video', unread: 1, box: 'active' },
+  {
+    id: 'e3',
+    candidateId: 'c3',
+    name: 'Elena Sokolova',
+    photo: p(1),
+    time: '10:41',
+    vacancies: ['Promo model, car launch'],
+    last: 'Thank you! See you on Monday at Expo City',
+    mine: true,
+    unread: 0,
+    box: 'active',
+  },
+  { id: 'e4', candidateId: 'c25', name: 'Sveta V.', photo: p(13), online: true, time: 'Yesterday', vacancies: ['Hostess, rooftop lounge'], last: 'What is the dress code?', unread: 0, box: 'active' },
+  {
+    id: 'e5',
+    candidateId: 'c13',
+    name: 'Lucas M.',
+    photo: p(14),
+    time: 'Mon',
+    vacancies: ['DJ for a boat party'],
+    direct: true,
+    last: 'Great, I will send the contract tonight',
+    mine: true,
+    unread: 0,
+    box: 'active',
+  },
   { id: 'e6', name: 'Nour A.', photo: p(6), time: 'Sun', vacancies: ['Hostess, rooftop lounge'], last: 'Hello! Is the vacancy still open?', unread: 0, box: 'active' },
-  { id: 'e7', name: 'Daria P.', photo: p(8), time: 'Tue', subtitle: 'Hostess · Dubai', last: '', unread: 0, box: 'inactive', reason: 'Declined' },
-  { id: 'e8', name: 'Omar H.', photo: p(5), time: '2 Oct', subtitle: 'Bartender · Dubai', last: '', unread: 0, box: 'inactive', reason: 'Blocked' },
-  { id: 'e9', name: 'Mira K.', photo: p(4), time: '28 Sep', subtitle: 'Hostess · Dubai', last: 'Thanks, good luck with the event!', unread: 0, box: 'archive' },
-  { id: 'e10', name: 'Akmed V.', photo: p(9), time: '21 Sep', subtitle: 'Waiter · Dubai', last: 'The position is filled, thank you', mine: true, unread: 0, box: 'archive' },
-  { id: 'e11', name: 'Kira L.', photo: p(3), time: '12 Sep', subtitle: 'Promo model · Dubai', last: 'See you next time 🙂', unread: 0, box: 'archive' },
+  {
+    id: 'e12',
+    candidateId: 'c30',
+    name: 'Mia D.',
+    photo: p(1),
+    online: true,
+    time: '17:41',
+    direct: true,
+    request: 'accepted',
+    last: 'Hi! Yes, I’m interested. What are the hours?',
+    unread: 1,
+    box: 'active',
+  },
+  { id: 'e7', candidateId: 'c38', name: 'Daria P.', photo: p(8), time: 'Tue', subtitle: 'Hostess · Dubai', last: '', unread: 0, box: 'inactive', reason: 'Declined' },
+  { id: 'e8', candidateId: 'c23', name: 'Omar H.', photo: p(5), time: '2 Oct', subtitle: 'Illusionist · Abu Dhabi', last: '', unread: 0, box: 'inactive', reason: 'Blocked', state: 'blocked' },
+  {
+    id: 'e9',
+    candidateId: 'c10',
+    name: 'Mira K.',
+    photo: p(4),
+    time: '28 Sep',
+    subtitle: 'Hostess · Dubai',
+    last: 'Hi! Yes, I can do Saturday. What time?',
+    unread: 0,
+    box: 'archive',
+    state: 'deleted',
+    vacancies: ['Hostess, yacht show'],
+  },
+  { id: 'e10', candidateId: 'c5', name: 'Akmed V.', photo: p(9), time: '21 Sep', subtitle: 'Waiter · Dubai', last: 'The position is filled, thank you', mine: true, unread: 0, box: 'archive' },
+  { id: 'e11', candidateId: 'c16', name: 'Kira L.', photo: p(3), time: '12 Sep', subtitle: 'Promo model · Dubai', last: 'See you next time 🙂', unread: 0, box: 'archive' },
 ];
+/** EmpMessages: pool photos and seeded conversations. */
+export const initialEmpThreads: EmpThread[] = rawThreads.map((t) => ({ ...t, photo: t.candidateId ? (findCandidate(t.candidateId)?.photo ?? t.photo) : t.photo, chats: initialChats[t.id] }));
 
 export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver';
 export type EmpNotif = {
@@ -401,6 +462,14 @@ type Store = {
   deleteThread: (id: string) => void;
   /** Direct contact request from a candidate profile (EmpContactSheet → EmpMessagesRequest). */
   addThread: (t: EmpThread) => void;
+  updateThread: (id: string, fn: (t: EmpThread) => Partial<EmpThread>) => void;
+  /** Append a message to one context of a chat. */
+  sendChat: (threadId: string, ctx: string, msg: NewEmpMsg) => void;
+  /** Accept / decline an applicant: updates the applicants list and the candidate's chat. */
+  acceptApplicant: (vacancyId: string, candidateId: string) => string;
+  declineApplicant: (vacancyId: string, candidateId: string) => void;
+  /** Direct contact request from a profile (EmpContactSheet → EmpChatRequestPending; the demo candidate accepts a bit later). */
+  requestContact: (candidateId: string, text: string) => string;
   vacancies: MyVacancy[];
   /** New vacancy from the posting flow: lands On review, the demo moderation approves it a bit later. */
   addVacancy: (v: MyVacancy) => void;
@@ -436,6 +505,25 @@ type Store = {
 
 /** How long the demo moderation takes for a new vacancy. */
 const MODERATION_MS = 20_000;
+
+const clock = () => {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
+const preview = (msg: NewEmpMsg) =>
+  msg.kind === 'text'
+    ? msg.text
+    : msg.kind === 'photos'
+      ? 'Photo'
+      : msg.kind === 'vacancy'
+        ? 'Vacancy'
+        : msg.kind === 'location'
+          ? 'Location'
+          : msg.kind === 'contact'
+            ? 'Contact'
+            : msg.kind === 'event'
+              ? msg.text
+              : '';
 
 const Ctx = createContext<Store | null>(null);
 
@@ -503,6 +591,126 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       freshTotal: vacancies.filter((v) => v.status === 'active').reduce((n, v) => n + (applicants[v.id] ?? []).filter((x) => x.status === 'new').length, 0),
       addNotif: (n) => setNotifs((ns) => [n, ...ns]),
       addThread: (t) => setThreads((ts) => [t, ...ts.filter((x) => x.id !== t.id)]),
+      updateThread: (id, fn) => setThreads((ts) => ts.map((t) => (t.id === id ? { ...t, ...fn(t) } : t))),
+      sendChat: (threadId, ctx, msg) =>
+        setThreads((ts) =>
+          ts.map((t) => {
+            if (t.id !== threadId) return t;
+            const chats = { ...(t.chats ?? {}), [ctx]: [...(t.chats?.[ctx] ?? []), withId(msg)] };
+            const text = preview(msg);
+            const mine = 'mine' in msg ? msg.mine : true;
+            return text ? { ...t, chats, last: text, lastIcon: undefined, mine, time: 'now', box: t.box === 'archive' ? 'active' : t.box, unread: mine ? 0 : t.unread + 1 } : { ...t, chats };
+          }),
+        ),
+      acceptApplicant: (vid, cid) => {
+        setApplicants((all) => ({ ...all, [vid]: (all[vid] ?? []).map((x) => (x.candidateId === cid ? { ...x, status: 'accepted' } : x)) }));
+        const cand = findCandidate(cid)!;
+        const title = vacancies.find((v) => v.id === vid)?.title ?? 'Vacancy';
+        const existing = threads.find((t) => t.candidateId === cid);
+        const accepted = withId({ kind: 'event', tone: 'success', text: 'You accepted the application', time: clock() });
+        if (existing) {
+          setThreads((ts) =>
+            ts.map((t) =>
+              t.id === existing.id
+                ? {
+                    ...t,
+                    vacancies: t.vacancies?.includes(title) ? t.vacancies : [...(t.vacancies ?? []), title],
+                    chats: { ...(t.chats ?? {}), [vid]: [...(t.chats?.[vid] ?? []), accepted] },
+                    box: 'active',
+                    reason: undefined,
+                  }
+                : t,
+            ),
+          );
+          return existing.id;
+        }
+        const id = `t-${cid}`;
+        const first = cand.name.split(' ')[0];
+        setThreads((ts) => [
+          {
+            id,
+            candidateId: cid,
+            name: cand.name,
+            photo: cand.photo,
+            time: 'now',
+            vacancies: [title],
+            last: 'You accepted the application',
+            mine: true,
+            unread: 0,
+            box: 'active',
+            chats: { [vid]: [withId({ kind: 'date', label: 'Today' }), withId({ kind: 'event', tone: 'info', text: `${first} applied to your vacancy`, time: clock() }), accepted] },
+          },
+          ...ts,
+        ]);
+        return id;
+      },
+      declineApplicant: (vid, cid) => {
+        setApplicants((all) => ({ ...all, [vid]: (all[vid] ?? []).map((x) => (x.candidateId === cid ? { ...x, status: 'declined', declinedNote: 'Declined just now' } : x)) }));
+      },
+      requestContact: (cid, text) => {
+        const cand = findCandidate(cid)!;
+        const first = cand.name.split(' ')[0];
+        const existing = threads.find((t) => t.candidateId === cid);
+        const id = existing?.id ?? `req-${cid}`;
+        const body = text.trim() || `Hi ${first}! We’d like to talk about working together.`;
+        const sent = [
+          withId({ kind: 'date', label: 'Today' }),
+          withId({ kind: 'event', tone: 'info', icon: 'message', text: 'You sent a contact request', time: clock() }),
+          withId({ kind: 'text', mine: true, text: body, time: clock() }),
+        ];
+        if (existing) {
+          setThreads((ts) =>
+            ts.map((t) => (t.id === id ? { ...t, direct: true, chats: { ...(t.chats ?? {}), direct: [...(t.chats?.direct ?? []), ...sent] }, last: body, mine: true, time: 'now' } : t)),
+          );
+          return id;
+        }
+        setThreads((ts) => [
+          { id, candidateId: cid, name: cand.name, photo: cand.photo, time: 'now', direct: true, request: 'pending', last: body, mine: true, unread: 0, box: 'active', chats: { direct: sent } },
+          ...ts,
+        ]);
+        // Demo: the candidate accepts a little later.
+        setTimeout(() => {
+          setThreads((ts) =>
+            ts.map((t) =>
+              t.id === id && t.request === 'pending'
+                ? {
+                    ...t,
+                    request: 'accepted',
+                    online: true,
+                    last: 'Hi! Yes, I’m interested. What are the hours?',
+                    mine: false,
+                    unread: 1,
+                    time: clock(),
+                    chats: {
+                      ...(t.chats ?? {}),
+                      direct: [
+                        ...(t.chats?.direct ?? []),
+                        withId({ kind: 'event', tone: 'success', text: `${first} accepted your request`, time: clock() }),
+                        withId({ kind: 'text', mine: false, text: 'Hi! Yes, I’m interested. What are the hours?', time: clock() }),
+                      ],
+                    },
+                  }
+                : t,
+            ),
+          );
+          setNotifs((ns) => [
+            {
+              id: `nreq-${cid}-${Date.now()}`,
+              kind: 'accepted',
+              group: 'messages',
+              title: `${cand.name} accepted your contact request`,
+              text: 'Direct chat is open — you can write now',
+              time: 'now',
+              day: 'today',
+              unread: true,
+              photo: cand.photo,
+              action: 'Open chat',
+            },
+            ...ns,
+          ]);
+        }, 20_000);
+        return id;
+      },
       unreadTotal: threads.filter((t) => t.box === 'active').reduce((n, t) => n + t.unread, 0),
       joinRequests,
       resolveJoin: (id) => setJoin((js) => js.filter((j) => j.id !== id)),

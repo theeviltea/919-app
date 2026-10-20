@@ -7,7 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton, Button, EmptyState, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast, type IconName } from '@/components';
 import { initialsOf, useEmployer, type MyVacancy } from '@/data/employer';
 import { applicantLine, asPublicVacancy, candidateOf, type Applicant, type ApplicantStatus } from '@/data/hiring';
-import { Pill, useSoon } from '@/features/hire/ui';
+import { Pill } from '@/features/hire/ui';
+import { useVacancyActions } from '@/features/hire/VacancyActions';
 import { ShareSheet } from '@/features/vacancies/ShareSheet';
 import { useTheme } from '@/theme';
 
@@ -41,8 +42,8 @@ function ApplicantsOf({ v, initialTab }: { v: MyVacancy; initialTab?: ApplicantS
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const soon = useSoon();
-  const { applicants, setApplicant, addThread, threads } = useEmployer();
+  const { applicants, setApplicant, acceptApplicant, declineApplicant, threads } = useEmployer();
+  const actions = useVacancyActions({ onDeleted: () => router.navigate('/hire/vacancies') });
   const [tab, setTab] = useState<ApplicantStatus>(initialTab ?? 'new');
   const [newestFirst, setNewestFirst] = useState(true);
   const all = applicants[v.id] ?? [];
@@ -52,15 +53,12 @@ function ApplicantsOf({ v, initialTab }: { v: MyVacancy; initialTab?: ApplicantS
 
   const accept = (x: Applicant) => {
     const cand = candidateOf(x);
-    setApplicant(v.id, x.candidateId, 'accepted');
     // Accepting opens a chat in the vacancy's context (EmpChatNew).
-    if (!threads.some((t) => t.name === cand.name)) {
-      addThread({ id: `a-${v.id}-${cand.id}`, name: cand.name, photo: cand.photo, time: 'now', vacancies: [v.title], last: 'You accepted the application', mine: true, unread: 0, box: 'active' });
-    }
+    acceptApplicant(v.id, x.candidateId);
     toast({ text: `${cand.name} accepted · chat is open`, icon: 'check', aboveTabBar: true });
   };
   const decline = (x: Applicant) => {
-    setApplicant(v.id, x.candidateId, 'declined');
+    declineApplicant(v.id, x.candidateId);
     toast({ text: `${candidateOf(x).name} declined · they’ll get a polite notice`, kind: 'neutral', icon: 'cancel', aboveTabBar: true });
   };
   const backToNew = (x: Applicant) => {
@@ -86,7 +84,7 @@ function ApplicantsOf({ v, initialTab }: { v: MyVacancy; initialTab?: ApplicantS
           </View>
         </Pressable>
         <Pressable
-          onPress={() => soon('Vacancy actions')}
+          onPress={() => actions.open(v.id)}
           accessibilityRole="button"
           accessibilityLabel="Vacancy actions"
           style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: c.input, alignItems: 'center', justifyContent: 'center' }}>
@@ -139,7 +137,11 @@ function ApplicantsOf({ v, initialTab }: { v: MyVacancy; initialTab?: ApplicantS
               onAccept={() => accept(x)}
               onDecline={() => decline(x)}
               onBack={() => backToNew(x)}
-              onMessage={() => soon('Chat with the candidate')}
+              onMessage={() => {
+                const t = threads.find((th) => th.candidateId === x.candidateId);
+                const id = t?.id ?? acceptApplicant(v.id, x.candidateId);
+                router.push({ pathname: '/hire-chat/[id]', params: { id, ctx: v.id } });
+              }}
             />
           ))}
 
@@ -159,6 +161,7 @@ function ApplicantsOf({ v, initialTab }: { v: MyVacancy; initialTab?: ApplicantS
           ) : null}
         </>
       )}
+      {actions.sheets}
     </ScrollView>
   );
 }

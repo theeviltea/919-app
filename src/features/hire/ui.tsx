@@ -49,7 +49,21 @@ export function PageTitle({ title, action }: { title: string; action?: { icon: I
 }
 
 /** Small pill chip (status / context), 22–26 px. */
-export function Pill({ label, icon, bg, fg, h = 22, shrink }: { label: string; icon?: IconName; bg: string; fg: string; h?: number; /** Long text (a vacancy title) gives way first. */ shrink?: boolean }) {
+export function Pill({
+  label,
+  icon,
+  bg,
+  fg,
+  h = 22,
+  shrink,
+}: {
+  label: string;
+  icon?: IconName;
+  bg: string;
+  fg: string;
+  h?: number;
+  /** Long text (a vacancy title) gives way first. */ shrink?: boolean;
+}) {
   return (
     <View style={{ flexShrink: shrink ? 1 : 0, minWidth: 0, height: h, paddingHorizontal: 8, borderRadius: 999, backgroundColor: bg, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {icon ? <Icon name={icon} size={13} color={fg} /> : null}
@@ -98,11 +112,17 @@ export function TalentTileCard({ t, onPress }: { t: TalentTile; onPress: () => v
   const { c } = useTheme();
   const ph = usePh();
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`} style={{ width: 128, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`}
+      style={{ width: 128, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
       <View style={{ height: 128, backgroundColor: ph(t.placeholder) }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
         {t.premium ? (
-          <View accessibilityLabel="Premium" style={{ position: 'absolute', left: 8, top: 8, width: 26, height: 26, borderRadius: 13, backgroundColor: c.labelOrangeBack, alignItems: 'center', justifyContent: 'center' }}>
+          <View
+            accessibilityLabel="Premium"
+            style={{ position: 'absolute', left: 8, top: 8, width: 26, height: 26, borderRadius: 13, backgroundColor: c.labelOrangeBack, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="star" size={14} color="labelOrangeText" />
           </View>
         ) : null}
@@ -122,7 +142,11 @@ export function TalentTileCard({ t, onPress }: { t: TalentTile; onPress: () => v
 /** 138 × 230 video presentation tile (TalentVideos). */
 export function VideoTileCard({ v, onPress }: { v: VideoTile; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`Video presentation, ${v.name}, ${v.duration}`} style={{ width: 138, height: 230, borderRadius: 20, overflow: 'hidden', backgroundColor: v.tint }}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Video presentation, ${v.name}, ${v.duration}`}
+      style={{ width: 138, height: 230, borderRadius: 20, overflow: 'hidden', backgroundColor: v.tint }}>
       <Image source={v.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} transition={150} />
       <View style={{ position: 'absolute', left: 10, top: 10, height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: 'rgba(14,26,43,0.6)', justifyContent: 'center' }}>
         <Text variant="caption" weight={600} color="#FFFFFF" style={{ fontSize: 11 }}>
@@ -154,4 +178,16 @@ export function VideoTileCard({ v, onPress }: { v: VideoTile; onPress: () => voi
 export function Section({ children, style }: { children: ReactNode; style?: object }) {
   const { c } = useTheme();
   return <View style={[{ backgroundColor: c.surface, borderRadius: 24, padding: 18, gap: 12 }, style]}>{children}</View>;
+}
+
+/** Round radio mark: filled check when on. */
+export function Radio({ on }: { on: boolean }) {
+  const { c } = useTheme();
+  return on ? (
+    <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name="check" size={14} color="ctaButtonText" />
+    </View>
+  ) : (
+    <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: c.control }} />
+  );
 }

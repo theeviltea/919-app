@@ -8,6 +8,7 @@ import { Chip, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/com
 import { hireStats, savedLabels, useEmployer, type HireStatus, type MyVacancy } from '@/data/employer';
 import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '@/data/talentPool';
 import { PageTitle, Pill, useSoon } from '@/features/hire/ui';
+import { useVacancyActions } from '@/features/hire/VacancyActions';
 import { useTheme } from '@/theme';
 
 type Tab = 'mine' | 'saved';
@@ -45,9 +46,8 @@ function Faces({ faces }: { faces: MyVacancy['faces'] }) {
 }
 
 /** Vacancy card in the hub (EmpHiring / EmpHiringModeration): status, days bar for active, moderation result, applicants, relaunch for archive. */
-function VacancyCard({ v }: { v: MyVacancy }) {
+function VacancyCard({ v, onActions }: { v: MyVacancy; onActions: (sheet?: 'menu' | 'relaunch') => void }) {
   const { c } = useTheme();
-  const soon = useSoon();
   const { applicants } = useEmployer();
   const archived = v.status === 'archive';
   const list = applicants[v.id] ?? [];
@@ -70,7 +70,7 @@ function VacancyCard({ v }: { v: MyVacancy }) {
           </View>
         </Pressable>
         <Pressable
-          onPress={() => soon('Vacancy actions')}
+          onPress={() => onActions()}
           accessibilityRole="button"
           accessibilityLabel="Vacancy actions"
           style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: c.input, alignItems: 'center', justifyContent: 'center' }}>
@@ -164,7 +164,7 @@ function VacancyCard({ v }: { v: MyVacancy }) {
 
       {archived ? (
         <Pressable
-          onPress={() => soon('Relaunch')}
+          onPress={() => onActions('relaunch')}
           accessibilityRole="button"
           style={{ height: 44, borderRadius: 14, backgroundColor: c.primarySecondary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
           <Icon name="flash" size={18} color="link" />
@@ -236,6 +236,7 @@ export default function HireVacancies() {
   const [filter, setFilter] = useState<Filter>('all');
   const [savedFilter, setSavedFilter] = useState<SavedFilter>('all');
   const { vacancies: myVacancies, freshTotal } = useEmployer();
+  const actions = useVacancyActions();
   const count = (s: HireStatus) => myVacancies.filter((v) => v.status === s).length;
   const list = myVacancies.filter((v) => filter === 'all' || v.status === filter);
   const { savedIds } = useEmployer();
@@ -273,8 +274,16 @@ export default function HireVacancies() {
             <Chip label={`On review ${count('review')}`} selected={filter === 'review'} onPress={() => setFilter('review')} />
             <Chip label={`Archive ${count('archive')}`} selected={filter === 'archive'} onPress={() => setFilter('archive')} />
           </ScrollView>
+          {filter === 'archive' ? (
+            <View style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: 16, backgroundColor: c.primarySecondary }}>
+              <Icon name="clock" size={18} color="link" />
+              <Text variant="bodyS" color="link" style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>
+                Vacancies stay live for 7 days, then move here automatically. Relaunch one to publish it again for 7 days — applicants and chats stay.
+              </Text>
+            </View>
+          ) : null}
           {list.map((v) => (
-            <VacancyCard key={v.id} v={v} />
+            <VacancyCard key={v.id} v={v} onActions={(sh) => actions.open(v.id, sh)} />
           ))}
         </>
       ) : (
@@ -294,6 +303,7 @@ export default function HireVacancies() {
           ))}
         </>
       )}
+      {actions.sheets}
     </ScrollView>
   );
 }

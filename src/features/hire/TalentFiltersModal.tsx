@@ -62,7 +62,9 @@ function Body({ value, source, onClose, onApply }: Props) {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.back }}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: 24, gap: 12, width: '100%', maxWidth: 600, alignSelf: 'center' }}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: 24, gap: 12, width: '100%', maxWidth: 600, alignSelf: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
           <IconButton icon="cancel" label="Close filters" onPress={onClose} />
           <Text variant="displayL" accessibilityRole="header" style={{ flex: 1, fontSize: 24, lineHeight: 30 }}>
@@ -112,10 +114,26 @@ function Body({ value, source, onClose, onApply }: Props) {
           <Label>Age</Label>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <View style={{ flex: 1 }}>
-              <Field onSurface label="From" value={f.ageFrom ?? ''} onChangeText={(v) => set({ ageFrom: v.replace(/\D/g, '').slice(0, 2) || undefined })} placeholder="18" keyboardType="number-pad" inputMode="numeric" />
+              <Field
+                onSurface
+                label="From"
+                value={f.ageFrom ?? ''}
+                onChangeText={(v) => set({ ageFrom: v.replace(/\D/g, '').slice(0, 2) || undefined })}
+                placeholder="18"
+                keyboardType="number-pad"
+                inputMode="numeric"
+              />
             </View>
             <View style={{ flex: 1 }}>
-              <Field onSurface label="To" value={f.ageTo ?? ''} onChangeText={(v) => set({ ageTo: v.replace(/\D/g, '').slice(0, 2) || undefined })} placeholder="Any" keyboardType="number-pad" inputMode="numeric" />
+              <Field
+                onSurface
+                label="To"
+                value={f.ageTo ?? ''}
+                onChangeText={(v) => set({ ageTo: v.replace(/\D/g, '').slice(0, 2) || undefined })}
+                placeholder="Any"
+                keyboardType="number-pad"
+                inputMode="numeric"
+              />
             </View>
           </View>
         </Card>
@@ -155,7 +173,18 @@ function Body({ value, source, onClose, onApply }: Props) {
         </Card>
       </ScrollView>
 
-      <View style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: Math.max(insets.bottom, 14) + 6, backgroundColor: c.surfacePanel, borderTopWidth: 1, borderColor: c.divider, backdropFilter: 'blur(12px)' } as object}>
+      <View
+        style={
+          {
+            paddingHorizontal: 16,
+            paddingTop: 14,
+            paddingBottom: Math.max(insets.bottom, 14) + 6,
+            backgroundColor: c.surfacePanel,
+            borderTopWidth: 1,
+            borderColor: c.divider,
+            backdropFilter: 'blur(12px)',
+          } as object
+        }>
         <View style={{ width: '100%', maxWidth: 568, alignSelf: 'center' }}>
           <Button size="l" label={n ? `Show ${n} profile${n === 1 ? '' : 's'}` : 'Nothing found'} disabled={!n} onPress={() => onApply(f)} />
         </View>
@@ -165,11 +194,7 @@ function Body({ value, source, onClose, onApply }: Props) {
         visible={sheet === 'country'}
         title="Country"
         searchPlaceholder="Search country"
-        sections={[
-          { items: ['Any country'] },
-          { title: 'POPULAR', items: popularCountryNames },
-          { title: 'ALL COUNTRIES', items: allCountries.filter((x) => !popularCountryNames.includes(x)) },
-        ]}
+        sections={[{ items: ['Any country'] }, { title: 'POPULAR', items: popularCountryNames }, { title: 'ALL COUNTRIES', items: allCountries.filter((x) => !popularCountryNames.includes(x)) }]}
         badge={(x) => (x === 'Any country' ? undefined : (countryCode[x] ?? x.slice(0, 2).toUpperCase()))}
         meta={(x) => String(x === 'Any country' ? countIn({}) : countIn({ country: x }))}
         value={f.country ?? 'Any country'}

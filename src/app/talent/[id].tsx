@@ -26,7 +26,7 @@ export default function CandidateProfileScreen() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { savedIds, toggleSaved, plan, setPlan, addThread, threads } = useEmployer();
+  const { savedIds, toggleSaved, plan, setPlan, requestContact, threads } = useEmployer();
   const [more, setMore] = useState(false);
   const [sheet, setSheet] = useState<'contact' | 'paywall' | null>(null);
   const [msg, setMsg] = useState('');
@@ -43,21 +43,22 @@ export default function CandidateProfileScreen() {
   const p = profileOf(cand);
   const first = cand.name.split(' ')[0];
   const saved = savedIds.includes(cand.id);
-  const sent = threads.some((t) => t.id === `req-${cand.id}`);
+  const chat = threads.find((t) => t.candidateId === cand.id && t.state !== 'deleted');
   const open = (v: string, kind: string) =>
     Linking.openURL(kind === 'ig' ? `https://instagram.com/${v.slice(1)}` : kind === 'sc' ? `https://soundcloud.com/${v.slice(1)}` : kind === 'fb' ? 'https://facebook.com' : `https://${v}`).catch(
       () => {},
     );
 
   const contact = () => {
-    if (sent) return router.navigate('/hire/messages');
+    if (chat) return router.push({ pathname: '/hire-chat/[id]', params: { id: chat.id } });
     setSheet(plan === 'free' ? 'paywall' : 'contact');
   };
   const send = () => {
-    addThread({ id: `req-${cand.id}`, name: cand.name, photo: cand.photo, time: 'now', direct: true, last: msg.trim() || 'Contact request sent', mine: true, unread: 0, box: 'active' });
+    const id = requestContact(cand.id, msg);
     setSheet(null);
     setMsg('');
     toast({ text: `Request sent. You can chat once ${first} accepts it`, icon: 'message' });
+    router.push({ pathname: '/hire-chat/[id]', params: { id } });
   };
 
   return (
@@ -323,7 +324,13 @@ export default function CandidateProfileScreen() {
           } as object
         }>
         <View style={{ width: '100%', maxWidth: 568, alignSelf: 'center' }}>
-          <Button size="l" icon="message" label={sent ? 'Request sent · Open chats' : 'Contact candidate'} variant={sent ? 'tonal' : 'primary'} onPress={contact} />
+          <Button
+            size="l"
+            icon="message"
+            label={chat ? (chat.request === 'pending' ? 'Request sent · Open chat' : 'Open chat') : 'Contact candidate'}
+            variant={chat ? 'tonal' : 'primary'}
+            onPress={contact}
+          />
         </View>
       </View>
 

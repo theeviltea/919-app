@@ -180,31 +180,34 @@ const a = (candidateId: string, status: ApplicantStatus, when: string, ago: numb
 /** Applicants per vacancy (EmpApplicants: New · Accepted · Declined). */
 export const initialApplicants: Record<string, Applicant[]> = {
   mv1: [
+    a('c2', 'new', '5 min', 5, { note: 'I host events too and would love to try a boat party.' }),
     a('c20', 'new', '12 min', 12, { note: 'Played boat parties for Xclusive Yachts all summer, house and nu-disco.' }),
     a('c27', 'new', '2 h', 120),
-    a('c37', 'accepted', 'Yesterday', 1500),
+    a('c13', 'accepted', 'Yesterday', 1500),
+    a('c37', 'accepted', 'Yesterday', 1600),
     a('c12', 'declined', '2 days', 2900, { declinedNote: 'Declined yesterday · plays live bass, not DJ sets' }),
   ],
   mv2: [
-    a('c2', 'new', '4 min', 4, { note: 'Five years in DIFC lounges, available every weekend.' }),
-    a('c25', 'new', '38 min', 38),
+    a('c56', 'new', '4 min', 4, { note: 'Five years in DIFC lounges, available every weekend.' }),
+    a('c19', 'new', '38 min', 38),
     a('c57', 'new', '1 h', 60, { note: 'I can start next week and work evening shifts.' }),
-    a('c10', 'new', '3 h', 180),
-    a('c49', 'new', '5 h', 300),
-    a('c21', 'accepted', 'Yesterday', 1440),
-    a('c19', 'accepted', '2 days', 2880),
-    a('c53', 'accepted', '2 days', 3000),
+    a('c49', 'new', '3 h', 180),
+    a('c53', 'new', '5 h', 300),
+    a('c2', 'accepted', 'Yesterday', 1440),
+    a('c25', 'accepted', '2 days', 2880),
+    a('c21', 'accepted', '2 days', 3000),
     a('c16', 'declined', 'Yesterday', 1500, { declinedNote: 'Declined yesterday · no Arabic' }),
     a('c38', 'declined', '3 days', 4300, { declinedNote: 'Declined 2 days ago · not available on weekends' }),
   ],
   mv4: [
+    a('c3', 'accepted', '27 Sep', 29000),
     a('c54', 'accepted', '26 Sep', 30000),
     a('c32', 'accepted', '25 Sep', 31000),
     a('c42', 'declined', '24 Sep', 32000, { declinedNote: 'Declined 24 Sep' }),
     a('c55', 'declined', '23 Sep', 33000, { declinedNote: 'Declined 23 Sep' }),
   ],
   mv5: [a('c35', 'accepted', '18 Sep', 40000), a('c46', 'declined', '17 Sep', 41000, { declinedNote: 'Declined 17 Sep' }), a('c39', 'declined', '16 Sep', 42000, { declinedNote: 'Declined 16 Sep' })],
-  mv6: [a('c47', 'accepted', '9 Sep', 50000), a('c59', 'declined', '8 Sep', 51000, { declinedNote: 'Declined 8 Sep' })],
+  mv6: [a('c10', 'accepted', '10 Sep', 49000), a('c47', 'accepted', '9 Sep', 50000), a('c59', 'declined', '8 Sep', 51000, { declinedNote: 'Declined 8 Sep' })],
 };
 
 /** "Hostess · 5 yrs · Arabic, English" */

@@ -82,7 +82,7 @@ export default function EmployerNotifications() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const soon = useSoon();
-  const { notifs, readNotif, readAllNotifs, vacancies } = useEmployer();
+  const { notifs, readNotif, readAllNotifs, vacancies, threads } = useEmployer();
   const startVacancy = useStartVacancy();
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -112,8 +112,10 @@ export default function EmployerNotifications() {
       case 'archived':
         return router.navigate('/hire/vacancies');
       case 'accepted':
-      case 'declined':
-        return router.navigate('/hire/messages');
+      case 'declined': {
+        const th = threads.find((x) => n.title.startsWith(x.name));
+        return th ? router.push({ pathname: '/hire-chat/[id]', params: { id: th.id } }) : router.navigate('/hire/messages');
+      }
       case 'expires':
         return toast({ text: 'Promo model, car launch relaunched for 7 days', icon: 'flash' });
       case 'premiumSoon':

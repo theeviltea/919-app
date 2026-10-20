@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -155,7 +156,7 @@ export default function HireMessages() {
                 open={openId === t.id}
                 onOpen={(o) => setOpenId(o ? t.id : null)}
                 label={`${t.name}${t.unread ? `, ${t.unread} unread` : ''}`}
-                onPress={() => (openId ? setOpenId(null) : soon('Chat with the candidate'))}>
+                onPress={() => (openId ? setOpenId(null) : router.push({ pathname: '/hire-chat/[id]', params: { id: t.id } }))}>
                 <Row t={t} last={i === list.length - 1} />
               </SwipeRow>
             ))}
