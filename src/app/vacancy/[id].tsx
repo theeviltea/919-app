@@ -5,6 +5,7 @@ import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton, BottomSheet, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text, useToast } from '@/components';
+import { companySlug } from '@/data/companies';
 import { contractTypes, formatAmount, spheres } from '@/data/dictionaries';
 import { findVacancy } from '@/data/mock';
 import { matchRequirement, useSeeker } from '@/data/seeker';
@@ -52,6 +53,8 @@ export default function VacancyScreen() {
   const fits = v.requirements.map((r) => ({ r, ok: !guest && matchRequirement(r, p) }));
   const fitN = fits.filter((f) => f.ok).length;
   const firstGap = fits.find((f) => !f.ok)?.r;
+
+  const openCompany = () => router.push({ pathname: '/org/[id]', params: { id: companySlug(v.company.name) } });
 
   const respond = () => {
     if (guest) return setAuth(true);
@@ -104,15 +107,21 @@ export default function VacancyScreen() {
         <View style={{ marginTop: -36, paddingHorizontal: 16, gap: 12 }}>
           <View style={{ backgroundColor: c.surface, borderRadius: 24, padding: 18, gap: 14 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: c.textHeadline, alignItems: 'center', justifyContent: 'center' }}>
-                <Text variant="displayM" color="surface" style={{ fontSize: 11, lineHeight: 14 }}>
-                  {v.company.initials}
+              <Pressable
+                onPress={openCompany}
+                accessibilityRole="link"
+                accessibilityLabel={`Employer: ${v.company.name}`}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 }}>
+                <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: c.textHeadline, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text variant="displayM" color="surface" style={{ fontSize: 11, lineHeight: 14 }}>
+                    {v.company.initials}
+                  </Text>
+                </View>
+                <Text variant="body" weight={600} numberOfLines={1} style={{ fontSize: 14, flexShrink: 1 }}>
+                  {v.company.name}
                 </Text>
-              </View>
-              <Text variant="body" weight={600} style={{ fontSize: 14 }}>
-                {v.company.name}
-              </Text>
-              {v.company.verified ? <Icon name="verified" size={16} color="primary" /> : null}
+                {v.company.verified ? <Icon name="verified" size={16} color="primary" /> : null}
+              </Pressable>
               <View style={{ flex: 1 }} />
               <StatusChip kind="new" label={spheres[v.sphere]} icon={null} />
             </View>
@@ -255,7 +264,7 @@ export default function VacancyScreen() {
           </Section>
 
           <Section title="Posted by">
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Pressable onPress={openCompany} accessibilityRole="link" accessibilityLabel={`Employer page: ${v.company.name}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: c.textHeadline, alignItems: 'center', justifyContent: 'center' }}>
                 <Text variant="displayM" color="surface" style={{ fontSize: 13 }}>
                   {v.company.initials}
@@ -269,7 +278,7 @@ export default function VacancyScreen() {
                 <Meta icon="location" text={`${v.city}, ${v.country}`} />
               </View>
               <Icon name="chevron-right" size={18} color="textBody" />
-            </View>
+            </Pressable>
           </Section>
         </View>
       </ScrollView>
