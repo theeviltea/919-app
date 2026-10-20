@@ -15,36 +15,8 @@ import { openPhotos } from '@/features/media/viewer';
 import { ShareSheet } from '@/features/vacancies/ShareSheet';
 import { useApply } from '@/features/vacancies/useApply';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
+import { DetailRow, Meta, Section } from '@/features/vacancies/detail';
 import { useTheme } from '@/theme';
-
-function Section({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
-  const { c } = useTheme();
-  return (
-    <View style={{ backgroundColor: c.surface, borderRadius: 24, padding: 18, gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text variant="bodyL" weight={700} style={{ flex: 1 }} accessibilityRole="header">
-          {title}
-        </Text>
-        {action}
-      </View>
-      {children}
-    </View>
-  );
-}
-
-function DetailRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
-  const { c } = useTheme();
-  return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 16, paddingVertical: 11, borderBottomWidth: last ? 0 : 1, borderColor: c.divider }}>
-      <Text variant="body" color="textBody">
-        {label}
-      </Text>
-      <Text variant="body" weight={600} align="right" style={{ flexShrink: 1 }}>
-        {value}
-      </Text>
-    </View>
-  );
-}
 
 /** Vacancy page. Public for guests: Respond and Save open the sign-in sheet (role: job seeker). */
 export default function VacancyScreen() {
@@ -229,7 +201,15 @@ export default function VacancyScreen() {
               {fits.map(({ r, ok }) => (
                 <View
                   key={r}
-                  style={{ height: 34, paddingHorizontal: 12, borderRadius: 999, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: guest ? c.input : ok ? c.successBack : c.infoBack }}>
+                  style={{
+                    height: 34,
+                    paddingHorizontal: 12,
+                    borderRadius: 999,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    backgroundColor: guest ? c.input : ok ? c.successBack : c.infoBack,
+                  }}>
                   {guest ? null : <Icon name={ok ? 'check' : 'alert-circle'} size={14} color={ok ? 'successText' : 'infoText'} />}
                   <Text variant="body" weight={600} color={guest ? 'textHeadline' : ok ? 'successText' : 'infoText'} style={{ fontSize: 14 }}>
                     {r}
@@ -294,7 +274,22 @@ export default function VacancyScreen() {
         </View>
       </ScrollView>
 
-      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: 14, paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 14) + 6, backgroundColor: c.surfacePanel, borderTopWidth: 1, borderColor: c.divider, backdropFilter: 'blur(12px)' } as object}>
+      <View
+        style={
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            paddingTop: 14,
+            paddingHorizontal: 16,
+            paddingBottom: Math.max(insets.bottom, 14) + 6,
+            backgroundColor: c.surfacePanel,
+            borderTopWidth: 1,
+            borderColor: c.divider,
+            backdropFilter: 'blur(12px)',
+          } as object
+        }>
         <View style={{ width: '100%', maxWidth: 600, alignSelf: 'center' }}>
           {!app ? (
             <Button size="l" label="Respond" onPress={respond} />
@@ -308,7 +303,12 @@ export default function VacancyScreen() {
           ) : app.status === 'declined' || app.status === 'closed' ? (
             <Button size="l" variant="neutral" label={app.status === 'declined' ? 'Application declined' : 'Vacancy closed'} disabled />
           ) : (
-            <Button size="l" icon="message" label={app.status === 'hired' ? 'You’re hired · Open chat' : 'Accepted · Open chat'} onPress={() => app.chatId && router.push({ pathname: '/chat/[id]', params: { id: app.chatId } })} />
+            <Button
+              size="l"
+              icon="message"
+              label={app.status === 'hired' ? 'You’re hired · Open chat' : 'Accepted · Open chat'}
+              onPress={() => app.chatId && router.push({ pathname: '/chat/[id]', params: { id: app.chatId } })}
+            />
           )}
         </View>
       </View>
@@ -317,7 +317,12 @@ export default function VacancyScreen() {
         <>
           {apply.sheets}
           <BottomSheet visible={sheet === 'more'} onClose={() => setSheet(null)}>
-            <Button variant="danger" icon="alert-circle" label="Report vacancy" onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will check this vacancy', kind: 'neutral', icon: 'alert-circle' }))} />
+            <Button
+              variant="danger"
+              icon="alert-circle"
+              label="Report vacancy"
+              onPress={() => (setSheet(null), toast({ text: 'Thanks. The 919 team will check this vacancy', kind: 'neutral', icon: 'alert-circle' }))}
+            />
           </BottomSheet>
         </>
       )}
@@ -332,17 +337,6 @@ export default function VacancyScreen() {
         context={{ title: v.title, subtitle: `${v.company.name} · ${v.pay.currency} ${formatAmount(v.pay.amount)} ${contractTypes[v.pay.contract].suffix}`, image: v.cover }}
         returnTo={`/vacancy/${v.id}`}
       />
-    </View>
-  );
-}
-
-function Meta({ icon, text, flex }: { icon: 'location' | 'clock' | 'view'; text: string; flex?: boolean }) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flex: flex ? 1 : undefined, minWidth: 0 }}>
-      <Icon name={icon} size={16} color="textBody" />
-      <Text variant="bodyS" color="textBody" numberOfLines={1}>
-        {text}
-      </Text>
     </View>
   );
 }

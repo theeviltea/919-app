@@ -6,7 +6,7 @@ import { BottomSheet, Button, Chip, Field, FormScreen, Icon, Pressable, StepProg
 import { useEmployer } from '@/data/employer';
 import { appearanceTypes, clothingSizes, fieldByKey, genres, hairColors, type Field as FieldKey } from '@/data/registration';
 import { SelectSheet } from '@/features/auth/SelectSheet';
-import { lastSent, payPreview, useDraft, type LangReq, type ParamValue } from '@/features/post/draft';
+import { currencyCode, lastSent, payPreview, useDraft, type LangReq, type ParamValue } from '@/features/post/draft';
 import { Panel } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
 
@@ -40,6 +40,20 @@ const paramsFor = (f?: FieldKey): ParamDef[] => {
   if (f === 'service') return [{ key: 'portfolio', label: 'Portfolio links', kind: 'bool' }, { key: 'equipment', label: 'Own equipment', kind: 'bool' }, ...common];
   return [...body, ...(f === 'model' ? [{ key: 'catwalk', label: 'Catwalk experience', kind: 'bool' as const }] : []), ...common];
 };
+
+/** Ticked requirements as the chips candidates see: "English — fluent", "Height 170 cm", "Video presentation". */
+function requirementChips(defs: ParamDef[], params: Record<string, ParamValue>, langs: LangReq[], age?: string) {
+  const out = langs.map((l) => `${l.name} — ${l.level.toLowerCase()}`);
+  if (age && age !== 'Any') out.push(`Age ${age}`);
+  for (const p of defs) {
+    const v = params[p.key];
+    if (v === undefined || p.kind === 'langs') continue;
+    if (p.kind === 'bool') out.push(p.label);
+    else if (Array.isArray(v)) v.forEach((x) => out.push(x));
+    else if (v) out.push(`${p.label} ${v}${p.unit ? ` ${p.unit}` : ''}`);
+  }
+  return out;
+}
 
 const summary = (p: ParamDef, v: ParamValue | undefined, langs: LangReq[]) => {
   if (p.kind === 'langs') return langs.map((l) => `${l.name} · ${l.level}`).join(', ');
@@ -109,10 +123,23 @@ export default function VacancyRequirements() {
       status: 'review',
       note: 'Sent just now',
       urgentLeft: d.urgent ? '24 h left' : undefined,
-      applicants: 0,
-      fresh: 0,
-      faces: [],
-      views: 0,
+      detail: {
+        category: d.field ? fieldByKey(d.field).label : 'Vacancy',
+        contract: d.contract,
+        currency: currencyCode(d.currency),
+        amount: d.amountMode === 'negotiable' ? undefined : Number(d.amount.replace(/\D/g, '')) || 0,
+        from: d.amountMode === 'from',
+        role: d.roles.join(', ') || d.title.trim(),
+        gender: d.sex || 'Any',
+        age: d.age ?? 'Any',
+        city: d.city,
+        country: d.country,
+        description: d.description.trim(),
+        requirements: requirementChips(defs, d.params, d.languages, d.age),
+        photos: [d.cover!, ...d.photos],
+        posted: 'On review',
+        views: 0,
+      },
     });
     lastSent.current = { id, title: d.title.trim(), city: d.city, pay, start: d.startDate, cover: d.cover };
     router.replace('/post/sent');

@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 
+import { initialApplicants, initialDetails, type Applicant, type ApplicantStatus, type VacancyDetail } from './hiring';
 import { mockImg as img, personPhoto as p } from './mock';
 
 // Employer-side mock for the prototype (demo account: Emanuel Brooks, Skyline Hospitality). Mirrors the canvas
@@ -38,7 +39,7 @@ export const team = [
 ];
 export const initialJoinRequests = [{ id: 'j1', name: 'Lina Morozova', email: 'lina.m@skylinehospitality.ae', when: '2 h ago', photo: p(4) }];
 
-export type HireStatus = 'active' | 'review' | 'archive';
+export type HireStatus = 'active' | 'review' | 'archive' | 'changes' | 'rejected';
 export type MyVacancy = {
   id: string;
   title: string;
@@ -52,10 +53,51 @@ export type MyVacancy = {
   fresh?: number; // new applicants
   faces?: ImageSourcePropType[];
   views?: number;
+  /** Full vacancy for the owner's page (EmpVacancy). */
+  detail?: VacancyDetail;
+  /** Moderation asked for corrections (EmpVacancyChanges). */
+  changes?: { at: string; summary: string; items: string[] };
+  /** Moderation rejected it (EmpVacancyRejected). */
+  rejected?: { at: string; short: string; reason: string; refund?: boolean };
+  /** Paid Urgent is running (EmpVacancyUrgent). */
+  urgentInfo?: { left: string; progress: number; views: number; applicants: number };
 };
 
-/** EmpHiring: My vacancies (6 = 2 active, 1 on review, 3 in archive). */
+/** EmpHiring / EmpHiringModeration: 8 vacancies — 2 moderation results, 2 active, 1 on review, 3 in archive. */
 export const initialVacancies: MyVacancy[] = [
+  {
+    id: 'mv7',
+    title: 'European female waitresses',
+    meta: 'Hospitality · AED 15 000 / month',
+    cover: img.waiter,
+    status: 'changes',
+    note: 'Today, 11:40',
+    detail: initialDetails.mv7,
+    changes: {
+      at: 'today, 11:40',
+      summary: 'cover photo, working hours, salary.',
+      items: [
+        'Replace the cover photo — it shows a different venue, not your restaurant.',
+        'Add working hours and days to the description.',
+        'Check the salary: AED 15 000 per month for part-time shifts looks like a typo.',
+      ],
+    },
+  },
+  {
+    id: 'mv8',
+    title: 'Promoters, training included',
+    meta: 'Events · AED 300 / day',
+    cover: img.misc,
+    status: 'rejected',
+    note: 'Today, 10:15',
+    detail: initialDetails.mv8,
+    rejected: {
+      at: 'today, 10:15',
+      short: 'asks candidates to pay for training.',
+      reason: 'The vacancy asks candidates to pay for training and a uniform before starting. This is treated as a scam.',
+      refund: true,
+    },
+  },
   {
     id: 'mv1',
     title: 'DJ for a boat party',
@@ -65,10 +107,8 @@ export const initialVacancies: MyVacancy[] = [
     note: '6 of 7 days left · until 14 Oct',
     daysLeft: 6,
     urgentLeft: '18 h left',
-    applicants: 9,
-    fresh: 2,
-    faces: [p(10), p(12), p(13)],
-    views: 242,
+    urgentInfo: { left: '18 h 24 min left · ends 10 Oct, 09:30', progress: 0.77, views: 640, applicants: 9 },
+    detail: initialDetails.mv1,
   },
   {
     id: 'mv2',
@@ -78,24 +118,12 @@ export const initialVacancies: MyVacancy[] = [
     status: 'active',
     note: '3 of 7 days left · until 11 Oct',
     daysLeft: 3,
-    applicants: 24,
-    fresh: 5,
-    faces: [p(12), p(1), p(2)],
-    views: 132,
+    detail: initialDetails.mv2,
   },
-  { id: 'mv3', title: 'Barista, specialty coffee', meta: 'Hospitality · AED 7 500 / month', cover: img.waiter, status: 'review', note: 'Sent 25 min ago' },
-  {
-    id: 'mv4',
-    title: 'Promo model, car launch',
-    meta: 'Model Business · AED 1 200 / day',
-    cover: img.dubai1,
-    status: 'archive',
-    note: 'Expired 28 Sep · 2 hired',
-    applicants: 31,
-    faces: [p(4), p(3)],
-  },
-  { id: 'mv5', title: 'Waiter, fine dining', meta: 'Hospitality · AED 9 000 / month', cover: img.misc, status: 'archive', note: 'Closed 21 Sep · 1 hired', applicants: 18, faces: [p(9), p(5)] },
-  { id: 'mv6', title: 'Hostess, yacht show', meta: 'Events · AED 800 / day', cover: img.dubai2, status: 'archive', note: 'Expired 12 Sep · 1 hired', applicants: 12, faces: [p(3), p(8)] },
+  { id: 'mv3', title: 'Barista, specialty coffee', meta: 'Hospitality · AED 7 500 / month', cover: img.waiter, status: 'review', note: 'Sent 25 min ago', detail: initialDetails.mv3 },
+  { id: 'mv4', title: 'Promo model, car launch', meta: 'Model Business · AED 1 200 / day', cover: img.dubai1, status: 'archive', note: 'Expired 28 Sep · 2 hired', detail: initialDetails.mv4 },
+  { id: 'mv5', title: 'Waiter, fine dining', meta: 'Hospitality · AED 9 000 / month', cover: img.misc, status: 'archive', note: 'Closed 21 Sep · 1 hired', detail: initialDetails.mv5 },
+  { id: 'mv6', title: 'Hostess, yacht show', meta: 'Events · AED 800 / day', cover: img.dubai2, status: 'archive', note: 'Expired 12 Sep · 1 hired', detail: initialDetails.mv6 },
 ];
 
 export const hireStats = { active: 2, fresh: 7, hired: 4 };
@@ -377,6 +405,12 @@ type Store = {
   /** New vacancy from the posting flow: lands On review, the demo moderation approves it a bit later. */
   addVacancy: (v: MyVacancy) => void;
   updateVacancy: (id: string, u: Partial<MyVacancy>) => void;
+  removeVacancy: (id: string) => void;
+  /** Applicants per vacancy id (EmpApplicants). */
+  applicants: Record<string, Applicant[]>;
+  setApplicant: (vacancyId: string, candidateId: string, status: ApplicantStatus) => void;
+  /** New applicants across active vacancies (hub stat and the Vacancies tab badge). */
+  freshTotal: number;
   addNotif: (n: EmpNotif) => void;
   unreadTotal: number;
   joinRequests: typeof initialJoinRequests;
@@ -412,6 +446,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [savedIds, setSaved] = useState<string[]>(DEFAULT_SAVED);
   const [notifs, setNotifs] = useState(initialEmpNotifs);
   const [vacancies, setVacancies] = useState(initialVacancies);
+  const [applicants, setApplicants] = useState(initialApplicants);
   const [rep, setRepState] = useState(initialRep);
   const [info, setInfoState] = useState(initialInfo);
   const [plan, setPlan] = useState<Plan>('premium');
@@ -427,7 +462,20 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         // Demo moderation: the 919 team approves the vacancy a little later.
         setTimeout(() => {
           const until = new Date(Date.now() + 7 * 864e5).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-          setVacancies((vs) => vs.map((x) => (x.id === v.id && x.status === 'review' ? { ...x, status: 'active', daysLeft: 7, note: `7 of 7 days left · until ${until}` } : x)));
+          setVacancies((vs) =>
+            vs.map((x) =>
+              x.id === v.id && x.status === 'review'
+                ? {
+                    ...x,
+                    status: 'active',
+                    daysLeft: 7,
+                    note: `7 of 7 days left · until ${until}`,
+                    detail: x.detail && { ...x.detail, posted: 'Just now' },
+                    urgentInfo: x.urgentLeft ? { left: '24 h left · started just now', progress: 1, views: 0, applicants: 0 } : undefined,
+                  }
+                : x,
+            ),
+          );
           setNotifs((ns) => [
             {
               id: `n${v.id}`,
@@ -445,6 +493,14 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         }, MODERATION_MS);
       },
       updateVacancy: (id, u) => setVacancies((vs) => vs.map((v) => (v.id === id ? { ...v, ...u } : v))),
+      removeVacancy: (id) => setVacancies((vs) => vs.filter((v) => v.id !== id)),
+      applicants,
+      setApplicant: (vid, cid, status) =>
+        setApplicants((all) => ({
+          ...all,
+          [vid]: (all[vid] ?? []).map((x) => (x.candidateId === cid ? { ...x, status, declinedNote: status === 'declined' ? 'Declined just now' : x.declinedNote } : x)),
+        })),
+      freshTotal: vacancies.filter((v) => v.status === 'active').reduce((n, v) => n + (applicants[v.id] ?? []).filter((x) => x.status === 'new').length, 0),
       addNotif: (n) => setNotifs((ns) => [n, ...ns]),
       addThread: (t) => setThreads((ts) => [t, ...ts.filter((x) => x.id !== t.id)]),
       unreadTotal: threads.filter((t) => t.box === 'active').reduce((n, t) => n + t.unread, 0),
@@ -472,7 +528,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         return on;
       },
     }),
-    [threads, joinRequests, savedIds, notifs, rep, info, plan, members, vacancies],
+    [threads, joinRequests, savedIds, notifs, rep, info, plan, members, vacancies, applicants],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

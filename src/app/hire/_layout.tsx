@@ -1,7 +1,7 @@
 import { Redirect, Tabs } from 'expo-router';
 
 import { TabBar } from '@/components';
-import { hireStats, useEmployer } from '@/data/employer';
+import { useEmployer } from '@/data/employer';
 import { useSession } from '@/data/session';
 import { useStartVacancy } from '@/features/post/gate';
 import { useTheme } from '@/theme';
@@ -10,7 +10,7 @@ import { useTheme } from '@/theme';
 export default function EmployerTabs() {
   const { c } = useTheme();
   const { user } = useSession();
-  const { unreadTotal } = useEmployer();
+  const { unreadTotal, freshTotal } = useEmployer();
   const startVacancy = useStartVacancy();
   if (!user) return <Redirect href="/guest" />;
   return (
@@ -20,11 +20,11 @@ export default function EmployerTabs() {
       tabBar={(props) => (
         <TabBar
           {...props}
-          aliases={{ search: 'index' }}
+          aliases={{ search: 'index', applicants: 'vacancies' }}
           center={{ after: 'vacancies', label: 'Post a new vacancy', icon: 'add', onPress: startVacancy }}
           meta={{
             index: { label: 'Talent', icon: 'users' },
-            vacancies: { label: 'Vacancies', icon: 'briefcase', badge: hireStats.fresh },
+            vacancies: { label: 'Vacancies', icon: 'briefcase', badge: freshTotal },
             messages: { label: 'Messages', icon: 'message', badge: unreadTotal },
             company: { label: 'Company', icon: 'building' },
           }}
@@ -36,6 +36,8 @@ export default function EmployerTabs() {
       <Tabs.Screen name="company" />
       {/* Search belongs to Talent: no tab of its own, the tab bar keeps Talent active. */}
       <Tabs.Screen name="search" options={{ href: null }} />
+      {/* Applicants of one vacancy: belongs to Vacancies. */}
+      <Tabs.Screen name="applicants" options={{ href: null }} />
     </Tabs>
   );
 }

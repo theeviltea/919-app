@@ -2,7 +2,24 @@ import type { ImageSourcePropType } from 'react-native';
 
 import { mockImg, personPhoto as p } from './mock';
 
-const img = { ...mockImg, dj: require('@/assets/images/mock/dj.jpg'), hostess: require('@/assets/images/mock/hostess.jpg'), barber: require('@/assets/images/mock/barber.jpg'), misc: require('@/assets/images/mock/misc.jpg'), v02: require('@/assets/images/mock/vac/v02.jpg'), v03: require('@/assets/images/mock/vac/v03.jpg'), v04: require('@/assets/images/mock/vac/v04.jpg'), v05: require('@/assets/images/mock/vac/v05.jpg'), v06: require('@/assets/images/mock/vac/v06.jpg'), v07: require('@/assets/images/mock/vac/v07.jpg'), v08: require('@/assets/images/mock/vac/v08.jpg'), v09: require('@/assets/images/mock/vac/v09.jpg'), v10: require('@/assets/images/mock/vac/v10.jpg'), v12: require('@/assets/images/mock/vac/v12.jpg'), v13: require('@/assets/images/mock/vac/v13.jpg') };
+const img = {
+  ...mockImg,
+  dj: require('@/assets/images/mock/dj.jpg'),
+  hostess: require('@/assets/images/mock/hostess.jpg'),
+  barber: require('@/assets/images/mock/barber.jpg'),
+  misc: require('@/assets/images/mock/misc.jpg'),
+  v02: require('@/assets/images/mock/vac/v02.jpg'),
+  v03: require('@/assets/images/mock/vac/v03.jpg'),
+  v04: require('@/assets/images/mock/vac/v04.jpg'),
+  v05: require('@/assets/images/mock/vac/v05.jpg'),
+  v06: require('@/assets/images/mock/vac/v06.jpg'),
+  v07: require('@/assets/images/mock/vac/v07.jpg'),
+  v08: require('@/assets/images/mock/vac/v08.jpg'),
+  v09: require('@/assets/images/mock/vac/v09.jpg'),
+  v10: require('@/assets/images/mock/vac/v10.jpg'),
+  v12: require('@/assets/images/mock/vac/v12.jpg'),
+  v13: require('@/assets/images/mock/vac/v13.jpg'),
+};
 
 // Candidate pool for employer search and filters (TalentSearch / TalentFilters). Deterministic mock, replaced by the API.
 
@@ -209,7 +226,12 @@ export function talentChips(f: TalentFilters): { key: string; label: string; rem
   if (f.city) out.push({ key: 'city', label: f.city, remove: (x) => ({ ...x, city: undefined }) });
   else if (f.country) out.push({ key: 'country', label: f.country, remove: (x) => ({ ...x, country: undefined }) });
   if (f.gender !== 'any') out.push({ key: 'g', label: f.gender === 'female' ? 'Female' : 'Male', remove: (x) => ({ ...x, gender: 'any' }) });
-  if (f.ageFrom || f.ageTo) out.push({ key: 'age', label: f.ageFrom && f.ageTo ? `${f.ageFrom}–${f.ageTo}` : f.ageFrom ? `${f.ageFrom}+` : `Up to ${f.ageTo}`, remove: (x) => ({ ...x, ageFrom: undefined, ageTo: undefined }) });
+  if (f.ageFrom || f.ageTo)
+    out.push({
+      key: 'age',
+      label: f.ageFrom && f.ageTo ? `${f.ageFrom}–${f.ageTo}` : f.ageFrom ? `${f.ageFrom}+` : `Up to ${f.ageTo}`,
+      remove: (x) => ({ ...x, ageFrom: undefined, ageTo: undefined }),
+    });
   f.languages.forEach((l) => out.push({ key: `l-${l}`, label: l, remove: (x) => ({ ...x, languages: x.languages.filter((y) => y !== l) }) }));
   f.has.forEach((h) => out.push({ key: `h-${h}`, label: h === 'video' ? 'Video' : hasLabels[h], remove: (x) => ({ ...x, has: x.has.filter((y) => y !== h) }) }));
   return out;

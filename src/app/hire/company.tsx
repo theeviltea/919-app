@@ -5,10 +5,11 @@ import { Linking, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Icon, PatternHeader, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast } from '@/components';
+import { formatAmount } from '@/data/dictionaries';
 import { initialsOf, useEmployer } from '@/data/employer';
 import { useStartVacancy } from '@/features/post/gate';
 import { useSession } from '@/data/session';
-import { GlassButton, Pill, Round, Section, useSoon } from '@/features/hire/ui';
+import { GlassButton, Pill, Round, Section } from '@/features/hire/ui';
 import { useTheme } from '@/theme';
 
 type Tab = 'recruiters' | 'company' | 'vacancies';
@@ -198,16 +199,16 @@ function About() {
 
 function Vacancies() {
   const { c } = useTheme();
-  const soon = useSoon();
-  const { vacancies } = useEmployer();
+  const { vacancies, applicants } = useEmployer();
   const startVacancy = useStartVacancy();
   const list = vacancies.filter((v) => v.status !== 'archive');
+  const fresh = (id: string) => (applicants[id] ?? []).filter((x) => x.status === 'new').length;
   return (
     <View style={{ gap: 10 }}>
       {list.map((v) => (
         <Pressable
           key={v.id}
-          onPress={() => soon('Vacancy page')}
+          onPress={() => router.push({ pathname: '/my-vacancy/[id]', params: { id: v.id } })}
           accessibilityRole="button"
           accessibilityLabel={v.title}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: c.surface, borderRadius: 20, padding: 12 }}>
@@ -217,12 +218,20 @@ function Vacancies() {
               {v.title}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              {v.status === 'active' ? <Pill label="Active" bg={c.successBack} fg={c.successText} /> : <Pill label="On review" bg={c.input} fg={c.textBody} />}
+              {v.status === 'active' ? (
+                <Pill label="Active" bg={c.successBack} fg={c.successText} />
+              ) : v.status === 'changes' ? (
+                <Pill label="Changes needed" bg={c.attentionBack} fg={c.attentionText} />
+              ) : v.status === 'rejected' ? (
+                <Pill label="Rejected" bg={c.dangerBack} fg={c.dangerText} />
+              ) : (
+                <Pill label="On review" bg={c.input} fg={c.textBody} />
+              )}
               {v.status === 'active' ? (
                 <>
                   <Icon name="view" size={14} color="textBody" />
                   <Text variant="caption" weight={400} color="textBody" style={{ fontSize: 12 }}>
-                    {v.views} views
+                    {formatAmount(v.detail?.views ?? 0)} views
                   </Text>
                 </>
               ) : (
@@ -232,7 +241,7 @@ function Vacancies() {
               )}
             </View>
           </View>
-          {v.fresh ? <Pill label={`+${v.fresh} new`} bg={c.primary} fg={c.ctaButtonText} h={24} /> : null}
+          {fresh(v.id) ? <Pill label={`+${fresh(v.id)} new`} bg={c.primary} fg={c.ctaButtonText} h={24} /> : null}
         </Pressable>
       ))}
       <Pressable onPress={startVacancy} accessibilityRole="button" style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 12 }}>

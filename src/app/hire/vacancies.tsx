@@ -14,10 +14,10 @@ type Tab = 'mine' | 'saved';
 type Filter = 'all' | HireStatus;
 type SavedFilter = 'all' | TalentSphere;
 
-function Stat({ n, label }: { n: number; label: string }) {
+function Stat({ n, label, accent }: { n: number; label: string; accent?: boolean }) {
   return (
     <View style={{ flex: 1, minWidth: 0 }}>
-      <Text variant="displayM" style={{ fontSize: 22, lineHeight: 26 }}>
+      <Text variant="displayM" color={accent && n ? 'link' : undefined} style={{ fontSize: 22, lineHeight: 26 }}>
         {n}
       </Text>
       <Text variant="caption" weight={400} color="textBody" style={{ marginTop: 4, fontSize: 12, lineHeight: 16 }}>
@@ -44,15 +44,21 @@ function Faces({ faces }: { faces: MyVacancy['faces'] }) {
   );
 }
 
-/** Vacancy card in the hub (EmpHiring): status, days bar for active, moderation note, applicants, relaunch for archive. */
+/** Vacancy card in the hub (EmpHiring / EmpHiringModeration): status, days bar for active, moderation result, applicants, relaunch for archive. */
 function VacancyCard({ v }: { v: MyVacancy }) {
   const { c } = useTheme();
   const soon = useSoon();
+  const { applicants } = useEmployer();
   const archived = v.status === 'archive';
+  const list = applicants[v.id] ?? [];
+  const fresh = list.filter((x) => x.status === 'new');
+  const faces = (fresh.length ? fresh : list).slice(0, 3).map((x) => findCandidate(x.candidateId)!.photo);
+  const open = () => router.push({ pathname: '/my-vacancy/[id]', params: { id: v.id } });
+  const openApplicants = () => router.push({ pathname: '/hire/applicants', params: { id: v.id } });
   return (
     <View style={{ backgroundColor: c.surface, borderRadius: 20, padding: 14, gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Pressable onPress={() => soon('Vacancy page')} accessibilityRole="button" accessibilityLabel={v.title} style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Pressable onPress={open} accessibilityRole="button" accessibilityLabel={v.title} style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <Image source={v.cover} contentFit="cover" style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: c.backDarker, opacity: archived ? 0.6 : 1 }} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text variant="bodyL" weight={600} numberOfLines={1} style={{ fontSize: 16, lineHeight: 21 }}>
@@ -77,10 +83,14 @@ function VacancyCard({ v }: { v: MyVacancy }) {
           <Pill label="Active" bg={c.successBack} fg={c.successText} h={26} />
         ) : v.status === 'review' ? (
           <Pill label="On review" icon="clock" bg={c.input} fg={c.textBody} h={26} />
+        ) : v.status === 'changes' ? (
+          <Pill label="Changes needed" icon="edit" bg={c.attentionBack} fg={c.attentionText} h={26} />
+        ) : v.status === 'rejected' ? (
+          <Pill label="Rejected" icon="alert-circle" bg={c.dangerBack} fg={c.dangerText} h={26} />
         ) : (
           <Pill label="In archive" bg={c.input} fg={c.textBody} h={26} />
         )}
-        {v.urgentLeft ? <Pill label={v.urgentLeft} icon="fire" bg={c.urgent} fg={c.onUrgent} h={26} /> : null}
+        {v.urgentLeft && v.status === 'active' ? <Pill label={v.urgentLeft} icon="fire" bg={c.urgent} fg={c.onUrgent} h={26} /> : null}
         <Text variant="bodyS" color="textBody" numberOfLines={1} style={{ flex: 1, fontSize: 13 }}>
           {v.note}
         </Text>
@@ -94,7 +104,43 @@ function VacancyCard({ v }: { v: MyVacancy }) {
         </View>
       ) : null}
 
-      {v.status === 'review' ? (
+      {v.status === 'changes' && v.changes ? (
+        <View style={{ padding: 14, borderRadius: 16, backgroundColor: c.attentionBack, gap: 10 }}>
+          <Text variant="bodyS" color="textHeadline" style={{ fontSize: 14, lineHeight: 20 }}>
+            <Text variant="bodyS" weight={700} style={{ fontSize: 14 }}>
+              {`${v.changes.items.length} corrections from the 919 team: `}
+            </Text>
+            {v.changes.summary}
+          </Text>
+          <Pressable
+            onPress={open}
+            accessibilityRole="button"
+            style={{ alignSelf: 'flex-start', height: 36, paddingHorizontal: 14, borderRadius: 12, backgroundColor: c.primary, justifyContent: 'center' }}>
+            <Text variant="body" weight={700} color="ctaButtonText" style={{ fontSize: 14 }}>
+              Fix and resubmit
+            </Text>
+          </Pressable>
+        </View>
+      ) : v.status === 'rejected' && v.rejected ? (
+        <Pressable onPress={open} accessibilityRole="button" style={{ padding: 14, borderRadius: 16, backgroundColor: c.dangerBack, gap: 8 }}>
+          <Text variant="bodyS" color="textHeadline" style={{ fontSize: 14, lineHeight: 20 }}>
+            <Text variant="bodyS" weight={700} style={{ fontSize: 14 }}>
+              {'Violates 919 rules: '}
+            </Text>
+            {v.rejected.short}
+          </Text>
+          {v.rejected.refund ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: c.urgent, alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="fire" size={12} color="onUrgent" />
+              </View>
+              <Text variant="bodyS" color="textPrimary" style={{ flex: 1, fontSize: 13 }}>
+                Urgent $2.99 refund within 3 business days
+              </Text>
+            </View>
+          ) : null}
+        </Pressable>
+      ) : v.status === 'review' ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 12, borderTopWidth: 1, borderColor: c.divider }}>
           <Icon name="clock" size={18} color="textBody" />
           <Text variant="bodyS" color="textBody" style={{ flex: 1, fontSize: 13, lineHeight: 18 }}>
@@ -103,15 +149,15 @@ function VacancyCard({ v }: { v: MyVacancy }) {
         </View>
       ) : (
         <Pressable
-          onPress={() => soon('Applicants')}
+          onPress={openApplicants}
           accessibilityRole="button"
-          accessibilityLabel={`${v.applicants} applicants${v.fresh ? `, ${v.fresh} new` : ''}`}
+          accessibilityLabel={`${list.length} applicants${fresh.length ? `, ${fresh.length} new` : ''}`}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 12, borderTopWidth: 1, borderColor: c.divider }}>
-          <Faces faces={v.faces} />
+          {faces.length ? <Faces faces={faces} /> : null}
           <Text variant="body" weight={600} style={{ flex: 1, fontSize: 14 }}>
-            {v.applicants} applicants
+            {list.length ? `${list.length} applicant${list.length === 1 ? '' : 's'}` : 'No applicants yet'}
           </Text>
-          {v.fresh ? <Pill label={`${v.fresh} new`} bg={c.primary} fg={c.ctaButtonText} h={24} /> : null}
+          {fresh.length && !archived ? <Pill label={`${fresh.length} new`} bg={c.primary} fg={c.ctaButtonText} h={24} /> : null}
           <Icon name="chevron-right" size={18} color="textLightSecondary" />
         </Pressable>
       )}
@@ -189,7 +235,7 @@ export default function HireVacancies() {
   const [tab, setTab] = useState<Tab>('mine');
   const [filter, setFilter] = useState<Filter>('all');
   const [savedFilter, setSavedFilter] = useState<SavedFilter>('all');
-  const { vacancies: myVacancies } = useEmployer();
+  const { vacancies: myVacancies, freshTotal } = useEmployer();
   const count = (s: HireStatus) => myVacancies.filter((v) => v.status === s).length;
   const list = myVacancies.filter((v) => filter === 'all' || v.status === filter);
   const { savedIds } = useEmployer();
@@ -217,7 +263,7 @@ export default function HireVacancies() {
           <View style={{ backgroundColor: c.surface, borderRadius: 20, padding: 16, flexDirection: 'row', gap: 12 }}>
             <Stat n={count('active')} label={'Active\nvacancies'} />
             <View style={{ width: 1, backgroundColor: c.divider }} />
-            <Stat n={hireStats.fresh} label={'New\napplicants'} />
+            <Stat n={freshTotal} label={'New\napplicants'} accent />
             <View style={{ width: 1, backgroundColor: c.divider }} />
             <Stat n={hireStats.hired} label={'Hired this\nmonth'} />
           </View>

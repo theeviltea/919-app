@@ -68,7 +68,17 @@ export type SeekerProfile = {
   stats: { views: number; applications: number; invites: number; videoViews: string };
 };
 
-const p = (n: number) => ({ id: `mp${n}`, source: [require('@/assets/images/mock/people/p2.jpg'), require('@/assets/images/mock/people/p3.jpg'), require('@/assets/images/mock/people/p4.jpg'), require('@/assets/images/mock/people/p5.jpg'), require('@/assets/images/mock/people/p6.jpg'), require('@/assets/images/mock/people/p7.jpg')][n] });
+const p = (n: number) => ({
+  id: `mp${n}`,
+  source: [
+    require('@/assets/images/mock/people/p2.jpg'),
+    require('@/assets/images/mock/people/p3.jpg'),
+    require('@/assets/images/mock/people/p4.jpg'),
+    require('@/assets/images/mock/people/p5.jpg'),
+    require('@/assets/images/mock/people/p6.jpg'),
+    require('@/assets/images/mock/people/p7.jpg'),
+  ][n],
+});
 
 /** Existing account used when someone signs in instead of registering (prototype). */
 const demoProfile: SeekerProfile = {
@@ -82,7 +92,12 @@ const demoProfile: SeekerProfile = {
   country: 'United Arab Emirates',
   occupations: [
     { field: 'hospitality', roles: ['Waiter'], details: { height: '165', weight: '45', clothing: 'XS', shoe: '36', hair: 'Brown', appearance: 'European' }, links: [] },
-    { field: 'model', roles: ['Model', 'Image model'], details: { height: '165', weight: '45', bust: '86', waist: '61', hips: '90', clothing: 'XS', shoe: '36', hair: 'Brown', appearance: 'European' }, links: [] },
+    {
+      field: 'model',
+      roles: ['Model', 'Image model'],
+      details: { height: '165', weight: '45', bust: '86', waist: '61', hips: '90', clothing: 'XS', shoe: '36', hair: 'Brown', appearance: 'European' },
+      links: [],
+    },
   ],
   photos: [0, 1, 2, 3, 4, 5].map(p),
   video: { poster: require('@/assets/images/mock/people/p12.jpg'), duration: '0:42' },
@@ -177,7 +192,8 @@ export type Thread = {
   requestText?: string;
 };
 
-const person = (n: number) => [require('@/assets/images/mock/people/p9.jpg'), require('@/assets/images/mock/people/p13.jpg'), require('@/assets/images/mock/people/p14.jpg'), require('@/assets/images/mock/people/p0.jpg')][n];
+const person = (n: number) =>
+  [require('@/assets/images/mock/people/p9.jpg'), require('@/assets/images/mock/people/p13.jpg'), require('@/assets/images/mock/people/p14.jpg'), require('@/assets/images/mock/people/p0.jpg')][n];
 
 const initialThreads: Thread[] = [
   {
@@ -359,13 +375,85 @@ const initialNotifs: Notif[] = [
     vacancyId: 'v6',
     threadId: 'c-request-azure',
   },
-  { id: 'n2', kind: 'accepted', group: 'applications', title: 'Skyline Hospitality accepted your application', text: 'Hostess, rooftop lounge · They opened a chat with you.', time: '5 min', day: 'today', unread: true, vacancyId: 'v3', threadId: 'c-skyline' },
-  { id: 'n3', kind: 'vacancies', group: 'vacancies', title: '5 new vacancies in Music', text: 'DJ for a boat party, Resident DJ, beach bar and 3 more', time: '1 h', day: 'today', unread: true, sphere: 'music', stack: ['v1', 'v12', 'v2'], more: 2 },
-  { id: 'n4', kind: 'declined', group: 'applications', title: 'DIVES Holding declined your application', text: 'European female waitresses · 12 similar vacancies are still open.', time: '3 h', day: 'today', unread: true, vacancyId: 'v4' },
-  { id: 'n5', kind: 'urgent', group: 'vacancies', title: 'Urgent in Hospitality: hostess for tonight', text: 'Skyline Hospitality · AED 120 / hour · Hiring within 24 h', time: '09:40', day: 'today', unread: false, vacancyId: 'v3' },
-  { id: 'n6', kind: 'viewed', group: 'applications', title: 'ORZU Group viewed your application', text: 'DJ for a boat party · Usually they reply within a day.', time: '08:55', day: 'today', unread: false, vacancyId: 'v1' },
-  { id: 'n7', kind: 'saved', group: 'vacancies', title: 'A saved vacancy closes tomorrow', text: 'Promo model, car launch · Prestige Events. Apply before it closes.', time: 'Yesterday', day: 'earlier', unread: false, vacancyId: 'v13' },
-  { id: 'n8', kind: 'views', group: 'other', title: 'Your profile was viewed 18 times this week', text: 'Employers from hospitality and music looked at your profile.', time: 'Mon', day: 'earlier', unread: false },
+  {
+    id: 'n2',
+    kind: 'accepted',
+    group: 'applications',
+    title: 'Skyline Hospitality accepted your application',
+    text: 'Hostess, rooftop lounge · They opened a chat with you.',
+    time: '5 min',
+    day: 'today',
+    unread: true,
+    vacancyId: 'v3',
+    threadId: 'c-skyline',
+  },
+  {
+    id: 'n3',
+    kind: 'vacancies',
+    group: 'vacancies',
+    title: '5 new vacancies in Music',
+    text: 'DJ for a boat party, Resident DJ, beach bar and 3 more',
+    time: '1 h',
+    day: 'today',
+    unread: true,
+    sphere: 'music',
+    stack: ['v1', 'v12', 'v2'],
+    more: 2,
+  },
+  {
+    id: 'n4',
+    kind: 'declined',
+    group: 'applications',
+    title: 'DIVES Holding declined your application',
+    text: 'European female waitresses · 12 similar vacancies are still open.',
+    time: '3 h',
+    day: 'today',
+    unread: true,
+    vacancyId: 'v4',
+  },
+  {
+    id: 'n5',
+    kind: 'urgent',
+    group: 'vacancies',
+    title: 'Urgent in Hospitality: hostess for tonight',
+    text: 'Skyline Hospitality · AED 120 / hour · Hiring within 24 h',
+    time: '09:40',
+    day: 'today',
+    unread: false,
+    vacancyId: 'v3',
+  },
+  {
+    id: 'n6',
+    kind: 'viewed',
+    group: 'applications',
+    title: 'ORZU Group viewed your application',
+    text: 'DJ for a boat party · Usually they reply within a day.',
+    time: '08:55',
+    day: 'today',
+    unread: false,
+    vacancyId: 'v1',
+  },
+  {
+    id: 'n7',
+    kind: 'saved',
+    group: 'vacancies',
+    title: 'A saved vacancy closes tomorrow',
+    text: 'Promo model, car launch · Prestige Events. Apply before it closes.',
+    time: 'Yesterday',
+    day: 'earlier',
+    unread: false,
+    vacancyId: 'v13',
+  },
+  {
+    id: 'n8',
+    kind: 'views',
+    group: 'other',
+    title: 'Your profile was viewed 18 times this week',
+    text: 'Employers from hospitality and music looked at your profile.',
+    time: 'Mon',
+    day: 'earlier',
+    unread: false,
+  },
   { id: 'n9', kind: 'video', group: 'other', title: 'Add a video presentation', text: 'Profiles with a video get 3× more invitations.', time: '2 Oct', day: 'earlier', unread: false },
 ];
 
@@ -447,9 +535,28 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const [extra, setExtra] = useState<Partial<SeekerProfile>>({});
   const [hidden, setHidden] = useState(false);
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
-    push: true, newVacancies: true, savedClosing: true, urgentNearby: false, appStatus: true, invites: true, messages: true, preview: true, digest: true, news: false, faceId: true, showAge: true, readReceipts: true,
+    push: true,
+    newVacancies: true,
+    savedClosing: true,
+    urgentNearby: false,
+    appStatus: true,
+    invites: true,
+    messages: true,
+    preview: true,
+    digest: true,
+    news: false,
+    faceId: true,
+    showAge: true,
+    readReceipts: true,
     // Employer account switches (EmpNotifications / EmpPrivacy).
-    empApplicants: true, empDigest: false, empStatus: true, empJoin: true, empTeam: false, empWeekly: true, showName: true, showPhone: false,
+    empApplicants: true,
+    empDigest: false,
+    empStatus: true,
+    empJoin: true,
+    empTeam: false,
+    empWeekly: true,
+    showName: true,
+    showPhone: false,
   });
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [saved, setSaved] = useState<string[]>(['v13', 'v10', 'v11', 'v12']);
@@ -498,8 +605,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       apps,
       appFor: (id) => apps.find((a) => a.vacancyId === id),
       // The message goes with the application; the chat opens when the employer accepts.
-      apply: (id, message) =>
-        setApps((a) => [{ vacancyId: id, status: 'pending', note: 'Applied just now', message: message.trim() || undefined }, ...a.filter((x) => x.vacancyId !== id)]),
+      apply: (id, message) => setApps((a) => [{ vacancyId: id, status: 'pending', note: 'Applied just now', message: message.trim() || undefined }, ...a.filter((x) => x.vacancyId !== id)]),
       withdraw: (id) => setApps((a) => a.map((x) => (x.vacancyId === id ? { ...x, status: 'closed', note: 'You withdrew the application', archived: true } : x))),
       saved,
       toggleSaved: (id) => {
@@ -513,9 +619,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       archiveThread: (id, archived) => updateThread(id, () => ({ archived })),
       deleteThread: (id) => setThreads((ts) => ts.filter((t) => t.id !== id)),
       send: (id, msg) =>
-        setThreads((ts) =>
-          ts.map((t) => (t.id === id ? { ...t, messages: [...t.messages, { ...msg, id: `n${++mid}` } as Msg], time: 'time' in msg ? (msg.time as string) : now(), unread: 0 } : t)),
-        ),
+        setThreads((ts) => ts.map((t) => (t.id === id ? { ...t, messages: [...t.messages, { ...msg, id: `n${++mid}` } as Msg], time: 'time' in msg ? (msg.time as string) : now(), unread: 0 } : t))),
       unreadTotal: threads.filter((t) => !t.archived).reduce((n, t) => n + t.unread, 0),
       acceptRequest: (id) => {
         updateThread(id, (x) =>
@@ -539,7 +643,9 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       },
       recent,
       addRecent: (r) =>
-        setRecent((rs) => [{ ...r, id: `r${Date.now()}` }, ...rs.filter((x) => x.q.trim().toLowerCase() !== r.q.trim().toLowerCase() || JSON.stringify(x.filters) !== JSON.stringify(r.filters))].slice(0, 6)),
+        setRecent((rs) =>
+          [{ ...r, id: `r${Date.now()}` }, ...rs.filter((x) => x.q.trim().toLowerCase() !== r.q.trim().toLowerCase() || JSON.stringify(x.filters) !== JSON.stringify(r.filters))].slice(0, 6),
+        ),
       removeRecent: (id) => setRecent((rs) => rs.filter((x) => x.id !== id)),
       clearRecent: () => setRecent([]),
       notifs,

@@ -146,7 +146,14 @@ export function profileOf(c: Candidate): CandidateProfile {
     languages,
     experience,
     total,
-    education: n % 3 === 0 ? { title: c.sphere === 'hospitality' || c.sphere === 'fnb' ? 'Diploma, Hospitality management' : 'Bachelor, Media and design', school: n % 2 ? 'Dubai Hospitality College' : 'Middlesex University Dubai', years: `${2014 + (n % 6)} — ${2017 + (n % 6)}` } : undefined,
+    education:
+      n % 3 === 0
+        ? {
+            title: c.sphere === 'hospitality' || c.sphere === 'fnb' ? 'Diploma, Hospitality management' : 'Bachelor, Media and design',
+            school: n % 2 ? 'Dubai Hospitality College' : 'Middlesex University Dubai',
+            years: `${2014 + (n % 6)} — ${2017 + (n % 6)}`,
+          }
+        : undefined,
     field: { title: fieldTitle[c.sphere], roles, rows },
     links,
     // One real photo per mock person: the grid shows it with three crops so the gallery reads as a set.

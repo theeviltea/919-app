@@ -82,7 +82,7 @@ export default function EmployerNotifications() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const soon = useSoon();
-  const { notifs, readNotif, readAllNotifs } = useEmployer();
+  const { notifs, readNotif, readAllNotifs, vacancies } = useEmployer();
   const startVacancy = useStartVacancy();
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -97,11 +97,18 @@ export default function EmployerNotifications() {
   /** Where a notification leads (its action and a tap on it). */
   const go = (n: EmpNotif) => {
     readNotif(n.id);
+    // The vacancy a notification is about, by its title in the text.
+    const vac = vacancies.find((v) => `${n.title} ${n.text}`.includes(v.title));
+    const page = () => (vac ? router.push({ pathname: '/my-vacancy/[id]', params: { id: vac.id } }) : router.navigate('/hire/vacancies'));
     switch (n.kind) {
       case 'applicants':
       case 'applicant':
+        return vac && vac.status === 'active' ? router.push({ pathname: '/hire/applicants', params: { id: vac.id } }) : router.navigate('/hire/vacancies');
       case 'urgent':
       case 'approved':
+      case 'changes':
+      case 'rejected':
+        return page();
       case 'archived':
         return router.navigate('/hire/vacancies');
       case 'accepted':
@@ -113,7 +120,7 @@ export default function EmployerNotifications() {
       case 'premiumOver':
         return router.push('/company/subscription');
       default:
-        return soon('Vacancy editing');
+        return soon('This notification');
     }
   };
 
