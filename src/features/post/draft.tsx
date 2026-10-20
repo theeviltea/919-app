@@ -1,7 +1,8 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 
-import type { Field } from '@/data/registration';
+import { fieldByKey, fields, type Field } from '@/data/registration';
+import type { VacancyDetail } from '@/data/hiring';
 import { contractTypes } from '@/data/dictionaries';
 import type { ContractType } from '@/data/types';
 
@@ -48,12 +49,32 @@ export const emptyDraft = (): VacancyDraft => ({
   urgent: false,
 });
 
-type Ctx = { d: VacancyDraft; set: (u: Partial<VacancyDraft>) => void; reset: () => void };
+type Ctx = {
+  d: VacancyDraft;
+  set: (u: Partial<VacancyDraft>) => void;
+  reset: () => void;
+  /** Vacancy being edited (post/edit), or undefined for a new one. The steps then save back instead of moving on. */
+  editing?: string;
+  /** Snapshot taken when editing started: tells which sections changed. */
+  original?: VacancyDraft;
+  startEdit: (id: string, d: VacancyDraft) => void;
+};
 const DraftCtx = createContext<Ctx | null>(null);
 
 export function DraftProvider({ children }: { children: ReactNode }) {
   const [d, setD] = useState<VacancyDraft>(emptyDraft);
-  const value = useMemo<Ctx>(() => ({ d, set: (u) => setD((x) => ({ ...x, ...u })), reset: () => setD(emptyDraft()) }), [d]);
+  const [edit, setEdit] = useState<{ id: string; original: VacancyDraft } | undefined>();
+  const value = useMemo<Ctx>(
+    () => ({
+      d,
+      set: (u) => setD((x) => ({ ...x, ...u })),
+      reset: () => (setD(emptyDraft()), setEdit(undefined)),
+      editing: edit?.id,
+      original: edit?.original,
+      startEdit: (id, draft) => (setD(draft), setEdit({ id, original: draft })),
+    }),
+    [d, edit],
+  );
   return <DraftCtx.Provider value={value}>{children}</DraftCtx.Provider>;
 }
 
@@ -86,3 +107,41 @@ export function payPreview(d: { amountMode: AmountMode; currency?: string; amoun
 /** The vacancy just sent for review — handed to the Sent screen (images aren't URL-serialisable). */
 export type SentVacancy = { id: string; title: string; city: string; pay: string; start?: string; cover?: ImageSourcePropType };
 export const lastSent: { current?: SentVacancy } = {};
+
+/** Rebuild the form from a published vacancy (Edit vacancy). Vacancies posted in the app carry their form; demo ones are parsed. */
+export function draftFromVacancy(v: { title: string; cover: ImageSourcePropType; urgentLeft?: string; detail?: VacancyDetail }): VacancyDraft {
+  const d = v.detail!;
+  const f = d.form;
+  const roleText = d.role.toLowerCase();
+  // Whole-word match, longest role wins: "Hostess" is Hospitality, not Entertainment's "Host".
+  const hit = (r: string) => new RegExp(`\\b${r.toLowerCase().replace(/[^a-z ]/g, '')}\\b`).test(roleText);
+  const byRole = fields
+    .flatMap((x) => x.roles.filter(hit).map((r) => ({ x, len: r.length })))
+    .sort((a, b) => b.len - a.len)[0]?.x;
+  const byLabel = fields.find((x) => x.label.toLowerCase() === d.category.toLowerCase()) ?? (d.category === 'Events' ? fields.find((x) => x.key === 'entertainment') : undefined);
+  const field = (f?.field as Field | undefined) ?? byRole?.key ?? byLabel?.key;
+  const roles = f?.roles ?? (field ? fieldByKey(field).roles.filter(hit) : []);
+  const langs = f?.languages ?? d.requirements.filter((r) => r.includes(' — ')).map((r) => ({ name: r.split(' — ')[0], level: r.split(' — ')[1].replace(/^./, (x) => x.toUpperCase()) }));
+  const params: Record<string, ParamValue> = f?.params ?? (d.requirements.includes('Video presentation') ? { video: true } : {});
+  const start = new Date(Date.now() + 3 * 864e5);
+  return {
+    field,
+    roles,
+    cover: v.cover,
+    title: v.title,
+    description: d.description,
+    startDate: f?.startDate ?? `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
+    country: d.country,
+    city: d.city,
+    photos: d.photos.filter((p) => p !== v.cover),
+    contract: d.contract,
+    amountMode: f?.amountMode ?? (d.amount == null ? 'negotiable' : d.from ? 'from' : 'exact'),
+    currency: f?.currency ?? CURRENCIES.find((c) => c.startsWith(d.currency)) ?? CURRENCIES[0],
+    amount: d.amount != null ? String(d.amount) : '',
+    sex: d.gender || 'Any',
+    age: d.age,
+    params,
+    languages: langs,
+    urgent: !!v.urgentLeft,
+  };
+}

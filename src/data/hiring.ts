@@ -24,6 +24,16 @@ export type VacancyDetail = {
   photos: ImageSourcePropType[];
   posted: string; // "2 h ago"
   views: number;
+  /** The form as it was filled (vacancies posted in the app), so editing reopens it exactly. */
+  form?: {
+    field?: string;
+    roles: string[];
+    startDate?: string;
+    params: Record<string, string | boolean | string[]>;
+    languages: { name: string; level: string }[];
+    amountMode: 'exact' | 'from' | 'negotiable';
+    currency?: string;
+  };
 };
 
 export type ApplicantStatus = 'new' | 'accepted' | 'declined';

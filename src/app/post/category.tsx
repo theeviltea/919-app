@@ -10,7 +10,7 @@ import { useTheme } from '@/theme';
 /** New vacancy, step 1 of 4 — field and role (VacCategory / VacCategoryOpen). One field, any of its roles. */
 export default function VacancyCategory() {
   const { c } = useTheme();
-  const { d, set } = useDraft();
+  const { d, set, editing } = useDraft();
   const [open, setOpen] = useState<Field | undefined>(d.field);
   const [field, setField] = useState<Field | undefined>(d.field);
   const [roles, setRoles] = useState<string[]>(d.roles);
@@ -28,10 +28,12 @@ export default function VacancyCategory() {
 
   return (
     <FormScreen
-      top={<StepProgress label="New vacancy" step={1} of={4} />}
-      title="Add vacancy"
+      top={editing ? undefined : <StepProgress label="New vacancy" step={1} of={4} />}
+      title={editing ? 'Field and role' : 'Add vacancy'}
       subtitle="Choose the field and the role you are hiring for."
-      footer={<Button size="l" label="Proceed" disabled={!field || !roles.length} onPress={() => (set({ field, roles }), router.push('/post/basic'))} />}>
+      footer={
+        <Button size="l" label={editing ? 'Done' : 'Proceed'} disabled={!field || !roles.length} onPress={() => (set({ field, roles }), editing ? router.back() : router.push('/post/basic'))} />
+      }>
       <View style={{ backgroundColor: c.surface, borderRadius: 24, paddingHorizontal: 18, paddingBottom: 8 }}>
         <Text variant="caption" weight={700} color="textBody" style={{ letterSpacing: 0.7, paddingTop: 16, paddingBottom: 4 }}>
           FIELDS

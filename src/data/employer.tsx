@@ -474,6 +474,8 @@ type Store = {
   /** New vacancy from the posting flow: lands On review, the demo moderation approves it a bit later. */
   addVacancy: (v: MyVacancy) => void;
   updateVacancy: (id: string, u: Partial<MyVacancy>) => void;
+  /** Edited vacancy goes back to review (Edit vacancy → Send for review); the demo moderation approves it again. */
+  resubmitVacancy: (id: string, u: Partial<MyVacancy>) => void;
   removeVacancy: (id: string) => void;
   /** Applicants per vacancy id (EmpApplicants). */
   applicants: Record<string, Applicant[]>;
@@ -539,6 +541,39 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [info, setInfoState] = useState(initialInfo);
   const [plan, setPlan] = useState<Plan>('premium');
   const [members, setMembers] = useState(initialMembers);
+  /** Demo moderation: the 919 team approves a vacancy a little after it's sent. */
+  const approveLater = (id: string, title: string, cover: ImageSourcePropType) =>
+    setTimeout(() => {
+      const until = new Date(Date.now() + 7 * 864e5).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      setVacancies((vs) =>
+        vs.map((x) =>
+          x.id === id && x.status === 'review'
+            ? {
+                ...x,
+                status: 'active',
+                daysLeft: 7,
+                note: `7 of 7 days left · until ${until}`,
+                detail: x.detail && { ...x.detail, posted: 'Just now' },
+                urgentInfo: x.urgentLeft ? { left: '24 h left · started just now', progress: 1, views: 0, applicants: 0 } : undefined,
+              }
+            : x,
+        ),
+      );
+      setNotifs((ns) => [
+        {
+          id: `n${id}-${Date.now()}`,
+          kind: 'approved',
+          group: 'vacancies',
+          title: 'Vacancy approved',
+          text: `${title} is live for 7 days, until ${until}`,
+          time: 'now',
+          day: 'today',
+          unread: true,
+          cover,
+        },
+        ...ns,
+      ]);
+    }, MODERATION_MS);
   const value = useMemo<Store>(
     () => ({
       threads,
@@ -547,38 +582,11 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       vacancies,
       addVacancy: (v) => {
         setVacancies((vs) => [v, ...vs]);
-        // Demo moderation: the 919 team approves the vacancy a little later.
-        setTimeout(() => {
-          const until = new Date(Date.now() + 7 * 864e5).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-          setVacancies((vs) =>
-            vs.map((x) =>
-              x.id === v.id && x.status === 'review'
-                ? {
-                    ...x,
-                    status: 'active',
-                    daysLeft: 7,
-                    note: `7 of 7 days left · until ${until}`,
-                    detail: x.detail && { ...x.detail, posted: 'Just now' },
-                    urgentInfo: x.urgentLeft ? { left: '24 h left · started just now', progress: 1, views: 0, applicants: 0 } : undefined,
-                  }
-                : x,
-            ),
-          );
-          setNotifs((ns) => [
-            {
-              id: `n${v.id}`,
-              kind: 'approved',
-              group: 'vacancies',
-              title: 'Vacancy approved',
-              text: `${v.title} is live for 7 days, until ${until}`,
-              time: 'now',
-              day: 'today',
-              unread: true,
-              cover: v.cover,
-            },
-            ...ns,
-          ]);
-        }, MODERATION_MS);
+        approveLater(v.id, v.title, v.cover);
+      },
+      resubmitVacancy: (id, u) => {
+        setVacancies((vs) => vs.map((x) => (x.id === id ? { ...x, ...u, status: 'review', note: 'Changes sent just now', changes: undefined, rejected: undefined, daysLeft: undefined } : x)));
+        approveLater(id, u.title ?? vacancies.find((x) => x.id === id)?.title ?? 'Vacancy', u.cover ?? vacancies.find((x) => x.id === id)!.cover);
       },
       updateVacancy: (id, u) => setVacancies((vs) => vs.map((v) => (v.id === id ? { ...v, ...u } : v))),
       removeVacancy: (id) => setVacancies((vs) => vs.filter((v) => v.id !== id)),

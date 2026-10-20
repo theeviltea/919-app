@@ -20,7 +20,7 @@ export default function EmployerTabs() {
       tabBar={(props) => (
         <TabBar
           {...props}
-          aliases={{ search: 'index', applicants: 'vacancies' }}
+          aliases={{ search: 'index', applicants: 'vacancies', 'vacancy-search': 'vacancies', 'chat-search': 'messages' }}
           center={{ after: 'vacancies', label: 'Post a new vacancy', icon: 'add', onPress: startVacancy }}
           meta={{
             index: { label: 'Talent', icon: 'users' },
@@ -38,6 +38,8 @@ export default function EmployerTabs() {
       <Tabs.Screen name="search" options={{ href: null }} />
       {/* Applicants of one vacancy: belongs to Vacancies. */}
       <Tabs.Screen name="applicants" options={{ href: null }} />
+      <Tabs.Screen name="vacancy-search" options={{ href: null }} />
+      <Tabs.Screen name="chat-search" options={{ href: null }} />
     </Tabs>
   );
 }

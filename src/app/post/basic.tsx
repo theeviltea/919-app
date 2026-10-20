@@ -34,7 +34,7 @@ type Sheet = 'cover' | 'photos' | 'date' | 'country' | 'city' | null;
 /** New vacancy, step 2 of 4 — Basic information (VacBasic / VacBasicFilled). */
 export default function VacancyBasic() {
   const { c } = useTheme();
-  const { d, set } = useDraft();
+  const { d, set, editing } = useDraft();
   const [sheet, setSheet] = useState<Sheet>(null);
   const missing = [
     !d.cover && 'cover',
@@ -49,7 +49,7 @@ export default function VacancyBasic() {
 
   return (
     <FormScreen
-      top={<StepProgress label="New vacancy" step={2} of={4} />}
+      top={editing ? undefined : <StepProgress label="New vacancy" step={2} of={4} />}
       title="Basic information"
       subtitle="Fill in all the fields — this is what candidates see first."
       footer={
@@ -59,7 +59,7 @@ export default function VacancyBasic() {
               {`Add ${missing.join(', ')} to continue`}
             </Text>
           ) : null}
-          <Button size="l" label="Proceed" disabled={!ok} onPress={() => router.push('/post/salary')} />
+          <Button size="l" label={editing ? 'Done' : 'Proceed'} disabled={!ok} onPress={() => (editing ? router.back() : router.push('/post/salary'))} />
         </View>
       }>
       <Panel title="Cover">

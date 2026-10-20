@@ -4,56 +4,12 @@ import { View } from 'react-native';
 
 import { BottomSheet, Button, Chip, Field, FormScreen, Icon, Pressable, StepProgress, Text, Toggle, useToast, type IconName } from '@/components';
 import { useEmployer } from '@/data/employer';
-import { appearanceTypes, clothingSizes, fieldByKey, genres, hairColors, type Field as FieldKey } from '@/data/registration';
+import { fieldByKey } from '@/data/registration';
 import { SelectSheet } from '@/features/auth/SelectSheet';
-import { currencyCode, lastSent, payPreview, useDraft, type LangReq, type ParamValue } from '@/features/post/draft';
+import { lastSent, payPreview, useDraft, type LangReq, type ParamValue } from '@/features/post/draft';
+import { AGES, detailFromDraft, LANGS, LEVELS, paramsFor, SEXES, type ParamDef } from '@/features/post/requirements';
 import { Panel } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
-
-type Kind = 'number' | 'chips' | 'bool' | 'langs';
-type ParamDef = { key: string; label: string; unit?: string; kind: Kind; options?: string[] };
-
-const LANGS = ['English', 'Arabic', 'Russian', 'French', 'Spanish', 'German', 'Italian', 'Hindi', 'Chinese', 'Turkish'];
-const LEVELS = ['Native', 'Fluent', 'Conversational', 'Basic'];
-const AGES = ['Any', '18–20', '21–24', '25–29', '30–35', '36+'];
-const SEXES = ['Any', 'Female', 'Male'];
-
-const body: ParamDef[] = [
-  { key: 'height', label: 'Height', unit: 'cm', kind: 'number' },
-  { key: 'weight', label: 'Weight', unit: 'kg', kind: 'number' },
-  { key: 'bust', label: 'Bust', unit: 'cm', kind: 'number' },
-  { key: 'waist', label: 'Waist', unit: 'cm', kind: 'number' },
-  { key: 'hips', label: 'Hips', unit: 'cm', kind: 'number' },
-  { key: 'clothing', label: 'Clothing size', kind: 'chips', options: clothingSizes },
-  { key: 'shoe', label: 'Shoe size', unit: 'EU', kind: 'number' },
-  { key: 'hair', label: 'Hair color', kind: 'chips', options: ['Blonde', ...hairColors.filter((h) => h !== 'Blonde'), 'Black'] },
-  { key: 'appearance', label: 'Appearance type', kind: 'chips', options: [...appearanceTypes, 'Middle Eastern'] },
-  { key: 'tattoos', label: 'Tattoos / piercings', kind: 'chips', options: ['No visible tattoos', 'Tattoos allowed', 'No piercings'] },
-];
-const common: ParamDef[] = [
-  { key: 'languages', label: 'Languages', kind: 'langs' },
-  { key: 'video', label: 'Video presentation', kind: 'bool' },
-];
-/** Additional parameters depend on the field (the same set the seeker questionnaires collect). */
-const paramsFor = (f?: FieldKey): ParamDef[] => {
-  if (f === 'music') return [{ key: 'genre', label: 'Genre', kind: 'chips', options: genres }, { key: 'equipment', label: 'Own equipment', kind: 'bool' }, ...common];
-  if (f === 'service') return [{ key: 'portfolio', label: 'Portfolio links', kind: 'bool' }, { key: 'equipment', label: 'Own equipment', kind: 'bool' }, ...common];
-  return [...body, ...(f === 'model' ? [{ key: 'catwalk', label: 'Catwalk experience', kind: 'bool' as const }] : []), ...common];
-};
-
-/** Ticked requirements as the chips candidates see: "English — fluent", "Height 170 cm", "Video presentation". */
-function requirementChips(defs: ParamDef[], params: Record<string, ParamValue>, langs: LangReq[], age?: string) {
-  const out = langs.map((l) => `${l.name} — ${l.level.toLowerCase()}`);
-  if (age && age !== 'Any') out.push(`Age ${age}`);
-  for (const p of defs) {
-    const v = params[p.key];
-    if (v === undefined || p.kind === 'langs') continue;
-    if (p.kind === 'bool') out.push(p.label);
-    else if (Array.isArray(v)) v.forEach((x) => out.push(x));
-    else if (v) out.push(`${p.label} ${v}${p.unit ? ` ${p.unit}` : ''}`);
-  }
-  return out;
-}
 
 const summary = (p: ParamDef, v: ParamValue | undefined, langs: LangReq[]) => {
   if (p.kind === 'langs') return langs.map((l) => `${l.name} · ${l.level}`).join(', ');
@@ -77,7 +33,7 @@ function Check({ on }: { on: boolean }) {
 export default function VacancyRequirements() {
   const { c } = useTheme();
   const toast = useToast();
-  const { d, set, reset } = useDraft();
+  const { d, set, reset, editing } = useDraft();
   const { addVacancy } = useEmployer();
   const [open, setOpen] = useState<string | null>(null);
   const [sheet, setSheet] = useState<'sex' | 'age' | 'urgent' | { lang: number } | null>(null);
@@ -123,23 +79,7 @@ export default function VacancyRequirements() {
       status: 'review',
       note: 'Sent just now',
       urgentLeft: d.urgent ? '24 h left' : undefined,
-      detail: {
-        category: d.field ? fieldByKey(d.field).label : 'Vacancy',
-        contract: d.contract,
-        currency: currencyCode(d.currency),
-        amount: d.amountMode === 'negotiable' ? undefined : Number(d.amount.replace(/\D/g, '')) || 0,
-        from: d.amountMode === 'from',
-        role: d.roles.join(', ') || d.title.trim(),
-        gender: d.sex || 'Any',
-        age: d.age ?? 'Any',
-        city: d.city,
-        country: d.country,
-        description: d.description.trim(),
-        requirements: requirementChips(defs, d.params, d.languages, d.age),
-        photos: [d.cover!, ...d.photos],
-        posted: 'On review',
-        views: 0,
-      },
+      detail: detailFromDraft(d, 'On review'),
     });
     lastSent.current = { id, title: d.title.trim(), city: d.city, pay, start: d.startDate, cover: d.cover };
     router.replace('/post/sent');
@@ -148,10 +88,16 @@ export default function VacancyRequirements() {
 
   return (
     <FormScreen
-      top={<StepProgress label="New vacancy" step={4} of={4} />}
+      top={editing ? undefined : <StepProgress label="New vacancy" step={4} of={4} />}
       title="Requirements"
       subtitle="Set what matters for this role. Everything else stays open."
-      footer={<Button size="l" label={d.urgent ? 'Send for review · $2.99 paid' : 'Send for review'} disabled={!ok} onPress={send} />}>
+      footer={
+        editing ? (
+          <Button size="l" label="Done" disabled={!ok} onPress={() => router.back()} />
+        ) : (
+          <Button size="l" label={d.urgent ? 'Send for review · $2.99 paid' : 'Send for review'} disabled={!ok} onPress={send} />
+        )
+      }>
       <Panel title="Mandatory" gap={8}>
         <Field onSurface label="Sex" required value={d.sex} onPress={() => setSheet('sex')} rightIcon="chevron-down" />
         <Field onSurface label="Age" required value={d.age} placeholder="Select" onPress={() => setSheet('age')} rightIcon="chevron-down" />
@@ -261,43 +207,45 @@ export default function VacancyRequirements() {
         })}
       </Panel>
 
-      {/* Urgent hiring */}
-      <View style={{ backgroundColor: c.surface, borderRadius: 24, padding: 18, gap: 12 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.urgent, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="fire" size={20} color="onUrgent" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text variant="bodyL" weight={700} style={{ fontSize: 16 }}>
-                Urgent hiring
-              </Text>
-              {!d.urgent ? (
-                <View style={{ height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: c.input, justifyContent: 'center' }}>
-                  <Text variant="caption" weight={700} color="textPrimary" style={{ fontSize: 11 }}>
-                    $2.99
-                  </Text>
-                </View>
-              ) : null}
+      {/* Urgent hiring: bought for a published vacancy from its actions, not while editing */}
+      {editing ? null : (
+        <View style={{ backgroundColor: c.surface, borderRadius: 24, padding: 18, gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.urgent, alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="fire" size={20} color="onUrgent" />
             </View>
-            <Text variant="bodyS" color="textBody" style={{ fontSize: 13 }}>
-              {d.urgent ? 'Paid · 24 h from the moment it goes live' : 'One-time purchase · lasts 24 hours'}
-            </Text>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text variant="bodyL" weight={700} style={{ fontSize: 16 }}>
+                  Urgent hiring
+                </Text>
+                {!d.urgent ? (
+                  <View style={{ height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: c.input, justifyContent: 'center' }}>
+                    <Text variant="caption" weight={700} color="textPrimary" style={{ fontSize: 11 }}>
+                      $2.99
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+              <Text variant="bodyS" color="textBody" style={{ fontSize: 13 }}>
+                {d.urgent ? 'Paid · 24 h from the moment it goes live' : 'One-time purchase · lasts 24 hours'}
+              </Text>
+            </View>
+            <Toggle value={d.urgent} onValueChange={(v) => (v ? setSheet('urgent') : toast({ text: 'Urgent is already paid for this vacancy', icon: 'fire' }))} accessibilityLabel="Urgent hiring" />
           </View>
-          <Toggle value={d.urgent} onValueChange={(v) => (v ? setSheet('urgent') : toast({ text: 'Urgent is already paid for this vacancy', icon: 'fire' }))} accessibilityLabel="Urgent hiring" />
+          <Text variant="bodyS" color="textPrimary" style={{ fontSize: 13, lineHeight: 19 }}>
+            The vacancy is pinned to the top of the feed and search, gets a hot Urgent badge and appears in the Urgent tab of candidates’ filters.
+          </Text>
+          {d.urgent ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 14, backgroundColor: c.successBack }}>
+              <Icon name="check" size={16} color="successText" />
+              <Text variant="bodyS" weight={700} color="successText" style={{ flex: 1, fontSize: 13 }}>
+                Urgent is on. The 24 hours start after moderation.
+              </Text>
+            </View>
+          ) : null}
         </View>
-        <Text variant="bodyS" color="textPrimary" style={{ fontSize: 13, lineHeight: 19 }}>
-          The vacancy is pinned to the top of the feed and search, gets a hot Urgent badge and appears in the Urgent tab of candidates’ filters.
-        </Text>
-        {d.urgent ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 14, backgroundColor: c.successBack }}>
-            <Icon name="check" size={16} color="successText" />
-            <Text variant="bodyS" weight={700} color="successText" style={{ flex: 1, fontSize: 13 }}>
-              Urgent is on. The 24 hours start after moderation.
-            </Text>
-          </View>
-        ) : null}
-      </View>
+      )}
 
       <SelectSheet visible={sheet === 'sex'} title="Sex" options={SEXES} value={d.sex} onClose={() => setSheet(null)} onSelect={(v) => (set({ sex: v }), setSheet(null))} />
       <SelectSheet visible={sheet === 'age'} title="Age" options={AGES} value={d.age ?? ''} onClose={() => setSheet(null)} onSelect={(v) => (set({ age: v }), setSheet(null))} />

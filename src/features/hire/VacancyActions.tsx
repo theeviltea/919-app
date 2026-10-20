@@ -124,9 +124,9 @@ export function useVacancyActions(opts: { onDeleted?: () => void } = {}) {
     removeVacancy(v.id);
     toast({ text: 'Vacancy deleted', kind: 'neutral', icon: 'trash', aboveTabBar: true });
   };
-  const soonEdit = () => {
+  const edit = () => {
     close();
-    toast({ text: 'Vacancy editing — next stage of the prototype', icon: 'clock', aboveTabBar: true });
+    if (v) router.push({ pathname: '/post/edit', params: { id: v.id } });
   };
 
   const sheets = v ? (
@@ -172,7 +172,7 @@ export function useVacancyActions(opts: { onDeleted?: () => void } = {}) {
               onPress={() => (close(), router.navigate({ pathname: '/hire/applicants', params: { id: v.id } }))}
             />
           ) : null}
-          <Row icon="edit" tint="primarySecondary" fg="link" title="Edit vacancy" sub="Changes go through moderation again" onPress={soonEdit} />
+          <Row icon="edit" tint="primarySecondary" fg="link" title="Edit vacancy" sub="Changes go through moderation again" onPress={edit} />
           {live ? <Row icon="share" tint="primarySecondary" fg="link" title="Share vacancy" onPress={() => go('share')} /> : null}
           {live ? <Row icon="clock" tint="primarySecondary" fg="link" title="Move to archive" sub="Stop receiving applicants before day 7" onPress={() => go('archive')} /> : null}
           {v.status === 'archive' ? (
@@ -322,7 +322,7 @@ export function useVacancyActions(opts: { onDeleted?: () => void } = {}) {
           ))}
         </View>
         <Button size="l" icon="flash" label="Relaunch" onPress={relaunch} />
-        <Button size="l" variant="neutral" label="Edit and relaunch" onPress={soonEdit} />
+        <Button size="l" variant="neutral" label="Edit and relaunch" onPress={edit} />
       </BottomSheet>
 
       {/* Delete */}

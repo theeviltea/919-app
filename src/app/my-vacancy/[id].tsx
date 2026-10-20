@@ -70,7 +70,7 @@ export default function MyVacancyScreen() {
             <BackButton tone="onPhoto" />
             <View style={{ flex: 1 }} />
             <IconButton tone="onPhoto" icon="share" label="Share" onPress={() => actions.open(v.id, 'share')} />
-            <IconButton tone="onPhoto" icon="edit" label="Edit vacancy" onPress={() => soon('Vacancy editing')} />
+            <IconButton tone="onPhoto" icon="edit" label="Edit vacancy" onPress={() => router.push({ pathname: '/post/edit', params: { id: v.id } })} />
             <IconButton tone="onPhoto" icon="trash" color={c.dangerText} label="Delete vacancy" onPress={() => actions.open(v.id, 'delete')} />
           </View>
           <View style={{ position: 'absolute', right: 16, bottom: 52, height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.mediaOverlay, justifyContent: 'center' }}>
@@ -233,7 +233,7 @@ export default function MyVacancyScreen() {
                   </View>
                 ))}
               </View>
-              <Button size="l" icon="edit" label="Edit and resubmit" onPress={() => soon('Vacancy editing')} />
+              <Button size="l" icon="edit" label="Edit and resubmit" onPress={() => router.push({ pathname: '/post/edit', params: { id: v.id } })} />
               <Text variant="caption" weight={400} color="attentionText" align="center" style={{ fontSize: 12, lineHeight: 17 }}>
                 After you save, the vacancy goes back to review. Paid Urgent hiring starts only after approval.
               </Text>

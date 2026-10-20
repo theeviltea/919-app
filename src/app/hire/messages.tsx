@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheet, Button, EmptyState, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast } from '@/components';
 import { useEmployer, type EmpThread } from '@/data/employer';
 import { SwipeRow, type SwipeAction } from '@/features/chat/SwipeRow';
-import { PageTitle, Pill, Round, useSoon } from '@/features/hire/ui';
+import { PageTitle, Pill, Round } from '@/features/hire/ui';
 import { SheetHero } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
 
@@ -92,7 +92,6 @@ export default function HireMessages() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const soon = useSoon();
   const { threads, moveThread, deleteThread } = useEmployer();
   const [tab, setTab] = useState<Box>('active');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -125,7 +124,7 @@ export default function HireMessages() {
   return (
     <View style={{ flex: 1, backgroundColor: c.back }}>
       <View style={{ paddingTop: insets.top + 20, paddingHorizontal: 16, gap: 14, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
-        <PageTitle title="Messages" action={{ icon: 'search', label: 'Search chats', onPress: () => soon('Chat search') }} />
+        <PageTitle title="Messages" action={{ icon: 'search', label: 'Search chats', onPress: () => router.push('/hire/chat-search') }} />
         <SegmentedTabs<Box>
           items={[
             { key: 'active', label: 'Active', count: of('active').length },

@@ -27,17 +27,17 @@ const MODES: [AmountMode, string][] = [
 /** New vacancy, step 3 of 4 — Salary (VacSalary / VacSalaryFilled). */
 export default function VacancySalary() {
   const { c } = useTheme();
-  const { d, set } = useDraft();
+  const { d, set, editing } = useDraft();
   const [sheet, setSheet] = useState(false);
   const needsAmount = d.amountMode !== 'negotiable';
   const ok = !needsAmount || (!!d.currency && Number(d.amount.replace(/\D/g, '')) > 0);
 
   return (
     <FormScreen
-      top={<StepProgress label="New vacancy" step={3} of={4} />}
+      top={editing ? undefined : <StepProgress label="New vacancy" step={3} of={4} />}
       title="Salary"
       subtitle="Candidates filter vacancies by pay, so be specific."
-      footer={<Button size="l" label="Proceed" disabled={!ok} onPress={() => router.push('/post/requirements')} />}>
+      footer={<Button size="l" label={editing ? 'Done' : 'Proceed'} disabled={!ok} onPress={() => (editing ? router.back() : router.push('/post/requirements'))} />}>
       <Panel title="Contract type" gap={12}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {(Object.keys(contractTypes) as ContractType[]).map((k) => (
