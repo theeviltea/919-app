@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 
-import { BottomSheet, BrandMarkPlaceholder, Button, FormScreen, Icon, Pressable, Text } from '@/components';
+import { BottomSheet, BrandMark, Button, FormScreen, Icon, Pressable, Text } from '@/components';
 import { popularCountries } from '@/data/dictionaries';
 import { PhoneInput } from '@/features/auth/PhoneInput';
 import { useCreateAccount } from '@/features/auth/useCreateAccount';
@@ -30,8 +30,8 @@ export default function SignIn() {
       <BottomSheet visible={other} onClose={() => setOther(false)} title="Other ways to sign in" subtitle="Use the method you chose when you created the account." closable>
         <View style={{ gap: 12 }}>
           <Button label="Sign in with email" icon="mail" onPress={() => (setOther(false), router.push('/auth/email'))} />
-          <Button variant="secondary" label="Continue with Apple" leading={<BrandMarkPlaceholder />} onPress={() => (setOther(false), router.push({ pathname: '/auth/register', params: { social: 'apple', signin: '1' } }))} />
-          <Button variant="secondary" label="Continue with Google" leading={<BrandMarkPlaceholder />} onPress={() => (setOther(false), router.push({ pathname: '/auth/register', params: { social: 'google', signin: '1' } }))} />
+          <Button variant="secondary" label="Continue with Apple" leading={<BrandMark brand="apple" />} onPress={() => (setOther(false), router.push({ pathname: '/auth/register', params: { social: 'apple', signin: '1' } }))} />
+          <Button variant="secondary" label="Continue with Google" leading={<BrandMark brand="google" />} onPress={() => (setOther(false), router.push({ pathname: '/auth/register', params: { social: 'google', signin: '1' } }))} />
         </View>
       </BottomSheet>
     </FormScreen>

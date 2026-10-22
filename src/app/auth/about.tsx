@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Button, Card, Field, FormScreen, Icon, Pressable, StepProgress, Text } from '@/components';
+import { BrandMark, Button, Card, Field, FormScreen, Icon, Pressable, StepProgress, Text } from '@/components';
 import { allCountries, citiesFor, countryCode, countryShort, formatDob, popularCountryNames } from '@/data/registration';
 import { useSignup } from '@/data/signup';
 import { DateSheet } from '@/features/auth/DateSheet';
@@ -41,7 +41,7 @@ export default function About() {
       {social ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: c.successBack }}>
           <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' }}>
-            <View style={{ width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderStyle: 'dashed', borderColor: c.placeholderDashed }} />
+            <BrandMark brand={social === 'apple' ? 'apple' : 'google'} />
           </View>
           <View style={{ flex: 1 }}>
             <Text variant="body" weight={700} color="successText" style={{ fontSize: 14 }}>

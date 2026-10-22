@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, View } from 'react-native';
 
-import { BrandMarkPlaceholder, Button, FormScreen, Icon, Pressable, Text } from '@/components';
+import { BrandMark, Button, FormScreen, Icon, Pressable, Text } from '@/components';
 import { OrDivider } from '@/components/AuthSheet';
 import { popularCountries } from '@/data/dictionaries';
 import { PhoneInput } from '@/features/auth/PhoneInput';
@@ -65,8 +65,8 @@ export default function Register() {
       </View>
       <OrDivider label="or" />
       <View style={{ gap: 12 }}>
-        <Button variant="secondary" label="Continue with Apple" leading={<BrandMarkPlaceholder />} onPress={() => setConnecting('apple')} />
-        <Button variant="secondary" label="Continue with Google" leading={<BrandMarkPlaceholder />} onPress={() => setConnecting('google')} />
+        <Button variant="secondary" label="Continue with Apple" leading={<BrandMark brand="apple" />} onPress={() => setConnecting('apple')} />
+        <Button variant="secondary" label="Continue with Google" leading={<BrandMark brand="google" />} onPress={() => setConnecting('google')} />
         <Button variant="secondary" label="Continue with email" icon="mail" onPress={() => router.push('/auth/register-email')} />
       </View>
       <Pressable onPress={() => router.replace('/auth/sign-in')} accessibilityRole="link" style={{ alignSelf: 'center', paddingVertical: 8 }}>

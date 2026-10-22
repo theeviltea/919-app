@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { useTheme } from '@/theme';
 
 import { BottomSheet } from './BottomSheet';
-import { BrandMarkPlaceholder, Button } from './Button';
+import { BrandMark, Button } from './Button';
 import { Text } from './Text';
 
 export type AuthMethod = 'phone' | 'apple' | 'google' | 'email';
@@ -14,8 +14,8 @@ export function AuthButtons({ onMethod, verb = 'Sign in' }: { onMethod: (m: Auth
   return (
     <View style={{ gap: 12 }}>
       <Button label={`${verb} with phone`} icon="phone" onPress={() => onMethod('phone')} />
-      <Button variant="secondary" label={`${verb} with Apple`} leading={<BrandMarkPlaceholder />} onPress={() => onMethod('apple')} />
-      <Button variant="secondary" label={`${verb} with Google`} leading={<BrandMarkPlaceholder />} onPress={() => onMethod('google')} />
+      <Button variant="secondary" label={`${verb} with Apple`} leading={<BrandMark brand="apple" />} onPress={() => onMethod('apple')} />
+      <Button variant="secondary" label={`${verb} with Google`} leading={<BrandMark brand="google" />} onPress={() => onMethod('google')} />
       <Button variant="secondary" label={`${verb} with email`} icon="mail" onPress={() => onMethod('email')} />
     </View>
   );

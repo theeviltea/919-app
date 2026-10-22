@@ -1,5 +1,7 @@
+import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, View, type StyleProp, type ViewStyle } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { useTheme, type Colors } from '@/theme';
 
@@ -16,7 +18,7 @@ type Props = {
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: IconName;
-  /** Custom leading element, e.g. the dashed brand-mark placeholder on Apple / Google buttons. */
+  /** Custom leading element, e.g. the Apple / Google mark (BrandMark). */
   leading?: ReactNode;
   disabled?: boolean;
   loading?: boolean;
@@ -84,14 +86,19 @@ export function Button({ label, onPress, variant = 'primary', size = 'm', icon, 
   );
 }
 
-/** Dashed 20×20 square standing in for the official Apple / Google marks until we get them. */
-export function BrandMarkPlaceholder() {
+/** Official Apple and Google marks for the sign-in buttons: Apple in the text colour, Google in its own colours. */
+export function BrandMark({ brand, size = 20 }: { brand: 'apple' | 'google'; size?: number }) {
   const { c } = useTheme();
+  if (brand === 'google') return <Image source={GOOGLE} accessibilityLabel="Google" style={{ width: size, height: size }} contentFit="contain" />;
   return (
-    <View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={{ width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderStyle: 'dashed', borderColor: c.placeholderDashed }}
-    />
+    <View accessibilityLabel="Apple" style={{ width: size, height: size }}>
+      <Svg width={size} height={size} viewBox="0 0 24 24">
+        <Path d={APPLE} fill={c.textHeadline} />
+      </Svg>
+    </View>
   );
 }
+
+const GOOGLE = require('@/assets/images/brand/google.png');
+const APPLE =
+  'M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701';
