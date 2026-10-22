@@ -5,12 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View, type ImageSourcePropType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BackButton, BottomSheet, Button, ChatBubble, ChatDate, ChatSystemLine, EmptyState, Icon, IconButton, Pressable, Text, useToast, type IconName } from '@/components';
+import { BackButton, BottomSheet, Button, ChatBubble, ChatDate, ChatSystemLine, EmptyState, Icon, IconButton, type IconName, Pressable, Text, TierBadge, useToast } from '@/components';
 import { profileOf } from '@/data/candidateProfile';
 import { contractTypes, formatAmount } from '@/data/dictionaries';
 import { candidateReplies, fallbackChat, type EmpMsg, type NewEmpMsg } from '@/data/empChat';
 import { useEmployer, type EmpThread, type MyVacancy } from '@/data/employer';
 import { findCandidate, type Candidate } from '@/data/talentPool';
+import { tierOf } from '@/data/tiers';
 import { SAMPLE_PHOTOS } from '@/features/auth/media';
 import { pickImages } from '@/features/auth/pickImage';
 import { ChatBackground } from '@/features/chat/ChatBackground';
@@ -123,7 +124,7 @@ function CandidateCard({ cand }: { cand: Candidate }) {
             duration: cand.video.duration,
             label: 'Video presentation',
             name: cand.name,
-            verified: cand.verified,
+            tier: cand.tier,
             avatar: cand.photo,
             subtitle: `${cand.role} · ${cand.city}`,
           })
@@ -329,7 +330,7 @@ function Chat({ t, initialCtx }: { t: EmpThread; initialCtx?: string }) {
                 <Text variant="bodyL" weight={700} color={deleted ? 'textBody' : 'textHeadline'} numberOfLines={1} style={{ fontSize: 16, flexShrink: 1 }} accessibilityRole="header">
                   {t.name}
                 </Text>
-                {cand?.verified ? <Icon name="verified" size={16} color="primary" /> : null}
+                <TierBadge tier={cand?.tier ?? tierOf(t.name)} size={18} />
               </View>
               <Text variant="caption" weight={400} color={typing ? 'link' : 'textBody'} numberOfLines={1} style={{ fontSize: 12 }}>
                 {deleted

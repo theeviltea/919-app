@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BackButton, Button, EmptyState, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast, type IconName } from '@/components';
+import { BackButton, Button, EmptyState, Icon, type IconName, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, TierBadge, useToast } from '@/components';
 import { initialsOf, useEmployer, type MyVacancy } from '@/data/employer';
 import { applicantLine, asPublicVacancy, candidateOf, type Applicant, type ApplicantStatus } from '@/data/hiring';
 import { Pill } from '@/features/hire/ui';
@@ -212,7 +212,7 @@ function ApplicantCard({ x, live, onAccept, onDecline, onBack, onMessage }: { x:
             <Text variant="bodyL" weight={600} numberOfLines={1} style={{ fontSize: 16, flexShrink: 1 }}>
               {cand.name}
             </Text>
-            {cand.verified ? <Icon name="verified" size={16} color="primary" /> : null}
+            <TierBadge tier={cand.tier} size={18} />
           </View>
           <Text variant="bodyS" color="textBody" numberOfLines={1} style={{ marginTop: 3, fontSize: 13 }}>
             {applicantLine(cand)}

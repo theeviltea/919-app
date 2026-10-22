@@ -4,6 +4,7 @@ import type { ImageSourcePropType } from 'react-native';
 import { ageFrom, type Field } from './registration';
 import { useSession } from './session';
 import { useSignup, type FieldEntry, type Photo, type SeekerDraft } from './signup';
+import type { FrameStyle, Tier } from './tiers';
 import type { Sphere, Vacancy } from './types';
 
 // ---------- profile
@@ -519,7 +520,21 @@ type Store = {
   readAllNotifs: () => void;
   removeNotif: (id: string) => void;
   unreadNotifs: number;
+  /** Seeker subscription (§12). `canceled`: stays active until the end of the paid period. */
+  plan: Tier;
+  planCanceled: boolean;
+  subscribe: (t: Exclude<Tier, 'free'>) => void;
+  cancelPlan: () => void;
+  renewPlan: () => void;
+  /** Max profile look: frame around the photo and the custom header. */
+  look: { frame?: FrameStyle; header: boolean };
+  setLook: (l: { frame?: FrameStyle; header: boolean }) => void;
+  /** Free plan: applications used this month, limit 10. */
+  appsUsed: number;
 };
+
+/** Free plan limit on applications (§12). */
+export const FREE_APPLY_LIMIT = 10;
 
 const Ctx = createContext<Store | null>(null);
 let mid = 0;
@@ -563,6 +578,9 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [notifs, setNotifs] = useState<Notif[]>(initialNotifs);
   const [recent, setRecent] = useState<RecentSearch[]>(initialRecent);
+  // Demo account (Mia) is on Max with the neon frame and a custom header, as on the canvas; new accounts start Free.
+  const [planState, setPlanState] = useState<{ plan: Tier; canceled: boolean } | null>(null);
+  const [lookState, setLookState] = useState<{ frame?: FrameStyle; header: boolean } | null>(null);
 
   const profile = useMemo<SeekerProfile>(() => {
     const base = draft.demo ? demoProfile : null;
@@ -591,6 +609,9 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       ...extra,
     };
   }, [draft, extra, user]);
+
+  const plan: Tier = planState?.plan ?? (draft.demo ? 'max' : 'free');
+  const look = useMemo(() => lookState ?? (draft.demo ? { frame: 'neon' as FrameStyle, header: true } : { header: false }), [lookState, draft.demo]);
 
   const updateThread = useCallback((id: string, fn: (t: Thread) => Partial<Thread>) => setThreads((ts) => ts.map((t) => (t.id === id ? { ...t, ...fn(t) } : t))), []);
 
@@ -653,8 +674,16 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       readAllNotifs: () => setNotifs((ns) => ns.map((n) => ({ ...n, unread: false }))),
       removeNotif: (id) => setNotifs((ns) => ns.filter((n) => n.id !== id)),
       unreadNotifs: notifs.filter((n) => n.unread).length,
+      plan,
+      planCanceled: planState?.canceled ?? false,
+      subscribe: (t) => setPlanState({ plan: t, canceled: false }),
+      cancelPlan: () => setPlanState({ plan, canceled: true }),
+      renewPlan: () => setPlanState({ plan: plan === 'free' ? 'max' : plan, canceled: false }),
+      look: plan === 'max' ? look : { header: false },
+      setLook: setLookState,
+      appsUsed: apps.length,
     }),
-    [profile, hidden, prefs, apps, saved, threads, notifs, recent, updateThread],
+    [profile, hidden, prefs, apps, saved, threads, notifs, recent, updateThread, plan, planState, look],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

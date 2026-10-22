@@ -1,4 +1,5 @@
 // Mock content for the prototype. Mirrors the canvas screens; replaced by the API later.
+import { frameOf, tierOf } from './tiers';
 import type { Talent, Vacancy } from './types';
 
 const img = {
@@ -330,15 +331,17 @@ export const allVacancies: Vacancy[] = [...vacancies, ...generated];
 /** Public feed: 9 hand-made + 43 generated = 52 vacancies. */
 export const feedVacancies = [...vacancies.slice(0, 9), ...generated];
 
-export const talents: Talent[] = [
+const withTier = (t: Talent): Talent => ({ ...t, tier: tierOf(t.name), frame: tierOf(t.name) === 'max' ? frameOf(t.name) : undefined, premium: tierOf(t.name) !== 'free' });
+
+export const talents: Talent[] = ([
   { id: 't1', name: 'Angela R.', role: 'Hostess', city: 'Dubai', verified: true, premium: true, sphere: 'hospitality', photo: p(1), placeholder: 1 },
   { id: 't2', name: 'Ibrahim K.', role: 'Bartender', city: 'Dubai', verified: true, premium: false, sphere: 'hospitality', photo: p(10), placeholder: 2 },
   { id: 't3', name: 'Sofia L.', role: 'Model', city: 'Dubai', verified: true, premium: true, sphere: 'modeling', photo: p(8), placeholder: 3 },
   { id: 't4', name: 'Nour A.', role: 'Bartender', city: 'Abu Dhabi', verified: true, premium: false, sphere: 'hospitality', photo: p(9), placeholder: 4 },
-  { id: 't5', name: 'Layla H.', role: 'Waitress', city: 'Dubai', verified: false, premium: true, sphere: 'hospitality', photo: p(13), placeholder: 1 },
+  { id: 't5', name: 'Layla H.', role: 'Hostess', city: 'Dubai', verified: false, premium: true, sphere: 'hospitality', photo: require('@/assets/images/stock/f-pink-skirt.webp'), placeholder: 1 },
   { id: 't6', name: 'Lucas M.', role: 'DJ', city: 'Dubai', verified: true, premium: false, sphere: 'music', photo: p(14), placeholder: 5 },
   { id: 't7', name: 'Mira K.', role: 'Hostess', city: 'Dubai', verified: true, premium: false, sphere: 'hospitality', photo: p(2), placeholder: 2 },
   { id: 't8', name: 'Wakako T.', role: 'Promo, hostess', city: 'Dubai', verified: true, premium: true, sphere: 'events', photo: p(3), placeholder: 3 },
-];
+] as Talent[]).map(withTier);
 
 export const findVacancy = (id: string) => allVacancies.find((v) => v.id === id);

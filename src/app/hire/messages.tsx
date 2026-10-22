@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomSheet, Button, EmptyState, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast } from '@/components';
+import { BottomSheet, Button, EmptyState, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, TierBadge, useToast } from '@/components';
 import { useEmployer, type EmpThread } from '@/data/employer';
+import { tierOf } from '@/data/tiers';
 import { SwipeRow, type SwipeAction } from '@/features/chat/SwipeRow';
 import { PageTitle, Pill, Round } from '@/features/hire/ui';
 import { SheetHero } from '@/features/profile/ui';
@@ -37,7 +38,7 @@ function Row({ t, last }: { t: EmpThread; last: boolean }) {
               <Text variant="bodyL" weight={700} numberOfLines={1} style={{ flexShrink: 1, fontSize: 16 }}>
                 {t.name}
               </Text>
-              <Icon name="verified" size={16} color="primary" />
+              <TierBadge tier={tierOf(t.name)} size={18} />
             </View>
             <Text variant="caption" weight={400} color="textBody" style={{ fontSize: 12 }}>
               {t.time}

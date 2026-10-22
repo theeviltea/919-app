@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Share, View, type GestureResponderEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon, Pressable, Text } from '@/components';
+import { Icon, Pressable, Text, TierBadge } from '@/components';
 import { currentVideo } from '@/features/media/viewer';
 import { useTheme } from '@/theme';
 
@@ -114,7 +114,7 @@ export default function VideoPlayer() {
                 <Text variant="bodyL" weight={700} color="#FFFFFF" numberOfLines={1}>
                   {v.name}
                 </Text>
-                {v.verified ? <Icon name="verified" size={18} color="#FFFFFF" /> : null}
+                {v.tier ? <TierBadge tier={v.tier} size={18} /> : v.verified ? <Icon name="verified" size={18} color="#FFFFFF" /> : null}
               </View>
               <Text variant="bodyS" color="rgba(255,255,255,0.8)" style={{ marginTop: 2, fontSize: 13 }} numberOfLines={1}>
                 {v.subtitle}

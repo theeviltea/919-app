@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import type { ImageSourcePropType } from 'react-native';
 
+import type { Tier } from '@/data/tiers';
+
 export type PhotoSet = { photos: ImageSourcePropType[]; index: number };
 export type VideoItem = {
   poster: ImageSourcePropType;
@@ -8,7 +10,10 @@ export type VideoItem = {
   /** Top pill, e.g. "Your video presentation". */
   label: string;
   name: string;
+  /** Company videos: verified check. */
   verified?: boolean;
+  /** Seeker videos: plan badge (TierBadge). */
+  tier?: Tier;
   avatar?: ImageSourcePropType;
   subtitle: string;
   text?: string;

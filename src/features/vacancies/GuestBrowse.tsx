@@ -17,7 +17,7 @@ import { VacancyListCard } from './VacancyListCard';
 /** Guests see the same candidate pool as employers (closed profiles: tap asks to sign in). */
 const talents: Talent[] = candidates
   .filter((c) => c.sphere !== 'service')
-  .map((c) => ({ id: c.id, name: c.name, role: c.role, city: c.city, verified: c.verified, premium: c.premium, sphere: c.sphere as Sphere, photo: c.photo, placeholder: c.placeholder }));
+  .map((c) => ({ id: c.id, name: c.name, role: c.role, city: c.city, verified: c.verified, premium: c.premium, tier: c.tier, frame: c.frame, sphere: c.sphere as Sphere, photo: c.photo, placeholder: c.placeholder }));
 
 export type GuestTab = 'vacancies' | 'talent';
 

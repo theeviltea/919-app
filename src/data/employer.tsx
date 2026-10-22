@@ -5,13 +5,14 @@ import { initialChats, withId, type EmpMsg, type NewEmpMsg } from './empChat';
 import { initialApplicants, initialDetails, type Applicant, type ApplicantStatus, type VacancyDetail } from './hiring';
 import { mockImg as img, personPhoto as p } from './mock';
 import { findCandidate } from './talentPool';
+import type { FrameStyle, Tier } from './tiers';
 
 // Employer-side mock for the prototype (demo account: Emanuel Brooks, Skyline Hospitality). Mirrors the canvas
 // screens TalentProfiles / TalentVideos / EmpHiring / EmpHiringSaved / EmpMessages* / Company*. Replaced by the API later.
 
 export type Placeholder = 1 | 2 | 3 | 4 | 5;
-export type TalentTile = { id: string; name: string; role: string; city: string; photo: ImageSourcePropType; premium?: boolean; placeholder: Placeholder };
-export type VideoTile = { id: string; name: string; city: string; photo: ImageSourcePropType; duration: string; views: string; tint: string };
+export type TalentTile = { id: string; name: string; role: string; city: string; photo: ImageSourcePropType; tier?: Tier; frame?: FrameStyle; placeholder: Placeholder };
+export type VideoTile = { id: string; name: string; city: string; photo: ImageSourcePropType; duration: string; views: string; tint: string; tier?: Tier; frame?: FrameStyle };
 
 export const company = {
   name: 'Skyline Hospitality',

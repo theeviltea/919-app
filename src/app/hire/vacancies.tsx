@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Chip, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
+import { Chip, Icon, MaxFrame, PhotoTierBadge, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
 import { hireStats, savedLabels, useEmployer, type HireStatus } from '@/data/employer';
 import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '@/data/talentPool';
 import { PageTitle } from '@/features/hire/ui';
@@ -37,29 +37,10 @@ function SavedCard({ t }: { t: Candidate }) {
       onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })}
       accessibilityRole="button"
       accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`}
-      style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+      style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden', zIndex: 0 }}>
       <View style={{ height: 150, backgroundColor: ph }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
-        {t.premium ? (
-          <View
-            style={{
-              position: 'absolute',
-              left: 8,
-              top: 8,
-              height: 24,
-              paddingHorizontal: 8,
-              borderRadius: 999,
-              backgroundColor: c.labelOrangeBack,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-            }}>
-            <Icon name="star" size={12} color="labelOrangeText" />
-            <Text variant="caption" weight={700} color="labelOrangeText" style={{ fontSize: 11 }}>
-              Premium
-            </Text>
-          </View>
-        ) : null}
+        <PhotoTierBadge tier={t.tier} />
         <View style={{ position: 'absolute', right: 8, top: 8, width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.92)', alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="bookmark-filled" size={18} color="primary" />
         </View>
@@ -75,6 +56,7 @@ function SavedCard({ t }: { t: Candidate }) {
           {savedLabels[t.id] ?? 'Saved today'}
         </Text>
       </View>
+      <MaxFrame frame={t.frame} />
     </Pressable>
   );
 }

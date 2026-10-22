@@ -2,8 +2,10 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Pressable, Row, Text, useToast } from '@/components';
+import { Pressable, Row, Text } from '@/components';
+import { useSeeker } from '@/data/seeker';
 import { DeleteAccountSheet, LogoutSheet } from '@/features/profile/AccountSheets';
+import { PlanChip, PLAN_NAME } from '@/features/profile/seekerPlan';
 import { ThemeRow } from '@/features/profile/ThemeRow';
 import { GroupLabel, SubScreen } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
@@ -15,8 +17,7 @@ function Group({ children }: { children: React.ReactNode }) {
 
 /** Seeker settings: account, subscription, legal, log out. Delete account is a quiet link under the card. */
 export default function Settings() {
-  const { c } = useTheme();
-  const toast = useToast();
+  const { plan, planCanceled } = useSeeker();
   const [sheet, setSheet] = useState<'logout' | 'delete' | null>(null);
 
   return (
@@ -34,18 +35,15 @@ export default function Settings() {
           icon="star"
           tone="premium"
           title="Subscription"
-          subtitle="Get Premium to stand out"
+          subtitle={plan === 'free' ? 'Premium from $2.99, Max $5.99' : planCanceled ? `${PLAN_NAME[plan]} until 9 Nov 2026` : 'Apple Pay · renews 9 Nov 2026'}
           chevron
-          right={
-            <View style={{ height: 28, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.input, justifyContent: 'center' }}>
-              <Text variant="caption" weight={700} color="textBody">
-                Free
-              </Text>
-            </View>
-          }
-          onPress={() => toast({ text: 'Premium for job seekers is coming soon', kind: 'paid', icon: 'star' })}
-          last
+          right={<PlanChip tier={plan} />}
+          onPress={() => router.push('/profile/subscription')}
+          last={plan !== 'max'}
         />
+        {plan === 'max' ? (
+          <Row icon="sparkles" tone="premium" title="Profile look" subtitle="Frame and header for your profile" chevron right={<PlanChip tier="max" />} onPress={() => router.push('/profile/look')} last />
+        ) : null}
       </Group>
 
       <GroupLabel>Legal</GroupLabel>

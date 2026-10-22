@@ -1,5 +1,7 @@
 import type { ImageSourcePropType } from 'react-native';
 
+import type { FrameStyle, Tier } from './tiers';
+
 /** Contract types — one dictionary for vacancy creation, filters, cards and the backend (product rules §7). */
 export type ContractType = 'one-time' | 'fixed-term' | 'monthly' | 'weekly' | 'daily' | 'hourly';
 
@@ -30,6 +32,8 @@ export type Talent = {
   city: string;
   verified: boolean;
   premium: boolean;
+  tier?: Tier;
+  frame?: FrameStyle;
   sphere: Sphere;
   photo: ImageSourcePropType;
   placeholder: 1 | 2 | 3 | 4 | 5;

@@ -1,6 +1,7 @@
 import type { ImageSourcePropType } from 'react-native';
 
 import { mockImg, personPhoto as p } from './mock';
+import { frameOf, tierOf, type FrameStyle, type Tier } from './tiers';
 
 const img = {
   ...mockImg,
@@ -50,6 +51,9 @@ export type Candidate = {
   languages: string[];
   premium: boolean;
   verified: boolean;
+  /** Seeker plan: badge on cards, Max also gets a frame and goes first. */
+  tier: Tier;
+  frame?: FrameStyle;
   photo: ImageSourcePropType;
   placeholder: 1 | 2 | 3 | 4 | 5;
   tint: string;
@@ -94,7 +98,21 @@ const q = {
   q32: require('@/assets/images/mock/people2/q32.jpg'),
   q33: require('@/assets/images/mock/people2/q33.jpg'),
 };
-const photoOf = (k: string): ImageSourcePropType => (k.startsWith('q') ? q[k as keyof typeof q] : k.startsWith('p') ? p(Number(k.slice(1))) : (img as Record<string, ImageSourcePropType>)[k]);
+// Licensed stock photos (Oct 2026): the People section and the profiles it opens.
+export const stock = {
+  dj: require('@/assets/images/stock/f-dj.webp'),
+  guitarAcoustic: require('@/assets/images/stock/f-guitar-acoustic.webp'),
+  guitarElectric: require('@/assets/images/stock/f-guitar-electric.webp'),
+  guitarHat: require('@/assets/images/stock/f-guitar-hat.webp'),
+  headphones: require('@/assets/images/stock/f-headphones.webp'),
+  makeup: require('@/assets/images/stock/f-makeup.webp'),
+  photographer: require('@/assets/images/stock/f-photographer.webp'),
+  pinkSkirt: require('@/assets/images/stock/f-pink-skirt.webp'),
+  videographer: require('@/assets/images/stock/f-videographer.webp'),
+  yellowLips: require('@/assets/images/stock/f-yellow-lips.webp'),
+  yellowSuit: require('@/assets/images/stock/f-yellow-suit.webp'),
+};
+const photoOf = (k: string): ImageSourcePropType => (k.startsWith('s:') ? stock[k.slice(2) as keyof typeof stock] : k.startsWith('q') ? q[k as keyof typeof q] : k.startsWith('p') ? p(Number(k.slice(1))) : (img as Record<string, ImageSourcePropType>)[k]);
 
 const tints = ['#2A2235', '#1B2A44', '#2C2140', '#13302A', '#3A2418', '#1A1F2B'];
 
@@ -120,8 +138,8 @@ const seed: [string, string, TalentSphere, Gender, string, string][] = [
   ['Zaurbek T.', 'Videographer', 'service', 'male', 'Dubai', 'q02'],
   ['Rita S.', 'Bartender, mixology', 'hospitality', 'female', 'Dubai', 'p8'],
   ['Ryan C.', 'DJ', 'music', 'male', 'Dubai', 'v02'],
-  ['Layla H.', 'Waitress', 'hospitality', 'female', 'Dubai', 'p13'],
-  ['Nadia O.', 'Model', 'modeling', 'female', 'Dubai', 'q10'],
+  ['Layla H.', 'Hostess', 'hospitality', 'female', 'Dubai', 's:pinkSkirt'],
+  ['Nadia R.', 'Hostess', 'hospitality', 'female', 'Abu Dhabi', 's:yellowSuit'],
   ['Omar H.', 'Illusionist', 'events', 'male', 'Abu Dhabi', 'q01'],
   ['Sami J.', 'Sommelier', 'fnb', 'male', 'Dubai', 'p9'],
   ['Sveta V.', 'Hostess', 'hospitality', 'female', 'Dubai', 'p5'],
@@ -161,6 +179,16 @@ const seed: [string, string, TalentSphere, Gender, string, string][] = [
   ['Julia F.', 'Front desk hostess', 'hospitality', 'female', 'Dubai', 'v05'],
   ['Amira Z.', 'Hostess', 'hospitality', 'female', 'Dubai', 'p14'],
   ['Hana S.', 'Waitress', 'fnb', 'female', 'Abu Dhabi', 'p0'],
+  // People section (SeekPeople): stock photos.
+  ['Sara M.', 'Waitress', 'hospitality', 'female', 'Dubai', 's:makeup'],
+  ['Olivia G.', 'Concierge', 'hospitality', 'female', 'Dubai', 's:photographer'],
+  ['Karim A.', 'DJ', 'music', 'male', 'Dubai', 's:headphones'],
+  ['Lina M.', 'DJ', 'music', 'female', 'Dubai', 's:dj'],
+  ['Omar S.', 'Guitarist', 'music', 'male', 'Dubai', 's:guitarElectric'],
+  ['Zara K.', 'Model', 'modeling', 'female', 'Dubai', 's:yellowLips'],
+  ['Leo P.', 'Videographer', 'service', 'male', 'Abu Dhabi', 's:videographer'],
+  ['Ali R.', 'Singer', 'music', 'male', 'Dubai', 's:guitarHat'],
+  ['Yusuf N.', 'Musician', 'music', 'male', 'Dubai', 's:guitarAcoustic'],
 ];
 
 const langSets = [['English'], ['English', 'Arabic'], ['English', 'Russian'], ['English', 'French'], ['English', 'Arabic', 'French'], ['Arabic'], ['English', 'Spanish']];
@@ -176,8 +204,10 @@ export const candidates: Candidate[] = seed.map(([name, role, sphere, gender, ci
   gender,
   age: 20 + ((i * 7) % 15),
   languages: langSets[i % langSets.length],
-  premium: i % 4 === 0,
+  premium: tierOf(name) !== 'free',
   verified: i % 5 !== 3,
+  tier: tierOf(name),
+  frame: tierOf(name) === 'max' ? frameOf(name) : undefined,
   photo: photoOf(photo),
   placeholder: ((i % 5) + 1) as 1 | 2 | 3 | 4 | 5,
   tint: tints[i % tints.length],

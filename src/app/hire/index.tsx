@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 
 import { initialsOf, useEmployer } from '@/data/employer';
 import { candidates, countTalentFilters, emptyTalentFilters, talentSphereLabels, talentSphereOrder, type TalentSphere } from '@/data/talentPool';
+import { tierRank } from '@/data/tiers';
 import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
 import { RowHeader, TalentTileCard, VideoTileCard } from '@/features/hire/ui';
 import { openVideo } from '@/features/media/viewer';
@@ -17,7 +18,7 @@ type View2 = 'profiles' | 'videos';
 
 const ROW = 10;
 /** One row per field, all seven (Hospitality, F&B, Events, Modeling, Music, Beauty, Service). */
-const profileRows = talentSphereOrder.map((k) => ({ key: k, title: talentSphereLabels[k], list: candidates.filter((x) => x.sphere === k) })).filter((r) => r.list.length);
+const profileRows = talentSphereOrder.map((k) => ({ key: k, title: talentSphereLabels[k], list: candidates.filter((x) => x.sphere === k).sort((a, b) => tierRank(b.tier) - tierRank(a.tier)) })).filter((r) => r.list.length);
 const videoRows = profileRows.map((r) => ({ ...r, list: r.list.filter((x) => x.video) })).filter((r) => r.list.length);
 const seeAll = (sphere: TalentSphere, tab?: 'videos') =>
   router.push({ pathname: '/hire/search', params: { f: JSON.stringify({ ...emptyTalentFilters, spheres: [sphere] }), ...(tab ? { tab } : {}) } });
@@ -70,7 +71,7 @@ export default function TalentHome() {
                   {row.list.slice(0, ROW).map((t) => (
                     <TalentTileCard
                       key={t.id}
-                      t={{ id: t.id, name: t.name.split(' ')[0], role: t.role.split(',')[0], city: t.city, photo: t.photo, premium: t.premium, placeholder: t.placeholder }}
+                      t={{ id: t.id, name: t.name.split(' ')[0], role: t.role.split(',')[0], city: t.city, photo: t.photo, tier: t.tier, frame: t.frame, placeholder: t.placeholder }}
                       onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })}
                     />
                   ))}
@@ -84,9 +85,9 @@ export default function TalentHome() {
                   {row.list.slice(0, ROW).map((t) => (
                     <VideoTileCard
                       key={t.id}
-                      v={{ id: t.id, name: t.name, city: t.city, photo: t.photo, duration: t.video!.duration, views: t.video!.views, tint: t.tint }}
+                      v={{ id: t.id, name: t.name, city: t.city, photo: t.photo, duration: t.video!.duration, views: t.video!.views, tint: t.tint, tier: t.tier, frame: t.frame }}
                       onPress={() =>
-                        openVideo({ poster: t.photo, duration: t.video!.duration, label: 'Video presentation', name: t.name, verified: t.verified, avatar: t.photo, subtitle: `${t.role} · ${t.city}` })
+                        openVideo({ poster: t.photo, duration: t.video!.duration, label: 'Video presentation', name: t.name, tier: t.tier, avatar: t.photo, subtitle: `${t.role} · ${t.city}` })
                       }
                     />
                   ))}

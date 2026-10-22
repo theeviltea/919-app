@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useToast } from '@/components';
 import { findVacancy } from '@/data/mock';
 import { fieldByKey } from '@/data/registration';
-import { completeness, missingForApply, sphereToField, useSeeker, type GateItem } from '@/data/seeker';
+import { completeness, FREE_APPLY_LIMIT, missingForApply, sphereToField, useSeeker, type GateItem } from '@/data/seeker';
 
 import { ApplyGate } from './ApplyGate';
+import { ApplyLimitSheet } from './ApplyLimitSheet';
 import { ApplySheet } from './ApplySheet';
 
 /**
@@ -16,13 +17,15 @@ import { ApplySheet } from './ApplySheet';
 export function useApply({ aboveTabBar }: { aboveTabBar?: boolean } = {}) {
   const toast = useToast();
   const seeker = useSeeker();
-  const [state, setState] = useState<{ id: string; sheet: 'apply' | 'gate' } | null>(null);
+  const [state, setState] = useState<{ id: string; sheet: 'apply' | 'gate' | 'limit' } | null>(null);
   const v = state ? findVacancy(state.id) : undefined;
   const missing: GateItem[] = v ? missingForApply(seeker.profile, v, fieldByKey(sphereToField[v.sphere]).label) : [];
 
   const respond = (id: string) => {
     const vac = findVacancy(id);
     if (!vac) return;
+    // Free plan: 10 applications, then the limit sheet offers Premium or Max (§12).
+    if (seeker.plan === 'free' && seeker.appsUsed >= FREE_APPLY_LIMIT) return setState({ id, sheet: 'limit' });
     const gaps = missingForApply(seeker.profile, vac, fieldByKey(sphereToField[vac.sphere]).label);
     setState({ id, sheet: gaps.length ? 'gate' : 'apply' });
   };
@@ -47,6 +50,7 @@ export function useApply({ aboveTabBar }: { aboveTabBar?: boolean } = {}) {
           toast({ text: 'You’ve applied to this vacancy', icon: 'check', aboveTabBar });
         }}
       />
+      <ApplyLimitSheet visible={state?.sheet === 'limit'} onClose={() => setState(null)} />
       <ApplyGate items={missing} percent={Math.max(10, Math.min(completeness(seeker.profile).percent, Math.round(((4 - missing.length) / 4) * 100)))} visible={state?.sheet === 'gate'} onClose={() => setState(null)} onFix={fix} />
     </>
   ) : null;

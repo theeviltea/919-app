@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
 import { View, type ImageSourcePropType } from 'react-native';
 
-import { Icon, Pressable, Text, useToast, type IconName } from '@/components';
+import { Icon, MaxFrame, PhotoTierBadge, Pressable, Text, useToast, type IconName } from '@/components';
 import type { TalentTile, VideoTile } from '@/data/employer';
 import { useTheme } from '@/theme';
 
@@ -116,16 +116,10 @@ export function TalentTileCard({ t, onPress }: { t: TalentTile; onPress: () => v
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`}
-      style={{ width: 128, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+      style={{ width: 128, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden', zIndex: 0 }}>
       <View style={{ height: 128, backgroundColor: ph(t.placeholder) }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
-        {t.premium ? (
-          <View
-            accessibilityLabel="Premium"
-            style={{ position: 'absolute', left: 8, top: 8, width: 26, height: 26, borderRadius: 13, backgroundColor: c.labelOrangeBack, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="star" size={14} color="labelOrangeText" />
-          </View>
-        ) : null}
+        <PhotoTierBadge tier={t.tier} />
       </View>
       <View style={{ paddingHorizontal: 11, paddingTop: 9, paddingBottom: 11 }}>
         <Text variant="body" weight={600} numberOfLines={1} style={{ fontSize: 14 }}>
@@ -135,6 +129,7 @@ export function TalentTileCard({ t, onPress }: { t: TalentTile; onPress: () => v
           {t.role} · {t.city}
         </Text>
       </View>
+      <MaxFrame frame={t.frame} />
     </Pressable>
   );
 }
@@ -146,9 +141,10 @@ export function VideoTileCard({ v, onPress }: { v: VideoTile; onPress: () => voi
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Video presentation, ${v.name}, ${v.duration}`}
-      style={{ width: 138, height: 230, borderRadius: 20, overflow: 'hidden', backgroundColor: v.tint }}>
+      style={{ width: 138, height: 230, borderRadius: 20, overflow: 'hidden', backgroundColor: v.tint, zIndex: 0 }}>
       <Image source={v.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} transition={150} />
-      <View style={{ position: 'absolute', left: 10, top: 10, height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: 'rgba(14,26,43,0.6)', justifyContent: 'center' }}>
+      <PhotoTierBadge tier={v.tier} inset={10} />
+      <View style={{ position: 'absolute', left: v.tier && v.tier !== 'free' ? 42 : 10, top: 11, height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: 'rgba(14,26,43,0.6)', justifyContent: 'center' }}>
         <Text variant="caption" weight={600} color="#FFFFFF" style={{ fontSize: 11 }}>
           {v.duration}
         </Text>
@@ -170,6 +166,7 @@ export function VideoTileCard({ v, onPress }: { v: VideoTile; onPress: () => voi
           {v.city}
         </Text>
       </View>
+      <MaxFrame frame={v.frame} />
     </Pressable>
   );
 }

@@ -17,6 +17,17 @@ export type CandidateProfile = {
   gallery: ImageSourcePropType[];
 };
 
+/** Full names shown in People (design) for the people it features; everyone else gets a generated surname. */
+export const FULL_NAMES: Record<string, string> = {
+  'Layla H.': 'Layla Haddad',
+  'Nadia R.': 'Nadia Rahimi',
+  'Sara M.': 'Sara Mendes',
+  'Olivia G.': 'Olivia Grant',
+  'Karim A.': 'Karim Aziz',
+  'Zara K.': 'Zara King',
+  'Leo P.': 'Leo Park',
+};
+
 const surnames = ['Dakaskos', 'Haddad', 'Novak', 'Rahman', 'Moreau', 'Ivanova', 'Khalil', 'Santos', 'Petrov', 'Nasser', 'Cole', 'Farouk', 'Lindqvist', 'Okafor', 'Mansour'];
 const codes: Record<string, string> = { English: 'EN', Arabic: 'AR', Russian: 'RU', French: 'FR', Spanish: 'ES' };
 
@@ -88,7 +99,7 @@ const yrs = (m: number) => {
 export function profileOf(c: Candidate): CandidateProfile {
   const n = Number(c.id.slice(1));
   const first = c.name.split(' ')[0];
-  const fullName = `${first} ${surnames[n % surnames.length]}`;
+  const fullName = FULL_NAMES[c.name] ?? `${first} ${surnames[n % surnames.length]}`;
   const [p1, p2] = [places[c.sphere][n % 3], places[c.sphere][(n + 1) % 3]];
   const m1 = 12 + (n % 24);
   const m2 = 8 + ((n * 5) % 18);

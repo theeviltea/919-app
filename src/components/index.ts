@@ -22,3 +22,4 @@ export * from './Screen';
 export * from './CollapsingHeader';
 export * from './TabBar';
 export * from './LoadMore';
+export * from './TierBadge';

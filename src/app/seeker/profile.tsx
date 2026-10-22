@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { Linking, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Icon, IconButton, Pressable, TAB_BAR_SPACE, Text } from '@/components';
+import { Button, FramedAvatar, Icon, IconButton, Pressable, TAB_BAR_SPACE, Text, TierBadge } from '@/components';
+import { mockImg } from '@/data/mock';
 import { fieldByKey } from '@/data/registration';
 import { completeness, jobPeriod, linkKinds, studyPeriod, totalExperience, useSeeker } from '@/data/seeker';
 import type { FieldEntry } from '@/data/signup';
 import { openPhotos, openVideo } from '@/features/media/viewer';
+import { PlanChip } from '@/features/profile/seekerPlan';
 import { CodeTile, Completeness, Panel, TimelineItem } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
 
@@ -64,8 +66,9 @@ function OccupationCard({ o }: { o: FieldEntry }) {
 export default function Profile() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const { profile: p, hidden } = useSeeker();
+  const { profile: p, hidden, plan, look } = useSeeker();
   const [more, setMore] = useState(false);
+  const max = plan === 'max';
   const comp = completeness(p);
   const photos = p.photos.filter((x) => x.progress === undefined);
   const location = [p.city, p.country].filter(Boolean).join(', ');
@@ -80,6 +83,11 @@ export default function Profile() {
           <Text variant="displayL" accessibilityRole="header" style={{ flex: 1, fontSize: 24, lineHeight: 30 }}>
             Profile
           </Text>
+          {plan !== 'free' ? (
+            <Pressable onPress={() => router.push('/profile/subscription')} accessibilityRole="button" accessibilityLabel="Your subscription">
+              <PlanChip tier={plan} />
+            </Pressable>
+          ) : null}
           <IconButton icon="edit" label="Edit profile" onPress={() => router.push('/profile/edit')} />
           <IconButton icon="settings" label="Settings" onPress={() => router.push('/profile/settings')} />
         </View>
@@ -146,11 +154,28 @@ export default function Profile() {
 
         {/* header card */}
         <View style={{ backgroundColor: c.surface, borderRadius: 24, overflow: 'hidden' }}>
-          <View style={{ height: p.photo ? 88 : 72, backgroundColor: c.primarySecondary }} />
+          {max && look.header ? (
+            <View>
+              <Image source={mockImg.dubai2} contentFit="cover" accessibilityLabel="Your profile header" style={{ height: 132, backgroundColor: c.primarySecondary }} />
+              <Pressable
+                onPress={() => router.push('/profile/look')}
+                accessibilityRole="button"
+                style={{ position: 'absolute', right: 12, top: 12, height: 32, paddingLeft: 10, paddingRight: 12, borderRadius: 999, backgroundColor: 'rgba(14,26,43,0.55)', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Icon name="sparkles" size={16} color="#FFFFFF" />
+                <Text variant="caption" weight={700} color="#FFFFFF">
+                  Edit look
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={{ height: p.photo ? 88 : 72, backgroundColor: c.primarySecondary }} />
+          )}
           <View style={{ paddingHorizontal: 18, paddingBottom: 18, alignItems: 'center' }}>
             {p.photo ? (
-              <Pressable onPress={() => openPhotos({ photos: [p.photo!], index: 0 })} accessibilityRole="imagebutton" accessibilityLabel="Open profile photo" style={{ marginTop: -52 }}>
-                <Image source={p.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: 104, height: 104, borderRadius: 52, borderWidth: 4, borderColor: c.surface, backgroundColor: c.avatar3 }} />
+              <Pressable onPress={() => openPhotos({ photos: [p.photo!], index: 0 })} accessibilityRole="imagebutton" accessibilityLabel="Open profile photo" style={{ marginTop: max && look.frame ? -56 : -52 }}>
+                <FramedAvatar frame={max ? look.frame : undefined} size={max && look.frame ? 112 : 104} ring={5} gap={max && look.frame ? 3 : 4} bg={c.surface}>
+                  <Image source={p.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%', backgroundColor: c.avatar3 }} />
+                </FramedAvatar>
               </Pressable>
             ) : (
               <Pressable
@@ -165,7 +190,7 @@ export default function Profile() {
               <Text variant="title" style={{ fontSize: 20, lineHeight: 26 }}>
                 {name}
               </Text>
-              {p.verified ? <Icon name="verified" size={20} color="primary" /> : null}
+              <TierBadge tier={plan} size={22} />
             </View>
             <Text variant="body" color="textBody" style={{ marginTop: 6, fontSize: 14 }}>
               {[p.age ? `${p.age} years` : null, p.gender].filter(Boolean).join(' · ')}
@@ -255,7 +280,7 @@ export default function Profile() {
                   duration: p.video!.duration,
                   label: 'Your video presentation',
                   name,
-                  verified: p.verified,
+                  tier: plan,
                   avatar: p.photo,
                   subtitle: [p.occupations[0]?.roles[0], p.city, `${p.stats.videoViews} views`].filter(Boolean).join(' · '),
                   text: p.about,

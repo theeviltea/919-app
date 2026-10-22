@@ -5,7 +5,7 @@ import { useSeeker } from '@/data/seeker';
 import { useSession } from '@/data/session';
 import { useTheme } from '@/theme';
 
-/** Seeker app: Vacancies · Applications · Messages · Profile. */
+/** Seeker app: Vacancies · Applications · People · Messages · Profile. */
 export default function SeekerTabs() {
   const { c } = useTheme();
   const { user } = useSession();
@@ -22,6 +22,7 @@ export default function SeekerTabs() {
           meta={{
             index: { label: 'Vacancies', icon: 'star' },
             applications: { label: 'Applications', icon: 'briefcase' },
+            people: { label: 'People', icon: 'users' },
             messages: { label: 'Messages', icon: 'message', badge: unreadTotal },
             profile: { label: 'Profile', icon: 'user' },
           }}
@@ -29,6 +30,7 @@ export default function SeekerTabs() {
       )}>
       <Tabs.Screen name="index" />
       <Tabs.Screen name="applications" />
+      <Tabs.Screen name="people" />
       <Tabs.Screen name="messages" />
       <Tabs.Screen name="profile" />
       {/* Search belongs to Vacancies: no tab of its own, the tab bar keeps Vacancies active. */}

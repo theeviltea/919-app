@@ -4,8 +4,9 @@ import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BackButton, Button, Chip, END_THRESHOLD, Icon, LoadMoreFooter, PatternHeader, Pressable, SearchBar, SegmentedTabs, TAB_BAR_SPACE, Text, usePaged, useToast } from '@/components';
+import { BackButton, Button, Chip, END_THRESHOLD, Icon, LoadMoreFooter, MaxFrame, PatternHeader, PhotoTierBadge, Pressable, SearchBar, SegmentedTabs, TAB_BAR_SPACE, Text, usePaged, useToast } from '@/components';
 import { useEmployer } from '@/data/employer';
+import { tierRank } from '@/data/tiers';
 import {
   applyTalentFilters,
   candidates,
@@ -78,29 +79,10 @@ function ProfileCard({ t }: { t: Candidate }) {
       onPress={() => router.push({ pathname: '/talent/[id]', params: { id: t.id } })}
       accessibilityRole="button"
       accessibilityLabel={`${t.name}, ${t.role}, ${t.city}`}
-      style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden' }}>
+      style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, overflow: 'hidden', zIndex: 0 }}>
       <View style={{ height: 150, backgroundColor: ph }}>
         <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ width: '100%', height: '100%' }} transition={150} />
-        {t.premium ? (
-          <View
-            style={{
-              position: 'absolute',
-              left: 8,
-              top: 8,
-              height: 24,
-              paddingHorizontal: 8,
-              borderRadius: 999,
-              backgroundColor: c.labelOrangeBack,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-            }}>
-            <Icon name="star" size={12} color="labelOrangeText" />
-            <Text variant="caption" weight={700} color="labelOrangeText" style={{ fontSize: 11 }}>
-              Premium
-            </Text>
-          </View>
-        ) : null}
+        <PhotoTierBadge tier={t.tier} />
         <SaveButton id={t.id} label={`Save ${t.name}`} />
         {t.video ? (
           <View
@@ -128,12 +110,12 @@ function ProfileCard({ t }: { t: Candidate }) {
           <Text variant="body" weight={600} numberOfLines={1} style={{ fontSize: 14, flexShrink: 1 }}>
             {t.name}
           </Text>
-          {t.verified ? <Icon name="verified" size={14} color="primary" /> : null}
         </View>
         <Text variant="caption" weight={400} color="textBody" numberOfLines={2} style={{ marginTop: 2, fontSize: 12 }}>
           {t.role} · {t.city}
         </Text>
       </View>
+      <MaxFrame frame={t.frame} />
     </Pressable>
   );
 }
@@ -142,12 +124,13 @@ function ProfileCard({ t }: { t: Candidate }) {
 function VideoCard({ t }: { t: Candidate }) {
   return (
     <Pressable
-      onPress={() => openVideo({ poster: t.photo, duration: t.video!.duration, label: 'Video presentation', name: t.name, verified: t.verified, avatar: t.photo, subtitle: `${t.role} · ${t.city}` })}
+      onPress={() => openVideo({ poster: t.photo, duration: t.video!.duration, label: 'Video presentation', name: t.name, tier: t.tier, avatar: t.photo, subtitle: `${t.role} · ${t.city}` })}
       accessibilityRole="button"
       accessibilityLabel={`Video presentation, ${t.name}, ${t.video!.duration}`}
-      style={{ flex: 1, height: 252, borderRadius: 20, overflow: 'hidden', backgroundColor: t.tint }}>
+      style={{ flex: 1, height: 252, borderRadius: 20, overflow: 'hidden', backgroundColor: t.tint, zIndex: 0 }}>
       <Image source={t.photo} contentFit="cover" contentPosition={{ top: '25%' }} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} transition={150} />
-      <View style={{ position: 'absolute', left: 10, top: 10, height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: 'rgba(14,26,43,0.6)', justifyContent: 'center' }}>
+      <PhotoTierBadge tier={t.tier} inset={10} />
+      <View style={{ position: 'absolute', left: t.tier && t.tier !== 'free' ? 42 : 10, top: 11, height: 22, paddingHorizontal: 8, borderRadius: 999, backgroundColor: 'rgba(14,26,43,0.6)', justifyContent: 'center' }}>
         <Text variant="caption" weight={600} color="#FFFFFF" style={{ fontSize: 11 }}>
           {t.video!.duration}
         </Text>
@@ -169,12 +152,12 @@ function VideoCard({ t }: { t: Candidate }) {
           <Text variant="body" weight={700} color="#FFFFFF" numberOfLines={1} style={{ fontSize: 14, flexShrink: 1 }}>
             {t.name}
           </Text>
-          {t.verified ? <Icon name="verified" size={14} color="#FFFFFF" /> : null}
         </View>
         <Text variant="caption" weight={400} color="rgba(255,255,255,0.85)" numberOfLines={1} style={{ marginTop: 1, fontSize: 11 }}>
           {t.role} · {t.city}
         </Text>
       </View>
+      <MaxFrame frame={t.frame} />
     </Pressable>
   );
 }
@@ -229,7 +212,7 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
     const xs = [...scoped];
     if (sort === 'Most viewed') xs.sort((a, b) => parseFloat(b.video?.views ?? '0') - parseFloat(a.video?.views ?? '0'));
     else if (sort === 'Newest') xs.reverse();
-    else xs.sort((a, b) => Number(b.premium) - Number(a.premium));
+    else xs.sort((a, b) => tierRank(b.tier) - tierRank(a.tier));
     return xs;
   }, [scoped, sort]);
   const profiles = sorted;
