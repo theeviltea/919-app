@@ -4,7 +4,7 @@ import { ActivityIndicator, Modal, View } from 'react-native';
 
 import { BrandMark, Button, FormScreen, Icon, Pressable, Text } from '@/components';
 import { OrDivider } from '@/components/AuthSheet';
-import { popularCountries } from '@/data/dictionaries';
+import { phoneLength, popularCountries } from '@/data/dictionaries';
 import { PhoneInput } from '@/features/auth/PhoneInput';
 import { useAfterContact } from '@/features/auth/useCreateAccount';
 import { useFinishAuth } from '@/features/auth/useFinishAuth';
@@ -23,7 +23,7 @@ export default function Register() {
   const [country, setCountry] = useState(popularCountries[0]);
   const [phone, setPhone] = useState('');
   const [connecting, setConnecting] = useState<'apple' | 'google' | null>(params.social ?? null);
-  const ok = phone.length >= 9;
+  const ok = phone.length >= phoneLength(country.dial);
 
   // Prototype: the provider window "returns" after 1.6 s.
   useEffect(() => {

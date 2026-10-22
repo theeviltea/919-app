@@ -21,7 +21,7 @@ export function useAfterContact() {
     if (pendingRole === 'employer') {
       // The phone is locked on the representative step, the email prefills it.
       const [dial, digits] = (params.phone ?? '').split('|');
-      setEmployer({ phone: digits ? `${dial} ${formatPhone(digits)}` : '', phoneLocked: !!digits, email: params.email ?? '' });
+      setEmployer({ phone: digits ? `${dial} ${formatPhone(digits, dial)}` : '', phoneLocked: !!digits, email: params.email ?? '' });
       router.replace('/employer/type');
     } else router.replace({ pathname: '/auth/about', params });
   };

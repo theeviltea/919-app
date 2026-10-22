@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button, FormScreen, Icon, Text } from '@/components';
-import { popularCountries } from '@/data/dictionaries';
+import { formatPhone, phoneLength, popularCountries } from '@/data/dictionaries';
 import { useSeeker } from '@/data/seeker';
 import { PhoneInput } from '@/features/auth/PhoneInput';
 import { useTheme } from '@/theme';
@@ -19,13 +19,13 @@ export default function PhoneScreen() {
   const [country, setCountry] = useState(popularCountries[0]);
   const [digits, setDigits] = useState('');
   const change = mode === 'change' && !!profile.phone;
-  const full = `${country.dial} ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`;
+  const full = `${country.dial} ${formatPhone(digits, country.dial)}`;
   const error = TAKEN.test(digits)
     ? 'This number is linked to another 919 account. Sign in with it, or delete that account first.'
-    : digits.length === 9 && full === profile.phone
+    : digits.length === phoneLength(country.dial) && full === profile.phone
       ? 'This is your current number.'
       : undefined;
-  const ok = digits.length >= 9 && !error;
+  const ok = digits.length >= phoneLength(country.dial) && !error;
 
   return (
     <FormScreen

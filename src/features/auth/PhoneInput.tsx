@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 
 import { BottomSheet, Icon, Pressable, SearchBar, Text } from '@/components';
-import { popularCountries } from '@/data/dictionaries';
+import { formatPhone, phoneLength, phoneMask, popularCountries } from '@/data/dictionaries';
 import type { Country } from '@/data/types';
 import { fontFamily, useTheme } from '@/theme';
 
 /** Regional-indicator emoji flag from an ISO code. */
 export const flag = (code: string) => String.fromCodePoint(...[...code.toUpperCase()].map((ch) => 0x1f1a5 + ch.charCodeAt(0)));
 
-/** "50 123 4567" — UAE mobile grouping, good enough for the prototype. */
-export const formatPhone = (digits: string) => digits.replace(/^(\d{0,2})(\d{0,3})(\d{0,4}).*/, (_, a, b, c) => [a, b, c].filter(Boolean).join(' '));
+export { formatPhone };
 export const maskPhone = (dial: string, digits: string) => `${dial} ${digits.slice(0, 2)} ••• ${digits.slice(-4)}`;
 
 type Props = { country: Country; onCountry: (c: Country) => void; value: string; onChange: (digits: string) => void; autoFocus?: boolean; label?: string; error?: string };
@@ -50,9 +49,9 @@ export function PhoneInput({ country, onCountry, value, onChange, autoFocus, lab
             boxShadow: focused && !error ? `0 0 0 4px ${c.focusRing}` : undefined,
           }}>
           <TextInput
-            value={formatPhone(value)}
-            onChangeText={(t) => onChange(t.replace(/\D/g, '').slice(0, 9))}
-            placeholder="50 000 0000"
+            value={formatPhone(value, country.dial)}
+            onChangeText={(t) => onChange(t.replace(/\D/g, '').slice(0, phoneLength(country.dial)))}
+            placeholder={phoneMask(country.dial).sample}
             placeholderTextColor={c.textLightSecondary}
             keyboardType="phone-pad"
             textContentType="telephoneNumber"
@@ -81,7 +80,7 @@ export function PhoneInput({ country, onCountry, value, onChange, autoFocus, lab
           </Text>
         </View>
       ) : null}
-      <CountrySheet visible={sheet} selected={country} onClose={() => setSheet(false)} onSelect={(x) => (onCountry(x), setSheet(false))} />
+      <CountrySheet visible={sheet} selected={country} onClose={() => setSheet(false)} onSelect={(x) => (onCountry(x), onChange(value.slice(0, phoneLength(x.dial))), setSheet(false))} />
     </View>
   );
 }

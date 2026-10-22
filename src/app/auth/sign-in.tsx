@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 
 import { BottomSheet, BrandMark, Button, FormScreen, Icon, Pressable, Text } from '@/components';
-import { popularCountries } from '@/data/dictionaries';
+import { phoneLength, popularCountries } from '@/data/dictionaries';
 import { PhoneInput } from '@/features/auth/PhoneInput';
 import { useCreateAccount } from '@/features/auth/useCreateAccount';
 import { View } from 'react-native';
@@ -13,7 +13,7 @@ export default function SignIn() {
   const [country, setCountry] = useState(popularCountries[0]);
   const [phone, setPhone] = useState('');
   const [other, setOther] = useState(false);
-  const ok = phone.length >= 9;
+  const ok = phone.length >= phoneLength(country.dial);
   return (
     <FormScreen
       title="Welcome back"

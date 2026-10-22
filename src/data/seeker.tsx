@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 
+import { formatPhone } from './dictionaries';
 import { ageFrom, type Field } from './registration';
 import { useSession } from './session';
 import { useSignup, type FieldEntry, type Photo, type SeekerDraft } from './signup';
@@ -309,7 +310,7 @@ const guessKind = (l: string): LinkKind => {
 /** "+971|501234567" (session) → "+971 50 123 4567". */
 const phoneLabel = (v: string) => {
   const [dial, d = ''] = v.includes('|') ? v.split('|') : ['+971', v.replace(/\D/g, '')];
-  return `${dial} ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}`.trim();
+  return `${dial} ${formatPhone(d, dial)}`.trim();
 };
 
 /** Profile strength for Edit profile and the "can't find you" banner. */
