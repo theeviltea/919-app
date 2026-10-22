@@ -50,7 +50,7 @@ export type Applicant = {
 };
 
 const desc = (what: string) =>
-  `${what} Shifts are 8 hours, 5 days a week, with uniform and staff meals provided. Previous experience in a five-star venue is a plus. We train every new team member on site and pay on time, every month.`;
+  `${what} Working days are 8 hours, 5 days a week, with uniform and staff meals provided. Previous experience in a five-star venue is a plus. We train every new team member on site and pay on time, every month.`;
 
 /** Details for the demo vacancies (keyed by MyVacancy id). */
 export const initialDetails: Record<string, VacancyDetail> = {
@@ -161,7 +161,7 @@ export const initialDetails: Record<string, VacancyDetail> = {
     city: 'Dubai',
     country: 'United Arab Emirates',
     description:
-      "Welcome guests at the hotel's beach restaurant, take orders and serve food and drinks during lunch and dinner. Shifts are 8 hours, 5 days a week, with uniform and staff meals provided. Previous experience in a five-star venue is a plus.",
+      "Welcome guests at the hotel's beach restaurant, take orders and serve food and drinks during lunch and dinner. Working days are 8 hours, 5 days a week, with uniform and staff meals provided. Previous experience in a five-star venue is a plus.",
     requirements: ['English — native', 'Age 21–25', 'Video presentation'],
     photos: [img.waiter, img.misc, img.madinat],
     posted: 'Not published',
@@ -200,7 +200,7 @@ export const initialApplicants: Record<string, Applicant[]> = {
   mv2: [
     a('c56', 'new', '4 min', 4, { note: 'Five years in DIFC lounges, available every weekend.' }),
     a('c19', 'new', '38 min', 38),
-    a('c57', 'new', '1 h', 60, { note: 'I can start next week and work evening shifts.' }),
+    a('c57', 'new', '1 h', 60, { note: 'I can start next week and work evenings.' }),
     a('c49', 'new', '3 h', 180),
     a('c53', 'new', '5 h', 300),
     a('c2', 'accepted', 'Yesterday', 1440),

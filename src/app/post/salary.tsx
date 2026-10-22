@@ -15,8 +15,8 @@ const HINTS: Record<ContractType, string> = {
   'fixed-term': 'A set period, e.g. a season or a 3-month project.',
   monthly: 'A regular job with a monthly salary.',
   weekly: 'Paid at the end of every week.',
-  daily: 'Shifts paid per day worked.',
-  hourly: 'Shifts paid per hour worked.',
+  daily: 'Paid per day worked.',
+  hourly: 'Paid per hour worked.',
 };
 const MODES: [AmountMode, string][] = [
   ['exact', 'Exact amount'],

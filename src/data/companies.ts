@@ -87,7 +87,7 @@ export function companyProfile(id: string): CompanyProfile | undefined {
     city: first.city,
     about:
       w.about ??
-      `${first.company.name} is a ${industry === 'F&B' ? 'food and beverage' : industry.toLowerCase()} company based in ${first.city}. On 919 we hire ${roles.join(', ')} for our venues and events. Shifts are paid on time, and every new team member gets a short briefing on site.`,
+      `${first.company.name} is a ${industry === 'F&B' ? 'food and beverage' : industry.toLowerCase()} company based in ${first.city}. On 919 we hire ${roles.join(', ')} for our venues and events. Work is paid on time, and every new team member gets a short briefing on site.`,
     // Not every company fills in links: some have a website, some only Instagram, some nothing.
     website: 'website' in w ? w.website : h % 10 < 7 ? `${id.replace(/-/g, '')}.com` : undefined,
     instagram: 'instagram' in w ? w.instagram : h % 10 < 8 ? `@${handle}` : undefined,

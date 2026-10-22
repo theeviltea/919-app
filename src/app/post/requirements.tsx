@@ -281,7 +281,7 @@ export default function VacancyRequirements() {
           [
             ['sort', 'Top of every list', 'Pinned above other vacancies in the feed and search'],
             ['fire', 'Hot badge', 'An Urgent badge on the vacancy and its card'],
-            ['filter', 'Urgent tab in filters', 'Candidates who need a shift now see it in a separate tab'],
+            ['filter', 'Urgent tab in filters', 'Candidates who need a job now see it in a separate tab'],
           ] as [IconName, string, string][]
         ).map(([ic, t, s]) => (
           <View key={t} style={{ flexDirection: 'row', gap: 12 }}>

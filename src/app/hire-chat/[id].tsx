@@ -681,7 +681,7 @@ function Chat({ t, initialCtx }: { t: EmpThread; initialCtx?: string }) {
             [
               ['camera', 'primarySecondary', 'link', 'Photo or video', 'From your gallery or the camera', 'photo'],
               ['briefcase', 'labelOrangeBack', 'labelOrangeText', 'Vacancy', 'Send one of your active vacancies', 'vacancy'],
-              ['location', 'successBack', 'successText', 'Location', 'Venue address for an interview or trial shift', 'location'],
+              ['location', 'successBack', 'successText', 'Location', 'Venue address for an interview or trial day', 'location'],
               ['call', 'input', 'textHeadline', 'Contact', 'Share your phone number or email', 'contact'],
             ] as [IconName, 'primarySecondary' | 'labelOrangeBack' | 'successBack' | 'input', 'link' | 'labelOrangeText' | 'successText' | 'textHeadline', string, string, AttachKind][]
           ).map(([ic, bg, fg, title, sub, kind], i) => (

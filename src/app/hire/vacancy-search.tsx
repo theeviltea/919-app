@@ -94,7 +94,7 @@ export default function VacancySearch() {
   );
 }
 
-/** "…Shifts are 8 hours, 5 days…" around the first hit. */
+/** "…Working days are 8 hours…" around the first hit. */
 function snippet(text: string, needle: string) {
   const i = text.toLowerCase().indexOf(needle);
   const start = Math.max(0, i - 40);

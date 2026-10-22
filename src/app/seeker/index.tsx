@@ -84,7 +84,7 @@ export default function SeekerHome() {
         insetTop={insets.top}
         titleLines={1}
         eyebrowText={`${greeting()}, ${profile.firstName}`}
-        title="Find your next shift"
+        title="Find your next job"
         searchPlaceholder="Role, venue or area"
         onSearch={() => router.push('/seeker/search')}
         onFilter={() => setSheet(true)}

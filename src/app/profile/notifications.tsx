@@ -12,7 +12,7 @@ const SEEKER_GROUPS: { label?: string; items: { key: string; title: string; subt
     label: 'Vacancies',
     items: [
       { key: 'newVacancies', title: 'New vacancies for you', subtitle: 'Matching your occupations and city' },
-      { key: 'urgentNearby', title: 'Urgent hiring', subtitle: 'Shifts that start today or tomorrow' },
+      { key: 'urgentNearby', title: 'Urgent hiring', subtitle: 'Jobs that start today or tomorrow' },
       { key: 'savedClosing', title: 'Saved vacancies', subtitle: 'A day before a saved vacancy closes' },
     ],
   },

@@ -51,7 +51,7 @@ export const personPhoto = (n: number) => p(n);
 
 const dives = { id: 'dives', name: 'DIVES Holding', initials: 'DH', verified: true };
 const desc =
-  "Welcome guests at the hotel's beach restaurant, take orders and serve food and drinks during lunch and dinner. Shifts are 8 hours, 5 days a week, with uniform and staff meals provided. Previous experience in a five-star venue is a plus.";
+  "Welcome guests at the hotel's beach restaurant, take orders and serve food and drinks during lunch and dinner. Working days are 8 hours, 5 days a week, with uniform and staff meals provided. Previous experience in a five-star venue is a plus.";
 
 const base = (v: Partial<Vacancy> & Pick<Vacancy, 'id' | 'title' | 'company' | 'pay' | 'cover'>): Vacancy => ({
   sphere: 'hospitality',
@@ -244,9 +244,9 @@ const seeds: Seed[] = [
   ['Resident DJ, rooftop bar', 'Sky Lounge', 'music', 'monthly', 14000, 'dj2', ['dj3']],
   ['Guitarist for Friday brunch', 'Bla Bla Dubai', 'music', 'daily', 1500, 'guitar'],
   ['Front desk hostess, business hotel', 'Address Downtown', 'hospitality', 'monthly', 8500, 'hostess3', ['hostess5']],
-  ['Barista, morning shift', 'Kava Coffee', 'fnb', 'hourly', 45, 'barista'],
+  ['Barista, mornings', 'Kava Coffee', 'fnb', 'hourly', 45, 'barista'],
   ['DJ for a private yacht party', 'Xclusive Yachts', 'music', 'one-time', 4000, 'dj3', ['dj2']],
-  ['Restaurant hostess, evening shifts', 'Zuma Dubai', 'hospitality', 'monthly', 10000, 'hostess4'],
+  ['Restaurant hostess, evenings', 'Zuma Dubai', 'hospitality', 'monthly', 10000, 'hostess4'],
   ['VIP hostess, product launch', 'Luxe Events', 'events', 'daily', 900, 'hostess5', ['promo']],
   ['Host for a corporate conference', 'DWTC', 'events', 'fixed-term', 6000, 'host'],
   ['Event staff, heritage festival', 'Madinat Jumeirah', 'events', 'daily', 600, 'madinat', ['burj']],

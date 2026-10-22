@@ -81,7 +81,7 @@ export const initialVacancies: MyVacancy[] = [
       items: [
         'Replace the cover photo — it shows a different venue, not your restaurant.',
         'Add working hours and days to the description.',
-        'Check the salary: AED 15 000 per month for part-time shifts looks like a typo.',
+        'Check the salary: AED 15 000 per month for part-time work looks like a typo.',
       ],
     },
   },
@@ -168,7 +168,7 @@ const rawThreads: EmpThread[] = [
     time: '14:35',
     direct: true,
     vacancies: ['Hostess, rooftop lounge', 'DJ for a boat party'],
-    last: 'Yes, I can come for a trial shift on Friday',
+    last: 'Yes, I can come for a trial day on Friday',
     unread: 2,
     box: 'active',
   },

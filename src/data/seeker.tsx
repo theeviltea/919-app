@@ -102,7 +102,7 @@ const demoProfile: SeekerProfile = {
   photos: [0, 1, 2, 3, 4, 5].map(p),
   video: { poster: require('@/assets/images/mock/people/p12.jpg'), duration: '0:42' },
   about:
-    'Five years in hospitality, from beach clubs in JBR to fine dining at DIFC. Calm under pressure, great with VIP guests. Also work as a commercial and runway model. Fluent in English and Russian, conversational Arabic. Available for evening and weekend shifts, can travel within the UAE.',
+    'Five years in hospitality, from beach clubs in JBR to fine dining at DIFC. Calm under pressure, great with VIP guests. Also work as a commercial and runway model. Fluent in English and Russian, conversational Arabic. Available for evening and weekend work, can travel within the UAE.',
   languages: [
     { code: 'EN', name: 'English', level: 'Native' },
     { code: 'RU', name: 'Russian', level: 'Native' },
@@ -200,7 +200,7 @@ const initialThreads: Thread[] = [
     id: 'c-request-azure',
     company: { name: 'Azure Beach Club', initials: 'AB', verified: true },
     person: { name: 'Nadia Saleh', role: 'HR', online: true, photo: person(1) },
-    requestText: 'Hi Mia! We’re hiring hostesses for a new rooftop lounge, evening shifts. Would you like to talk?',
+    requestText: 'Hi Mia! We’re hiring hostesses for a new rooftop lounge, evening work. Would you like to talk?',
     messages: [{ id: 'd', kind: 'date', label: 'Today' }],
     unread: 1,
     time: '17:12',
@@ -231,7 +231,7 @@ const initialThreads: Thread[] = [
     messages: [
       { id: 'd1', kind: 'date', label: 'Today' },
       { id: 's1', kind: 'system', tone: 'success', text: 'Your application was accepted', time: '08:40' },
-      { id: 'm1', kind: 'text', mine: false, text: 'Hi Mia! Can you come for a short trial shift on Saturday at 18:00?', time: '09:05' },
+      { id: 'm1', kind: 'text', mine: false, text: 'Hi Mia! Can you come for a short trial day on Saturday at 18:00?', time: '09:05' },
       { id: 'm2', kind: 'text', mine: true, text: 'Ok, I’m waiting for the address', time: '09:12' },
     ],
     unread: 0,
@@ -368,7 +368,7 @@ const initialNotifs: Notif[] = [
     group: 'requests',
     title: 'Azure Beach Club wants to chat with you',
     text: 'Contact request · Rooftop lounge hostess',
-    quote: '“Hi Mia! We’re hiring hostesses for a new rooftop lounge, evening shifts. Would you like to talk?”',
+    quote: '“Hi Mia! We’re hiring hostesses for a new rooftop lounge, evening work. Would you like to talk?”',
     time: '2 min',
     day: 'today',
     unread: true,

@@ -59,7 +59,7 @@ const places: Record<TalentSphere, [string, string][]> = {
 };
 
 const abouts: Record<TalentSphere, string> = {
-  hospitality: 'Years in hospitality, from beach clubs in JBR to fine dining at DIFC. Calm under pressure, great with VIP guests and big tables. Available for evening shifts and private events.',
+  hospitality: 'Years in hospitality, from beach clubs in JBR to fine dining at DIFC. Calm under pressure, great with VIP guests and big tables. Available for evening work and private events.',
   fnb: 'Coffee and service are my craft: latte art, manual brewing and friendly, fast service at the bar. I keep the station clean and know the menu by heart.',
   events: 'I make events feel easy for guests — welcoming, guiding, keeping the energy up. Comfortable on stage and in crowds, fluent with brand scripts.',
   modeling: 'Commercial and runway model with editorial experience. Professional on set, quick with direction, available for campaigns, fittings and promo events.',

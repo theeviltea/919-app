@@ -65,7 +65,7 @@ export default function Role() {
         </View>
       </PatternHeader>
       <View style={{ marginTop: -60, paddingHorizontal: 20, gap: 12, width: '100%', maxWidth: 560, alignSelf: 'center' }}>
-        <RoleCard icon="briefcase" title="I'm looking for work" points={['Build your profile and CV', 'Apply to shifts in one tap', 'Get hired in hours, not weeks']} onPress={() => pick('seeker')} />
+        <RoleCard icon="briefcase" title="I'm looking for work" points={['Build your profile and CV', 'Apply to jobs in one tap', 'Get hired in hours, not weeks']} onPress={() => pick('seeker')} />
         <RoleCard icon="building" title="I'm hiring" points={['Register your company', 'Post vacancies and castings', 'Find the best candidates']} onPress={() => pick('employer')} />
       </View>
       <View style={{ flex: 1, minHeight: 24 }} />
