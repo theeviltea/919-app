@@ -11,6 +11,8 @@ import { candidates, countTalentFilters, emptyTalentFilters, talentSphereLabels,
 import { tierRank } from '@/data/tiers';
 import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
 import { RowHeader, TalentTileCard, VideoTileCard } from '@/features/hire/ui';
+import { TalentProfilesSkeleton } from '@/features/skeletons/TalentProfilesSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { openVideo } from '@/features/media/viewer';
 import { useTheme } from '@/theme';
 
@@ -30,6 +32,7 @@ export default function TalentHome() {
   const [tab, setTab] = useState<View2>('profiles');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { unreadNotifs: unread, info, plan } = useEmployer();
+  const loading = useFirstLoad(`hire-talent-${tab}`);
 
   const { expanded, range } = headerMetrics(insets.top, { titleLines: 1 });
   const ref = useAnimatedRef<Animated.ScrollView>();
@@ -63,7 +66,9 @@ export default function TalentHome() {
           />
         </View>
 
-        {tab === 'profiles'
+        {loading ? (
+          <TalentProfilesSkeleton videos={tab === 'videos'} />
+        ) : tab === 'profiles'
           ? profileRows.map((row) => (
               <View key={row.key} style={{ paddingTop: 16 }}>
                 <RowHeader title={row.title} count={String(row.list.length)} onAll={() => seeAll(row.key)} />

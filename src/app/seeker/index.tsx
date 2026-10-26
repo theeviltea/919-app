@@ -9,6 +9,8 @@ import { spheres, vacancySpheres } from '@/data/dictionaries';
 import { feedVacancies } from '@/data/mock';
 import { useSeeker } from '@/data/seeker';
 import type { Sphere } from '@/data/types';
+import { SeekFeedSkeleton } from '@/features/skeletons/SeekFeedSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { countFilters, emptyFilters, FiltersSheet } from '@/features/vacancies/FiltersSheet';
 import { SaveButton } from '@/features/vacancies/SaveButton';
 import { VacancyListCard } from '@/features/vacancies/VacancyListCard';
@@ -26,6 +28,7 @@ export default function SeekerHome() {
   const { profile, unreadNotifs } = useSeeker();
   const [quick, setQuick] = useState<'all' | 'urgent' | Sphere>('all');
   const [sheet, setSheet] = useState(false);
+  const loading = useFirstLoad('seeker-feed');
   const { expanded, range } = headerMetrics(insets.top, { titleLines: 1, eyebrow: true });
   const list = useMemo(() => {
     const byQuick = feedVacancies.filter((v) => quick === 'all' || (quick === 'urgent' ? v.urgent : v.sphere === quick));
@@ -65,6 +68,12 @@ export default function SeekerHome() {
             <Chip key={s} label={spheres[s]} selected={quick === s} onPress={() => setQuick(s)} />
           ))}
         </ScrollView>
+        {loading ? (
+          <View style={{ marginTop: 14 }}>
+            <SeekFeedSkeleton />
+          </View>
+        ) : (
+          <>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginTop: 18, marginBottom: 10 }}>
           <Text variant="displayM" accessibilityRole="header" style={{ flex: 1 }}>
             {quick === 'urgent' ? 'Urgent hiring' : 'Hiring today'}
@@ -78,6 +87,8 @@ export default function SeekerHome() {
           )}
           {list.length ? <LoadMoreFooter loading={paged.loading} done={paged.done} total={list.length} noun="vacancies" /> : null}
         </View>
+          </>
+        )}
       </Animated.ScrollView>
       <CollapsingHeader
         scrollY={y}

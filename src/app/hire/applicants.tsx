@@ -10,6 +10,8 @@ import { applicantLine, asPublicVacancy, candidateOf, type Applicant, type Appli
 import { Pill } from '@/features/hire/ui';
 import { useVacancyActions } from '@/features/hire/VacancyActions';
 import { ShareSheet } from '@/features/vacancies/ShareSheet';
+import { EmpApplicantsSkeleton } from '@/features/skeletons/EmpApplicantsSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 /** Employer — applicants of one vacancy (EmpApplicants / Accepted / Declined / Empty). Lives in the Vacancies tab. */
@@ -50,6 +52,7 @@ function ApplicantsOf({ v, initialTab }: { v: MyVacancy; initialTab?: ApplicantS
   const count = (s: ApplicantStatus) => all.filter((x) => x.status === s).length;
   const list = all.filter((x) => x.status === tab).sort((a, b) => (newestFirst ? a.ago - b.ago : b.ago - a.ago));
   const live = v.status === 'active';
+  const loading = useFirstLoad(`hire-applicants-${v.id}`);
 
   const accept = (x: Applicant) => {
     const cand = candidateOf(x);
@@ -102,7 +105,9 @@ function ApplicantsOf({ v, initialTab }: { v: MyVacancy; initialTab?: ApplicantS
         onChange={setTab}
       />
 
-      {all.length === 0 ? (
+      {loading ? (
+        <EmpApplicantsSkeleton />
+      ) : all.length === 0 ? (
         <NoApplicants v={v} live={live} />
       ) : (
         <>

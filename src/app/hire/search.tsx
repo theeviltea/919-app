@@ -23,6 +23,8 @@ import {
 import { SelectSheet } from '@/features/auth/SelectSheet';
 import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
 import { openVideo } from '@/features/media/viewer';
+import { TalentSearchSkeleton } from '@/features/skeletons/TalentSearchSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 type Tab = 'profiles' | 'videos';
@@ -225,6 +227,7 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
   const sphereCount = (s: TalentSphere) => pool.filter((x) => x.sphere === s).length;
   const noun = tab === 'profiles' ? 'profile' : 'video';
   const plural = (n: number) => `${n} ${noun}${n === 1 ? '' : 's'}`;
+  const loading = useFirstLoad(`hire-search-${tab}`);
 
   return (
     <View style={{ flex: 1, backgroundColor: c.back }}>
@@ -283,7 +286,9 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
           </ScrollView>
         ) : null}
 
-        {list.length || nFilters ? (
+        {loading ? (
+          <TalentSearchSkeleton videos={tab === 'videos'} />
+        ) : list.length || nFilters ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 }}>
             <Text variant="bodyS" color="textPrimary" style={{ flex: 1, fontSize: 13 }}>
               {nFilters ? (
@@ -314,7 +319,7 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
           </View>
         ) : null}
 
-        {list.length ? (
+        {loading ? null : list.length ? (
           <View style={{ paddingHorizontal: 16, gap: 12 }}>
             {rows.map((r, i) => (
               <View key={i} style={{ flexDirection: 'row', gap: 12 }}>

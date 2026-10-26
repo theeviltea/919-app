@@ -13,6 +13,8 @@ import { SelectSheet } from '@/features/auth/SelectSheet';
 import { applyFilters, countFilters, emptyFilters, FiltersSheet, type VacancyFilters } from '@/features/vacancies/FiltersSheet';
 import { SaveButton } from '@/features/vacancies/SaveButton';
 import { VacancyListCard } from '@/features/vacancies/VacancyListCard';
+import { SeekSearchSkeleton } from '@/features/skeletons/SeekSearchSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 type Sort = 'Newest' | 'Highest pay';
@@ -85,6 +87,8 @@ function SeekerSearch({ initialQ, initialFilters }: { initialQ: string; initialF
     return sort === 'Highest pay' ? [...list].sort((a, b) => b.pay.amount - a.pay.amount) : [...list].sort((a, b) => Number(b.urgent) - Number(a.urgent));
   }, [filters, q, sort]);
   const paged = usePaged(results.length, `${q}|${sort}|${JSON.stringify(filters)}`);
+  // Each new query / filter set loads like a request: skeleton first (SeekSearchResultsSkeleton).
+  const loading = useFirstLoad('seeker-search-results', 700) && active;
   const chips = chipsOf(filters);
   const remember = () => (q.trim() || nFilters ? addRecent({ q: q.trim(), filters }) : undefined);
   const apply = (r: Pick<RecentSearch, 'q' | 'filters'>) => {
@@ -212,6 +216,10 @@ function SeekerSearch({ initialQ, initialFilters }: { initialQ: string; initialF
                 </Pressable>
               ))}
             </View>
+          </View>
+        ) : loading ? (
+          <View style={{ paddingHorizontal: 16 }}>
+            <SeekSearchSkeleton />
           </View>
         ) : results.length ? (
           <View style={{ paddingHorizontal: 16, gap: 12 }}>

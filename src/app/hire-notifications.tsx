@@ -8,6 +8,8 @@ import { BackButton, Icon, IconButton, Pressable, Text, useToast, type IconName 
 import { useEmployer, type EmpNotif, type EmpNotifKind } from '@/data/employer';
 import { useSoon } from '@/features/hire/ui';
 import { useStartVacancy } from '@/features/post/gate';
+import { EmpNotificationCenterSkeleton } from '@/features/skeletons/EmpNotificationCenterSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme, type Colors } from '@/theme';
 
 type Filter = 'all' | EmpNotif['group'];
@@ -88,6 +90,7 @@ export default function EmployerNotifications() {
   const startVacancy = useStartVacancy();
   const [filter, setFilter] = useState<Filter>('all');
 
+  const loading = useFirstLoad('hire-notifications');
   const shown = notifs.filter((n) => filter === 'all' || n.group === filter);
   const groups: { title: string; items: EmpNotif[]; markAll?: boolean }[] = [
     { title: `New · ${shown.filter((n) => n.unread).length}`, items: shown.filter((n) => n.unread), markAll: true },
@@ -178,7 +181,9 @@ export default function EmployerNotifications() {
           </ScrollView>
         ) : null}
 
-        {groups.length === 0 ? (
+        {loading ? <EmpNotificationCenterSkeleton /> : null}
+
+        {!loading && groups.length === 0 ? (
           <View style={{ alignItems: 'center', paddingTop: 72, paddingHorizontal: 24 }}>
             <View style={{ width: 88, height: 88, borderRadius: 28, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="notification" size={36} color="primary" />
@@ -201,7 +206,7 @@ export default function EmployerNotifications() {
           </View>
         ) : null}
 
-        {groups.map((g) => (
+        {(loading ? [] : groups).map((g) => (
           <View key={g.title} style={{ gap: 12 }}>
             <View style={{ paddingTop: 8, paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <Text variant="bodyS" weight={600} color="textBody" style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 }}>

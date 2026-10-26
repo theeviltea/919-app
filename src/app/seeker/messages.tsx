@@ -9,6 +9,8 @@ import { useSeeker, type Thread } from '@/data/seeker';
 import { SwipeRow, type SwipeAction } from '@/features/chat/SwipeRow';
 import { lastLine, ThreadAvatar } from '@/features/chat/ThreadAvatar';
 import { SheetHero } from '@/features/profile/ui';
+import { SeekMessagesSkeleton } from '@/features/skeletons/SeekMessagesSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 type Tab = 'active' | 'archive';
@@ -78,6 +80,7 @@ export default function Messages() {
   const [tab, setTab] = useState<Tab>('active');
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<Thread | null>(null);
+  const loading = useFirstLoad('seeker-messages');
   const active = threads.filter((t) => !t.archived && t.state !== 'declined');
   const archive = threads.filter((t) => t.archived && t.state !== 'declined');
   const list = tab === 'active' ? active : archive;
@@ -138,7 +141,8 @@ export default function Messages() {
       <ScrollView
         onScrollBeginDrag={() => setOpenId(null)}
         contentContainerStyle={{ paddingTop: 12, paddingHorizontal: 20, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
-        {list.length === 0 ? (
+        {loading ? <SeekMessagesSkeleton /> : null}
+        {!loading && list.length === 0 ? (
           tab === 'active' ? (
             <EmptyState
               icon="message"
@@ -150,7 +154,7 @@ export default function Messages() {
             <EmptyState icon="clock" title="Archive is empty" text="Chats for closed vacancies and withdrawn applications move here." passive />
           )
         ) : null}
-        {tab === 'archive' && list.length ? (
+        {!loading && tab === 'archive' && list.length ? (
           <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 4 }}>
             <Icon name="alert-circle" size={16} color="textBody" />
             <Text variant="bodyS" color="textBody" style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>
@@ -158,8 +162,8 @@ export default function Messages() {
             </Text>
           </View>
         ) : null}
-        {requests.length ? group(requests) : null}
-        {rest.length ? group(rest) : null}
+        {!loading && requests.length ? group(requests) : null}
+        {!loading && rest.length ? group(rest) : null}
       </ScrollView>
 
       <BottomSheet visible={!!confirm} onClose={() => setConfirm(null)}>

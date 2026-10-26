@@ -14,6 +14,8 @@ import { pickImages } from '@/features/auth/pickImage';
 import { ChatBackground } from '@/features/chat/ChatBackground';
 import { SwipeReply } from '@/features/chat/SwipeReply';
 import { openPhotos, openVideo } from '@/features/media/viewer';
+import { ChatSkeleton } from '@/features/skeletons/ChatSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { fontFamily, useTheme } from '@/theme';
 
 type Quote = { author: string; text: string };
@@ -112,6 +114,7 @@ export default function ChatScreen() {
   const [inputH, setInputH] = useState(22);
   const scroll = useRef<ScrollView>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loading = useFirstLoad(`chat:${id}`);
 
   const unread = t?.unread ?? 0;
   useEffect(() => {
@@ -243,6 +246,9 @@ export default function ChatScreen() {
       {/* messages, over the 919 pattern */}
       <View style={{ flex: 1 }}>
         <ChatBackground />
+        {loading ? (
+          <ChatSkeleton variant="seeker" />
+        ) : (
         <ScrollView
           ref={scroll}
           onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: true })}
@@ -318,6 +324,7 @@ export default function ChatScreen() {
             </View>
           ) : null}
         </ScrollView>
+        )}
       </View>
 
       {/* bottom */}

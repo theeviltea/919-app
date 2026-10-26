@@ -18,6 +18,8 @@ import { ChatBackground } from '@/features/chat/ChatBackground';
 import { Radio } from '@/features/hire/ui';
 import { SwipeReply } from '@/features/chat/SwipeReply';
 import { openPhotos, openVideo } from '@/features/media/viewer';
+import { ChatSkeleton } from '@/features/skeletons/ChatSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { fontFamily, useTheme } from '@/theme';
 
 type AttachKind = 'photo' | 'vacancy' | 'location' | 'contact';
@@ -214,6 +216,7 @@ function Chat({ t, initialCtx }: { t: EmpThread; initialCtx?: string }) {
   const [typing, setTyping] = useState(false);
   const [undo, setUndo] = useState<string | null>(null);
   const scroll = useRef<ScrollView>(null);
+  const loading = useFirstLoad(`hire-chat:${t.id}`);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
@@ -383,6 +386,9 @@ function Chat({ t, initialCtx }: { t: EmpThread; initialCtx?: string }) {
       {/* messages */}
       <View style={{ flex: 1 }}>
         <ChatBackground />
+        {loading ? (
+          <ChatSkeleton variant="employer" card={!!cand} />
+        ) : (
         <ScrollView
           ref={scroll}
           onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: true })}
@@ -524,6 +530,7 @@ function Chat({ t, initialCtx }: { t: EmpThread; initialCtx?: string }) {
               })
             : null}
         </ScrollView>
+        )}
 
         {undo ? (
           <View style={{ position: 'absolute', left: 12, right: 12, top: 12, padding: 12, borderRadius: 16, backgroundColor: c.inverse, flexDirection: 'row', alignItems: 'center', gap: 10 }}>

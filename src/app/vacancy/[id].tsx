@@ -17,6 +17,8 @@ import { ShareSheet } from '@/features/vacancies/ShareSheet';
 import { useApply } from '@/features/vacancies/useApply';
 import { PayLabel } from '@/features/vacancies/VacancyListCard';
 import { DetailRow, Meta, Section } from '@/features/vacancies/detail';
+import { VacancyBodySkeleton, VacancyCoverSkeleton } from '@/features/skeletons/VacancyCardSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 /** Vacancy page. Public for guests: Respond and Save open the sign-in sheet (role: job seeker). */
@@ -36,6 +38,7 @@ export default function VacancyScreen() {
   const seeker = useSeeker();
   const apply = useApply({ aboveTabBar: true });
   const w = Math.min(width, 640);
+  const loading = useFirstLoad(`vacancy:${id}`);
 
   if (!v) {
     return (
@@ -65,7 +68,10 @@ export default function VacancyScreen() {
     <View style={{ flex: 1, backgroundColor: c.back }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
         <View style={{ height: 300, backgroundColor: c.labelBlueBack }}>
-          <Pager
+          {loading ? (
+            <VacancyCoverSkeleton />
+          ) : (
+            <Pager
             count={v.photos.length}
             width={w}
             height={300}
@@ -79,6 +85,7 @@ export default function VacancyScreen() {
               </View>
             )}
           />
+          )}
           <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 130, experimental_backgroundImage: 'linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0))' }} />
           <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 12, flexDirection: 'row', gap: 8 }}>
             <BackButton tone="onPhoto" />
@@ -97,12 +104,18 @@ export default function VacancyScreen() {
             />
             {guest ? null : <IconButton tone="onPhoto" icon="more" label="More" onPress={() => setSheet('more')} />}
           </View>
+          {loading ? null : (
           <View style={{ position: 'absolute', right: 16, bottom: 52, height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.mediaOverlay, justifyContent: 'center' }}>
             <Text variant="caption" weight={600} color="#FFFFFF">
               {page + 1} / {v.photos.length}
             </Text>
           </View>
+          )}
         </View>
+
+        {loading ? (
+          <VacancyBodySkeleton />
+        ) : (
 
         <View style={{ marginTop: -36, paddingHorizontal: 16, gap: 12 }}>
           <View style={{ backgroundColor: c.surface, borderRadius: 24, padding: 18, gap: 14 }}>
@@ -281,6 +294,7 @@ export default function VacancyScreen() {
             </Pressable>
           </Section>
         </View>
+        )}
       </ScrollView>
 
       <View

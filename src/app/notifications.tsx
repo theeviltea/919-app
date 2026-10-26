@@ -8,6 +8,8 @@ import { BackButton, Icon, IconButton, Pressable, Text, useToast, type IconName 
 import { findVacancy } from '@/data/mock';
 import { useSeeker, type Notif, type NotifKind } from '@/data/seeker';
 import { useTheme, type Colors } from '@/theme';
+import { SeekNotificationsSkeleton } from '@/features/skeletons/SeekNotificationsSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 
 type Filter = 'all' | 'applications' | 'requests' | 'vacancies';
 
@@ -69,6 +71,7 @@ export default function Notifications() {
   const toast = useToast();
   const { notifs, readNotif, readAllNotifs, removeNotif, acceptRequest, declineRequest } = useSeeker();
   const [filter, setFilter] = useState<Filter>('all');
+  const loading = useFirstLoad('seeker-notifications');
 
   const shown = notifs.filter((n) => filter === 'all' || n.group === filter);
   const groups: { title: string; items: Notif[]; markAll?: boolean }[] = [
@@ -176,7 +179,8 @@ export default function Notifications() {
           </ScrollView>
         ) : null}
 
-        {groups.length === 0 ? (
+        {loading ? <SeekNotificationsSkeleton /> : null}
+        {!loading && groups.length === 0 ? (
           <View style={{ alignItems: 'center', paddingTop: 72, paddingHorizontal: 24 }}>
             <View style={{ width: 88, height: 88, borderRadius: 28, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="notification" size={36} color="primary" />
@@ -199,7 +203,7 @@ export default function Notifications() {
           </View>
         ) : null}
 
-        {groups.map((g) => (
+        {(loading ? [] : groups).map((g) => (
           <View key={g.title} style={{ gap: 12 }}>
             <View style={{ paddingTop: 8, paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <Text variant="bodyS" weight={600} color="textBody" style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 }}>

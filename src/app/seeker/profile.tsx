@@ -13,6 +13,8 @@ import { openPhotos, openVideo } from '@/features/media/viewer';
 import { PlanChip } from '@/features/profile/seekerPlan';
 import { CodeTile, Completeness, Panel, TimelineItem } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
+import { SeekerProfileSkeleton } from '@/features/skeletons/SeekerProfileSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 
 const DETAIL_ROWS: [string, string, string?][] = [
   ['appearance', 'Appearance'],
@@ -68,6 +70,7 @@ export default function Profile() {
   const insets = useSafeAreaInsets();
   const { profile: p, hidden, plan, look } = useSeeker();
   const [more, setMore] = useState(false);
+  const loading = useFirstLoad('seeker-profile');
   const max = plan === 'max';
   const comp = completeness(p);
   const photos = p.photos.filter((x) => x.progress === undefined);
@@ -91,6 +94,11 @@ export default function Profile() {
           <IconButton icon="edit" label="Edit profile" onPress={() => router.push('/profile/edit')} />
           <IconButton icon="settings" label="Settings" onPress={() => router.push('/profile/settings')} />
         </View>
+
+        {loading ? (
+          <SeekerProfileSkeleton />
+        ) : (
+          <>
 
         {hidden ? (
           <Panel>
@@ -395,6 +403,8 @@ export default function Profile() {
             })}
           </Panel>
         ) : null}
+          </>
+        )}
       </ScrollView>
     </View>
   );

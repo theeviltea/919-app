@@ -9,6 +9,8 @@ import { contractTypes, formatAmount } from '@/data/dictionaries';
 import { findVacancy } from '@/data/mock';
 import { useSeeker, type AppStatus, type Application } from '@/data/seeker';
 import type { Vacancy } from '@/data/types';
+import { SeekApplicationsSkeleton } from '@/features/skeletons/SeekApplicationsSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { SaveButton } from '@/features/vacancies/SaveButton';
 import { useApply } from '@/features/vacancies/useApply';
 import { useTheme } from '@/theme';
@@ -84,6 +86,7 @@ export default function Applications() {
   const apply = useApply({ aboveTabBar: true });
   const [tab, setTab] = useState<Tab>('applied');
   const [filter, setFilter] = useState<Filter>('all');
+  const loading = useFirstLoad('seeker-applications');
 
   const live = apps.filter((a) => !a.archived && a.status !== 'hired');
   const count = (f: Filter) => (f === 'all' ? live.length : live.filter((a) => a.status === f).length);
@@ -114,6 +117,7 @@ export default function Applications() {
         />
       </View>
       <ScrollView contentContainerStyle={{ paddingTop: 12, paddingHorizontal: 20, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
+        {loading && tab !== 'applied' ? <SeekApplicationsSkeleton /> : null}
         {tab === 'applied' ? (
           <>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} style={{ marginHorizontal: -20 }}>
@@ -123,7 +127,9 @@ export default function Applications() {
               ))}
               <View style={{ width: 12 }} />
             </ScrollView>
-            {applied.length
+            {loading ? (
+              <SeekApplicationsSkeleton />
+            ) : applied.length
               ? applied.map((a) => {
                   const v = findVacancy(a.vacancyId);
                   return v ? <Card key={a.vacancyId} v={v} footer={<AppFooter a={a} />} /> : null;
@@ -132,7 +138,7 @@ export default function Applications() {
           </>
         ) : null}
 
-        {tab === 'saved' ? (
+        {!loading && tab === 'saved' ? (
           savedList.length ? (
             <>
               <Text variant="bodyS" color="textBody">
@@ -169,7 +175,7 @@ export default function Applications() {
           )
         ) : null}
 
-        {tab === 'active' ? (
+        {!loading && tab === 'active' ? (
           active.length ? (
             <>
               <Text variant="bodyS" color="textBody">
@@ -200,7 +206,7 @@ export default function Applications() {
           )
         ) : null}
 
-        {tab === 'archive' ? (
+        {!loading && tab === 'archive' ? (
           archive.length ? (
             <>
               <Text variant="bodyS" color="textBody">

@@ -9,6 +9,8 @@ import { tierOf } from '@/data/tiers';
 import { SwipeRow, type SwipeAction } from '@/features/chat/SwipeRow';
 import { PageTitle, Pill, Round } from '@/features/hire/ui';
 import { SheetHero } from '@/features/profile/ui';
+import { EmpMessagesSkeleton } from '@/features/skeletons/EmpMessagesSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 type Box = EmpThread['box'];
@@ -99,6 +101,7 @@ export default function HireMessages() {
   const [confirm, setConfirm] = useState<EmpThread | null>(null);
   const of = (b: Box) => threads.filter((t) => t.box === b);
   const list = of(tab);
+  const loading = useFirstLoad(`hire-messages-${tab}`);
 
   const move = (t: EmpThread, box: Box) => {
     moveThread(t.id, box);
@@ -139,7 +142,10 @@ export default function HireMessages() {
       <ScrollView
         onScrollBeginDrag={() => setOpenId(null)}
         contentContainerStyle={{ paddingTop: 12, paddingHorizontal: 16, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
-        {tab !== 'active' && list.length ? (
+        {loading ? (
+          <EmpMessagesSkeleton />
+        ) : null}
+        {!loading && tab !== 'active' && list.length ? (
           <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 4 }}>
             <Icon name="alert-circle" size={16} color="textBody" />
             <Text variant="bodyS" color="textBody" style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>
@@ -147,7 +153,7 @@ export default function HireMessages() {
             </Text>
           </View>
         ) : null}
-        {list.length ? (
+        {loading ? null : list.length ? (
           <View style={{ backgroundColor: c.surface, borderRadius: 24, overflow: 'hidden' }}>
             {list.map((t, i) => (
               <SwipeRow

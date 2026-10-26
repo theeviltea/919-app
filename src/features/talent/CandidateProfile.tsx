@@ -12,6 +12,8 @@ import { findCandidate } from '@/data/talentPool';
 import { PremiumSheet } from '@/features/hire/PremiumSheet';
 import { openPhotos, openVideo } from '@/features/media/viewer';
 import { CodeTile, Panel, TimelineItem } from '@/features/profile/ui';
+import { EmpSeekerProfileSkeleton } from '@/features/skeletons/EmpSeekerProfileSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 // One mock photo per person: full frame, then two closer crops, so the set reads as different shots.
@@ -44,6 +46,7 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
   const [sheet, setSheet] = useState<'contact' | 'paywall' | null>(null);
   const [msg, setMsg] = useState('');
   const cand = findCandidate(id);
+  const loading = useFirstLoad(`candidate:${id}`);
 
   if (!cand) {
     return (
@@ -107,6 +110,10 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
           )}
         </View>
 
+        {loading ? (
+          <EmpSeekerProfileSkeleton />
+        ) : (
+          <>
         {/* header card */}
         <View style={{ backgroundColor: c.surface, borderRadius: 24, overflow: 'hidden' }}>
           {max ? (
@@ -363,6 +370,8 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
             </Pressable>
           ))}
         </Panel>
+          </>
+        )}
       </ScrollView>
 
       {/* pinned CTA (employer only) */}

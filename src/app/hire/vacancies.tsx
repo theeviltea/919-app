@@ -10,6 +10,9 @@ import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, t
 import { PageTitle } from '@/features/hire/ui';
 import { useVacancyActions } from '@/features/hire/VacancyActions';
 import { VacancyCard } from '@/features/hire/VacancyHubCard';
+import { EmpHiringSkeleton } from '@/features/skeletons/EmpHiringSkeleton';
+import { TalentGridSkeleton } from '@/features/skeletons/TalentSearchSkeleton';
+import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { useTheme } from '@/theme';
 
 type Tab = 'mine' | 'saved';
@@ -77,6 +80,7 @@ export default function HireVacancies() {
   const saved = savedAll.filter((t) => savedFilter === 'all' || t.sphere === savedFilter);
   const savedCount = (f: SavedFilter) => savedAll.filter((t) => f === 'all' || t.sphere === f).length;
   const rows = Array.from({ length: Math.ceil(saved.length / 2) }, (_, i) => saved.slice(i * 2, i * 2 + 2));
+  const loading = useFirstLoad(`hire-vacancies-${tab}`);
 
   return (
     <ScrollView
@@ -92,7 +96,13 @@ export default function HireVacancies() {
         onChange={setTab}
       />
 
-      {tab === 'mine' ? (
+      {loading ? (
+        tab === 'mine' ? (
+          <EmpHiringSkeleton />
+        ) : (
+          <TalentGridSkeleton count={false} />
+        )
+      ) : tab === 'mine' ? (
         <>
           <View style={{ backgroundColor: c.surface, borderRadius: 20, padding: 16, flexDirection: 'row', gap: 12 }}>
             <Stat n={count('active')} label={'Active\nvacancies'} />
