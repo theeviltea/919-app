@@ -23,7 +23,7 @@ export default function MyVacancyScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const soon = useSoon();
-  const { vacancies, applicants, info } = useEmployer();
+  const { vacancies, applicants, info, verified } = useEmployer();
   const [page, setPage] = useState(0);
   const [more, setMore] = useState(false);
   const actions = useVacancyActions({ onDeleted: () => router.back() });
@@ -92,7 +92,7 @@ export default function MyVacancyScreen() {
               <Text variant="body" weight={600} numberOfLines={1} style={{ fontSize: 14, flexShrink: 1 }}>
                 {company.name}
               </Text>
-              <Icon name="verified" size={16} color="primary" />
+              {verified ? <Icon name="verified" size={16} color="primary" /> : null}
               <View style={{ flex: 1 }} />
               <StatusChip kind="new" label={d.category} icon={null} />
             </View>
@@ -368,7 +368,7 @@ export default function MyVacancyScreen() {
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Text variant="bodyL">{company.name}</Text>
-                  <Icon name="verified" size={16} color="primary" />
+                  {verified ? <Icon name="verified" size={16} color="primary" /> : null}
                 </View>
                 <Meta icon="location" text={`${info.city}, ${info.country}`} />
               </View>

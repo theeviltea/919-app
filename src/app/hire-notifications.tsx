@@ -29,6 +29,8 @@ const tiles: Partial<Record<EmpNotifKind, { icon: IconName; bg: keyof Colors; fg
   premiumSoon: { icon: 'star', bg: 'labelOrangeBack', fg: 'labelOrangeText' },
   archived: { icon: 'briefcase', bg: 'input', fg: 'textBody' },
   premiumOver: { icon: 'star', bg: 'input', fg: 'textBody' },
+  licenceOk: { icon: 'verified', bg: 'successBack', fg: 'successText' },
+  licenceRejected: { icon: 'alert-circle', bg: 'dangerBack', fg: 'dangerText' },
 };
 
 function Avatar({ n }: { n: EmpNotif }) {
@@ -121,6 +123,9 @@ export default function EmployerNotifications() {
       case 'premiumSoon':
       case 'premiumOver':
         return router.push('/company/subscription');
+      case 'licenceOk':
+      case 'licenceRejected':
+        return router.push('/company/verification');
       default:
         return soon('This notification');
     }

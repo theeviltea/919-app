@@ -40,6 +40,8 @@ export type EmployerDraft = {
   phone: string;
   phoneLocked: boolean;
   company: { logo?: ImageSourcePropType; name: string; phone: string; website: string; country?: string; city?: string };
+  /** Trade licence PDF picked on step 3 (optional: without it the company gets no verified badge). */
+  licence?: { name: string; size: string; uri?: string };
   joinCompanyId?: string;
 };
 

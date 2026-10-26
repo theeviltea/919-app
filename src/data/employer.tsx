@@ -235,11 +235,34 @@ const rawThreads: EmpThread[] = [
 /** EmpMessages: pool photos and seeded conversations. */
 export const initialEmpThreads: EmpThread[] = rawThreads.map((t) => ({ ...t, photo: t.candidateId ? (findCandidate(t.candidateId)?.photo ?? t.photo) : t.photo, chats: initialChats[t.id] }));
 
-export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver';
+/** Trade licence verification. Only an approved licence gives the company the verified badge. */
+export type LicenceStatus = 'none' | 'review' | 'rejected' | 'verified';
+export type LicenceFile = { name: string; size: string; uri?: string };
+export type Licence = {
+  status: LicenceStatus;
+  file?: LicenceFile;
+  sentAt?: string;
+  checkedAt?: string;
+  reason?: string;
+  number?: string;
+  issuer?: string;
+  validUntil?: string;
+};
+/** Demo account (Skyline Hospitality) is verified. */
+export const initialLicence: Licence = {
+  status: 'verified',
+  file: { name: 'Skyline_trade_licence.pdf', size: '1.2 MB' },
+  checkedAt: '12 Sep 2026',
+  number: 'CN-3318204',
+  issuer: 'Dubai DED',
+  validUntil: '14 Mar 2027',
+};
+
+export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver' | 'licenceOk' | 'licenceRejected';
 export type EmpNotif = {
   id: string;
   kind: EmpNotifKind;
-  group: 'applicants' | 'vacancies' | 'messages' | 'subscription';
+  group: 'applicants' | 'vacancies' | 'messages' | 'subscription' | 'company';
   title: string;
   text: string;
   time: string;
@@ -497,6 +520,12 @@ type Store = {
   setInfo: (u: Partial<CompanyInfo>) => void;
   plan: Plan;
   setPlan: (p: Plan) => void;
+  /** Trade licence and the verified badge (EmpVerify*). */
+  licence: Licence;
+  verified: boolean;
+  sendLicence: (file: LicenceFile) => void;
+  /** New employer from sign-up: no licence yet, or the one picked on step 3. */
+  resetLicence: (file?: LicenceFile) => void;
   members: Member[];
   addMember: (m: Member) => void;
   updateMember: (id: string, u: Partial<Member>) => void;
@@ -541,7 +570,18 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [rep, setRepState] = useState(initialRep);
   const [info, setInfoState] = useState(initialInfo);
   const [plan, setPlan] = useState<Plan>('premium');
+  const [licence, setLicence] = useState<Licence>(initialLicence);
   const [members, setMembers] = useState(initialMembers);
+  /** Demo check of a trade licence: the 919 team approves it a little after it's sent. */
+  const checkLicenceLater = () =>
+    setTimeout(() => {
+      const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      setLicence((l) => (l.status === 'review' ? { ...l, status: 'verified', checkedAt: today, issuer: 'Dubai DED', validUntil: '14 Mar 2027', reason: undefined } : l));
+      setNotifs((ns) => [
+        { id: `lic-${Date.now()}`, kind: 'licenceOk', group: 'company', title: 'Company verified', text: 'Trade licence approved. The verified badge is now next to your company name', time: 'now', day: 'today', unread: true },
+        ...ns,
+      ]);
+    }, MODERATION_MS);
   /** Demo moderation: the 919 team approves a vacancy a little after it's sent. */
   const approveLater = (id: string, title: string, cover: ImageSourcePropType) =>
     setTimeout(() => {
@@ -733,6 +773,18 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       setInfo: (u) => setInfoState((x) => ({ ...x, ...u })),
       plan,
       setPlan,
+      licence,
+      verified: licence.status === 'verified',
+      sendLicence: (file) => {
+        setLicence({ status: 'review', file, sentAt: `today at ${clock()}` });
+        checkLicenceLater();
+      },
+      resetLicence: (file) => {
+        if (file) {
+          setLicence({ status: 'review', file, sentAt: `today at ${clock()}` });
+          checkLicenceLater();
+        } else setLicence({ status: 'none' });
+      },
       // "You" in the team always mirrors Your profile.
       members: members.map((m) => (m.you ? { ...m, name: `${rep.firstName} ${rep.lastName}`, title: rep.position, photo: rep.photo } : m)),
       addMember: (m) => setMembers((ms) => [...ms, m]),
@@ -745,7 +797,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         return on;
       },
     }),
-    [threads, joinRequests, savedIds, notifs, rep, info, plan, members, vacancies, applicants],
+    [threads, joinRequests, savedIds, notifs, rep, info, plan, licence, members, vacancies, applicants],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

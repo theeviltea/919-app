@@ -15,7 +15,7 @@ const DOCS: Record<DocKey, Doc> = {
     intro: 'This agreement sets the rules for using 919 by companies and recruiters who post vacancies and contact candidates in the UAE. By creating a business account you accept these terms.',
     sections: [
       ['Who can use 919 for business', ['You must represent a company registered in the UAE or work as a licensed private recruiter. One person can belong to one company at a time.', 'The company admin is responsible for the team: who joins, which role they get and what they publish.']],
-      ['Company verification', ['Before your first vacancy we check the trade licence and the contact person. Until verification is complete you can browse talent but cannot publish vacancies.']],
+      ['Company verification', ['Before your first vacancy we check the company details and the contact person. Until this check is complete you can browse talent but cannot publish vacancies.', 'The verified badge is given only to companies that upload a valid trade licence (PDF) and pass the check by the 919 team. The licence is seen only by the 919 team and is never shown to candidates. Without it you can still post vacancies, but without the badge.']],
       ['Vacancies and content', ['Vacancies must describe a real job with the actual pay, location and schedule. Discriminatory requirements, fees charged to candidates and misleading offers are not allowed.', 'We may hide or remove a vacancy that breaks these rules and will tell you why.']],
       ['Contacting candidates', ['Use candidate contacts and video presentations only to discuss work you offer. Do not share them outside your company or use them for advertising.']],
       ['Subscription and payments', ['Premium is purchased in the app through Apple Pay and renews automatically each period. You can cancel any time in your Apple ID settings; access stays until the end of the paid period.', 'Refunds are handled by Apple under its rules.']],
@@ -27,7 +27,7 @@ const DOCS: Record<DocKey, Doc> = {
     title: 'Privacy policy',
     intro: 'This policy explains which data 919 collects from business accounts, why we need it and how you can control it.',
     sections: [
-      ['Data we collect', ['Account data: your name, phone number, email and role in the company.', 'Company data: name, trade licence, logo, address and links you add.', 'Activity: vacancies you post, applicants you review and messages you send in 919.']],
+      ['Data we collect', ['Account data: your name, phone number, email and role in the company.', 'Company data: name, trade licence (seen only by the 919 team), logo, address and links you add.', 'Activity: vacancies you post, applicants you review and messages you send in 919.']],
       ['How we use it', ['To verify your company, show your vacancies to candidates, deliver messages and notifications, and keep the service safe from fraud.']],
       ['What candidates see', ['Candidates see your company profile, your vacancies and, if you allow it in Privacy and security, your name and phone number.']],
       ['Sharing with third parties', ['We do not sell personal data. We share it only with providers that run 919 for us — hosting, SMS delivery and analytics — under contracts that protect it, and with authorities when the law requires.']],

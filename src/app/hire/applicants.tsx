@@ -285,7 +285,7 @@ function ApplicantCard({ x, live, onAccept, onDecline, onBack, onMessage }: { x:
 /** EmpApplicantsEmpty */
 function NoApplicants({ v, live }: { v: MyVacancy; live: boolean }) {
   const { c } = useTheme();
-  const { info } = useEmployer();
+  const { info, verified } = useEmployer();
   const [share, setShare] = useState(false);
   return (
     <View style={{ alignItems: 'center', paddingTop: 48, paddingHorizontal: 24 }}>
@@ -303,7 +303,7 @@ function NoApplicants({ v, live }: { v: MyVacancy; live: boolean }) {
           <Button size="l" icon="share" label="Share vacancy" onPress={() => setShare(true)} />
         </View>
       ) : null}
-      {v.detail ? <ShareSheet v={asPublicVacancy(v, v.detail, { name: info.name, initials: initialsOf(info.name) })} visible={share} onClose={() => setShare(false)} /> : null}
+      {v.detail ? <ShareSheet v={asPublicVacancy(v, v.detail, { name: info.name, initials: initialsOf(info.name), verified })} visible={share} onClose={() => setShare(false)} /> : null}
     </View>
   );
 }

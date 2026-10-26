@@ -229,10 +229,10 @@ export function applicantLine(c: Candidate) {
 export const candidateOf = (x: Applicant) => findCandidate(x.candidateId)!;
 
 /** The share sheet speaks the public vacancy shape. */
-export const asPublicVacancy = (v: { id: string; title: string; cover: ImageSourcePropType; urgentLeft?: string }, d: VacancyDetail, company: { name: string; initials: string }): Vacancy => ({
+export const asPublicVacancy = (v: { id: string; title: string; cover: ImageSourcePropType; urgentLeft?: string }, d: VacancyDetail, company: { name: string; initials: string; verified: boolean }): Vacancy => ({
   id: v.id,
   title: v.title,
-  company: { id: 'me', name: company.name, initials: company.initials, verified: true },
+  company: { id: 'me', name: company.name, initials: company.initials, verified: company.verified },
   sphere: 'hospitality',
   city: d.city,
   country: d.country,

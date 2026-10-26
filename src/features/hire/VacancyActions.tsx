@@ -67,7 +67,7 @@ function Row({
 export function useVacancyActions(opts: { onDeleted?: () => void } = {}) {
   const { c } = useTheme();
   const toast = useToast();
-  const { vacancies, applicants, info, updateVacancy, removeVacancy } = useEmployer();
+  const { vacancies, applicants, info, verified, updateVacancy, removeVacancy } = useEmployer();
   const [id, setId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [reason, setReason] = useState<(typeof ARCHIVE_REASONS)[number]['key']>('hired');
@@ -337,7 +337,7 @@ export function useVacancyActions(opts: { onDeleted?: () => void } = {}) {
         <Button size="l" variant="neutral" label="Cancel" onPress={close} />
       </BottomSheet>
 
-      {v.detail ? <ShareSheet v={asPublicVacancy(v, v.detail, { name: info.name, initials: initialsOf(info.name) })} visible={sheet === 'share'} onClose={close} /> : null}
+      {v.detail ? <ShareSheet v={asPublicVacancy(v, v.detail, { name: info.name, initials: initialsOf(info.name), verified })} visible={sheet === 'share'} onClose={close} /> : null}
     </>
   ) : null;
 

@@ -13,7 +13,7 @@ import { useTheme } from '@/theme';
 const SAMPLE_LOGO = require('@/assets/images/mock/hostess.jpg');
 const looksLikeSite = (s: string) => !s.trim() || /^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(s.trim());
 
-/** Employer sign-up, step 2 — company card candidates see on every vacancy. Goes to 919 verification. */
+/** Employer sign-up, step 2 — company card candidates see on every vacancy. Next: trade licence (step 3). */
 export default function CompanyStep() {
   const { c } = useTheme();
   const { employer, setEmployer } = useSignup();
@@ -24,10 +24,10 @@ export default function CompanyStep() {
 
   return (
     <FormScreen
-      top={<StepProgress step={2} of={2} />}
+      top={<StepProgress step={2} of={3} />}
       title="Your company"
       subtitle="Candidates see this on every vacancy you post."
-      footer={<Button size="l" label="Send for verification" disabled={!ok} onPress={() => router.push('/employer/review')} />}>
+      footer={<Button size="l" label="Continue" disabled={!ok} onPress={() => router.push('/employer/licence')} />}>
       <Card padding={20} style={{ alignItems: 'center', gap: 6 }}>
         <Pressable onPress={() => setSheet('logo')} accessibilityRole="button" accessibilityLabel={co.logo ? 'Change company logo' : 'Add company logo'}>
           <View style={{ width: 88, height: 88, borderRadius: 24, backgroundColor: c.input, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>

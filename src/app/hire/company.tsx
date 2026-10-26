@@ -254,12 +254,12 @@ function Vacancies() {
   );
 }
 
-/** Employer — Company (CompanyRecruiters / CompanyAbout / CompanyPremium): greeting, company card, three tabs. */
+/** Employer — Company (CompanyRecruiters / CompanyAbout / CompanyPremium / CompanyNotVerified): greeting, company card, three tabs. */
 export default function HireCompany() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const { user } = useSession();
-  const { info, rep, plan } = useEmployer();
+  const { info, rep, plan, verified, licence } = useEmployer();
   const [tab, setTab] = useState<Tab>('recruiters');
   const pending = user?.company?.status === 'pending';
   const name = info.name;
@@ -305,8 +305,13 @@ export default function HireCompany() {
           <Text variant="body" weight={700} color="#FFFFFF" numberOfLines={1} style={{ flex: 1, fontSize: 15 }}>
             {name}
           </Text>
+          {verified ? <Icon name="verified" size={18} color="#FFFFFF" /> : null}
           {pending ? (
             <Pill label="Under review" icon="clock" bg={c.surface} fg={c.textBody} h={26} />
+          ) : !verified ? (
+            <Pressable onPress={() => router.push('/company/verification')} accessibilityRole="button" accessibilityLabel="Not verified. Upload trade licence">
+              <Pill label={licence.status === 'review' ? 'Licence on review' : 'Not verified'} bg={c.surface} fg={c.textBody} h={26} />
+            </Pressable>
           ) : plan !== 'free' ? (
             <Pill label="Premium" icon="star" bg={c.labelOrangeBack} fg={c.labelOrangeText} h={26} />
           ) : (

@@ -32,7 +32,7 @@ export default function Representative() {
 
   return (
     <FormScreen
-      top={<StepProgress step={1} of={single ? 1 : 2} />}
+      top={<StepProgress step={1} of={single ? 1 : e.mode === 'company' ? 3 : 2} />}
       title="Who's hiring?"
       subtitle="The contact person candidates will talk to. Fields marked * are required."
       footer={<Button size="l" label={single ? 'Send for verification' : 'Continue'} disabled={!ok} onPress={next} />}>
