@@ -18,7 +18,7 @@ export default function EmployerReview() {
   const isPrivate = mode === 'private';
   const licence = isPrivate ? undefined : employer.licence;
   const done = () => {
-    resetLicence(licence);
+    resetLicence(licence, isPrivate);
     finish({
       role: 'employer',
       firstName: employer.firstName,

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon, PatternHeader, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast } from '@/components';
 import { formatAmount } from '@/data/dictionaries';
 import { initialsOf, useEmployer } from '@/data/employer';
+import { LicenceAlert } from '@/features/employer/LicencePrompt';
 import { useStartVacancy } from '@/features/post/gate';
 import { useSession } from '@/data/session';
 import { GlassButton, Pill, Round, Section } from '@/features/hire/ui';
@@ -308,19 +309,20 @@ export default function HireCompany() {
           {verified ? <Icon name="verified" size={18} color="#FFFFFF" /> : null}
           {pending ? (
             <Pill label="Under review" icon="clock" bg={c.surface} fg={c.textBody} h={26} />
-          ) : !verified ? (
+          ) : !verified && !licence.exempt ? (
             <Pressable onPress={() => router.push('/company/verification')} accessibilityRole="button" accessibilityLabel="Not verified. Upload trade licence">
               <Pill label={licence.status === 'review' ? 'Licence on review' : 'Not verified'} bg={c.surface} fg={c.textBody} h={26} />
             </Pressable>
           ) : plan !== 'free' ? (
             <Pill label="Premium" icon="star" bg={c.labelOrangeBack} fg={c.labelOrangeText} h={26} />
-          ) : (
+          ) : verified ? (
             <Pill label="Verified" icon="verified" bg={c.successBack} fg={c.successText} h={26} />
-          )}
+          ) : null}
         </Pressable>
       </PatternHeader>
 
       <View style={{ paddingHorizontal: 20, paddingTop: 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
+        <LicenceAlert />
         <SegmentedTabs<Tab>
           items={[
             { key: 'recruiters', label: 'Recruiters' },

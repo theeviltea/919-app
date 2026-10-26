@@ -247,6 +247,8 @@ export type Licence = {
   number?: string;
   issuer?: string;
   validUntil?: string;
+  /** Private recruiters: no trade licence, no badge prompts. */
+  exempt?: boolean;
 };
 /** Demo account (Skyline Hospitality) is verified. */
 export const initialLicence: Licence = {
@@ -524,8 +526,13 @@ type Store = {
   licence: Licence;
   verified: boolean;
   sendLicence: (file: LicenceFile) => void;
-  /** New employer from sign-up: no licence yet, or the one picked on step 3. */
-  resetLicence: (file?: LicenceFile) => void;
+  /** New employer from sign-up: no licence yet, or the one picked on step 3. Private recruiters are exempt. */
+  resetLicence: (file?: LicenceFile, exempt?: boolean) => void;
+  /** Employer still should be asked to upload a licence (no file, not exempt). */
+  needsLicence: boolean;
+  /** The one-time 'Add your trade licence' sheet after sign-up was shown. */
+  licencePromptSeen: boolean;
+  setLicencePromptSeen: () => void;
   members: Member[];
   addMember: (m: Member) => void;
   updateMember: (id: string, u: Partial<Member>) => void;
@@ -571,6 +578,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [info, setInfoState] = useState(initialInfo);
   const [plan, setPlan] = useState<Plan>('premium');
   const [licence, setLicence] = useState<Licence>(initialLicence);
+  const [licencePromptSeen, setPromptSeen] = useState(false);
   const [members, setMembers] = useState(initialMembers);
   /** Demo check of a trade licence: the 919 team approves it a little after it's sent. */
   const checkLicenceLater = () =>
@@ -779,8 +787,13 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         setLicence({ status: 'review', file, sentAt: `today at ${clock()}` });
         checkLicenceLater();
       },
-      resetLicence: (file) => {
-        if (file) {
+      needsLicence: !licence.exempt && (licence.status === 'none' || licence.status === 'rejected'),
+      licencePromptSeen,
+      setLicencePromptSeen: () => setPromptSeen(true),
+      resetLicence: (file, exempt) => {
+        setPromptSeen(false);
+        if (exempt) setLicence({ status: 'none', exempt: true });
+        else if (file) {
           setLicence({ status: 'review', file, sentAt: `today at ${clock()}` });
           checkLicenceLater();
         } else setLicence({ status: 'none' });
@@ -797,7 +810,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         return on;
       },
     }),
-    [threads, joinRequests, savedIds, notifs, rep, info, plan, licence, members, vacancies, applicants],
+    [threads, joinRequests, savedIds, notifs, rep, info, plan, licence, licencePromptSeen, members, vacancies, applicants],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

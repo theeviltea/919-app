@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { BottomSheet, Button, Icon, Pressable, Row, Text, useToast } from '@/components';
 import { EMPLOYER_LOSSES, useEmployer } from '@/data/employer';
 import { DeleteAccountSheet, LogoutSheet } from '@/features/profile/AccountSheets';
+import { VerificationRow } from '@/features/employer/VerificationRow';
 import { ThemeRow } from '@/features/profile/ThemeRow';
 import { GroupLabel, SheetHero, SubScreen } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
@@ -34,6 +35,7 @@ export default function EmployerSettings() {
 
       <GroupLabel>Company</GroupLabel>
       <Group>
+        <VerificationRow />
         <Row
           icon="users"
           title="Team and roles"

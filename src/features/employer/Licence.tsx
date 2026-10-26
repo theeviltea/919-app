@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { Icon, Pressable, Text, type IconName } from '@/components';
-import type { LicenceFile } from '@/data/employer';
+import { useEmployer, type LicenceFile } from '@/data/employer';
+import { LogoTile } from '@/features/hire/LogoTile';
 import { useTheme, type Colors } from '@/theme';
 
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -69,9 +70,9 @@ export function FileCard({ file, meta, right, dim }: { file: LicenceFile; meta: 
 export function Facts({ items }: { items: [IconName, string][] }) {
   const { c } = useTheme();
   return (
-    <View style={{ backgroundColor: c.surface, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 2 }}>
+    <View style={{ backgroundColor: c.surface, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 4 }}>
       {items.map(([icon, text], i) => (
-        <View key={text} style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: i < items.length - 1 ? 1 : 0, borderColor: c.divider }}>
+        <View key={text} style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: i < items.length - 1 ? 1 : 0, borderColor: c.divider }}>
           <Icon name={icon} size={20} color="primary" />
           <Text variant="body" color="textPrimary" style={{ flex: 1, fontSize: 14, lineHeight: 20 }}>
             {text}
@@ -97,3 +98,26 @@ export const LICENCE_FACTS: [IconName, string][] = [
   ['clock', 'We check it within 24 hours.'],
   ['verified', 'After the check, the badge appears next to your company name on vacancies, the company page and in chats.'],
 ];
+
+/** How the company looks to candidates, with or without the badge. */
+export function BadgePreview() {
+  const { c } = useTheme();
+  const { info } = useEmployer();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 16, backgroundColor: c.back }}>
+      <LogoTile info={info} size={40} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Text variant="body" weight={700} numberOfLines={1} style={{ fontSize: 15, flexShrink: 1 }}>
+            {info.name}
+          </Text>
+          <Icon name="verified" size={16} color="primary" />
+        </View>
+        <Text variant="bodyS" color="textBody" numberOfLines={1} style={{ marginTop: 2 }}>
+          Hostess, rooftop lounge · AED 15 000
+        </Text>
+      </View>
+    </View>
+  );
+}
+

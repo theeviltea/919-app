@@ -3,6 +3,7 @@ import { Redirect, Tabs } from 'expo-router';
 import { TabBar } from '@/components';
 import { useEmployer } from '@/data/employer';
 import { useSession } from '@/data/session';
+import { LicencePromptSheet } from '@/features/employer/LicencePrompt';
 import { useStartVacancy } from '@/features/post/gate';
 import { useTheme } from '@/theme';
 
@@ -14,6 +15,7 @@ export default function EmployerTabs() {
   const startVacancy = useStartVacancy();
   if (!user) return <Redirect href="/guest" />;
   return (
+    <>
     <Tabs
       backBehavior="history"
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: c.back }, animation: 'fade' }}
@@ -41,5 +43,7 @@ export default function EmployerTabs() {
       <Tabs.Screen name="vacancy-search" options={{ href: null }} />
       <Tabs.Screen name="chat-search" options={{ href: null }} />
     </Tabs>
+    <LicencePromptSheet />
+    </>
   );
 }
