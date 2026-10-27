@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton, EmptyState, Icon, IconButton, PatternHeader, Pressable, SegmentedTabs, Text, useToast, type IconName } from '@/components';
 import { companyProfile, companyVacancies } from '@/data/companies';
+import { useSeeker } from '@/data/seeker';
 import { useSession } from '@/data/session';
 import { SaveButton } from '@/features/vacancies/SaveButton';
 import { VacancyListCard } from '@/features/vacancies/VacancyListCard';
@@ -19,6 +20,7 @@ export default function CompanyPage() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { user } = useSession();
+  const { appFor } = useSeeker();
   const [tab, setTab] = useState<Tab>(tabParam === 'vacancies' ? 'vacancies' : 'about');
   const co = companyProfile(id);
   const back = () => (router.canGoBack() ? router.back() : router.navigate('/'));
@@ -152,7 +154,7 @@ export default function CompanyPage() {
             </>
           ) : list.length ? (
             list.map((v) => (
-              <VacancyListCard key={v.id} v={v} right={seeker ? <SaveButton vacancyId={v.id} /> : undefined} onPress={() => router.push({ pathname: '/vacancy/[id]', params: { id: v.id } })} />
+              <VacancyListCard key={v.id} v={v} applied={seeker ? appFor(v.id)?.status : undefined} right={seeker ? <SaveButton vacancyId={v.id} /> : undefined} onPress={() => router.push({ pathname: '/vacancy/[id]', params: { id: v.id } })} />
             ))
           ) : (
             <EmptyState icon="briefcase" title="No active vacancies" text={`${co.name} has nothing open right now. Check back soon.`} passive />

@@ -26,7 +26,7 @@ const greeting = () => {
 export default function SeekerHome() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const { profile, unreadNotifs, availEligible } = useSeeker();
+  const { profile, unreadNotifs, availEligible, appFor } = useSeeker();
   const [quick, setQuick] = useState<'all' | 'urgent' | Sphere>('all');
   const [sheet, setSheet] = useState(false);
   const loading = useFirstLoad('seeker-feed');
@@ -87,7 +87,7 @@ export default function SeekerHome() {
         </View>
         <View style={{ paddingHorizontal: 20, gap: 12 }}>
           {list.length ? (
-            list.slice(0, paged.count).map((v) => <VacancyListCard key={v.id} v={v} onPress={() => router.push({ pathname: '/vacancy/[id]', params: { id: v.id } })} right={<SaveButton vacancyId={v.id} />} />)
+            list.slice(0, paged.count).map((v) => <VacancyListCard key={v.id} v={v} applied={appFor(v.id)?.status} onPress={() => router.push({ pathname: '/vacancy/[id]', params: { id: v.id } })} right={<SaveButton vacancyId={v.id} />} />)
           ) : (
             <EmptyState icon="search" title="No vacancies match" text="Try another sphere. New vacancies appear every hour." action={{ label: 'Show all', onPress: () => setQuick('all') }} />
           )}

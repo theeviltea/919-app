@@ -74,7 +74,7 @@ function SeekerSearch({ initialQ, initialFilters }: { initialQ: string; initialF
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { recent, addRecent, removeRecent, clearRecent } = useSeeker();
+  const { recent, addRecent, removeRecent, clearRecent, appFor } = useSeeker();
   const [q, setQ] = useState(initialQ);
   const [filters, setFilters] = useState<VacancyFilters>(initialFilters);
   const [sort, setSort] = useState<Sort>('Newest');
@@ -103,7 +103,7 @@ function SeekerSearch({ initialQ, initialFilters }: { initialQ: string; initialF
   }, [results.length, filters.country, filters.city, q]);
 
   const card = (v: Vacancy) => (
-    <VacancyListCard key={v.id} v={v} onPress={() => (remember(), router.push({ pathname: '/vacancy/[id]', params: { id: v.id } }))} right={<SaveButton vacancyId={v.id} />} />
+    <VacancyListCard key={v.id} v={v} applied={appFor(v.id)?.status} onPress={() => (remember(), router.push({ pathname: '/vacancy/[id]', params: { id: v.id } }))} right={<SaveButton vacancyId={v.id} />} />
   );
 
   return (
