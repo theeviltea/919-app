@@ -18,6 +18,7 @@ const badges: Partial<Record<NotifKind, { icon: IconName; bg: keyof Colors }>> =
   request: { icon: 'message', bg: 'primary' },
   accepted: { icon: 'check', bg: 'successStrong' },
   declined: { icon: 'cancel', bg: 'dangerText' },
+  hireAsk: { icon: 'briefcase', bg: 'primary' },
 };
 /** Round icon tiles for notifications without a vacancy picture. */
 const tiles: Partial<Record<NotifKind, { icon: IconName; bg: keyof Colors; fg: keyof Colors }>> = {
@@ -94,6 +95,8 @@ export default function Notifications() {
         return { pathname: '/seeker/search', params: { q: 'DJ' } };
       case 'declined':
         return { pathname: '/seeker/search', params: { q: 'Waitress' } };
+      case 'hireAsk':
+        return { pathname: '/seeker/applications', params: { ask: n.vacancyId! } };
       case 'viewed':
       case 'saved':
         return '/seeker/applications';
@@ -128,6 +131,7 @@ export default function Notifications() {
         </>
       );
     if (n.kind === 'accepted') return <Action label="Open chat" primary onPress={() => open(n, target(n))} />;
+    if (n.kind === 'hireAsk') return <Action label="Answer" primary onPress={() => open(n, target(n))} />;
     if (n.kind === 'vacancies') return <Action label="Show vacancies" onPress={() => open(n, target(n))} />;
     if (n.kind === 'declined') return <Action label="See similar" onPress={() => open(n, target(n))} />;
     if (n.kind === 'urgent') return <Action label="View vacancy" onPress={() => open(n, target(n))} />;

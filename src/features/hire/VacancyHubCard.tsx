@@ -7,6 +7,7 @@ import { useEmployer, type MyVacancy } from '@/data/employer';
 import { findCandidate } from '@/data/talentPool';
 import { useTheme } from '@/theme';
 
+import { HireAskRow } from './HireSurveySheet';
 import { Pill } from './ui';
 
 export function Faces({ faces }: { faces: MyVacancy['faces'] }) {
@@ -146,6 +147,8 @@ export function VacancyCard({ v, onActions }: { v: MyVacancy; onActions: (sheet?
           <Icon name="chevron-right" size={18} color="textLightSecondary" />
         </Pressable>
       )}
+
+      {v.status === 'active' || archived ? <HireAskRow vacancyId={v.id} /> : null}
 
       {archived ? (
         <Pressable

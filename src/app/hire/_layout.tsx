@@ -4,6 +4,7 @@ import { TabBar } from '@/components';
 import { useEmployer } from '@/data/employer';
 import { useSession } from '@/data/session';
 import { LicencePromptSheet } from '@/features/employer/LicencePrompt';
+import { HireSurveySheet } from '@/features/hire/HireSurveySheet';
 import { useStartVacancy } from '@/features/post/gate';
 import { useTheme } from '@/theme';
 
@@ -44,6 +45,7 @@ export default function EmployerTabs() {
       <Tabs.Screen name="chat-search" options={{ href: null }} />
     </Tabs>
     <LicencePromptSheet />
+    <HireSurveySheet />
     </>
   );
 }

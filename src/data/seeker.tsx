@@ -153,10 +153,26 @@ export const demoDraft: SeekerDraft = {
 // ---------- applications
 
 export type AppStatus = 'pending' | 'accepted' | 'declined' | 'hired' | 'closed';
-export type Application = { vacancyId: string; status: AppStatus; note: string; chatId?: string; archived?: boolean; when?: string; message?: string };
+/** Seeker's answer to "Did you get this job?" for an accepted application (hire confirmation). */
+export type HireAnswer = 'yes' | 'no' | 'process' | { other: string };
+export const HIRE_OTHER_MAX = 200;
+export const hireAnswerLabel = (a: HireAnswer) => (typeof a === 'object' ? 'Other answer' : a === 'yes' ? 'Got the job' : a === 'no' ? 'Didn’t work out' : 'Still in process');
+export type Application = {
+  vacancyId: string;
+  status: AppStatus;
+  note: string;
+  chatId?: string;
+  archived?: boolean;
+  when?: string;
+  message?: string;
+  /** When the employer accepted (shown in the hire question). */
+  acceptedOn?: string;
+  /** Hire confirmation answer; 'yes' moves the application to Active (status 'hired'). */
+  answer?: HireAnswer;
+};
 
 const initialApps: Application[] = [
-  { vacancyId: 'v3', status: 'accepted', note: 'Replied today', chatId: 'c-skyline' },
+  { vacancyId: 'v3', status: 'accepted', note: 'Replied today', chatId: 'c-skyline', acceptedOn: '9 Oct' },
   { vacancyId: 'v1', status: 'pending', note: 'Applied 2 h ago · viewed' },
   { vacancyId: 'v2', status: 'pending', note: 'Applied yesterday' },
   { vacancyId: 'v4', status: 'declined', note: 'The position was filled', chatId: 'c-dives' },
@@ -344,7 +360,7 @@ const initialRecent: RecentSearch[] = [
 
 // ---------- notifications
 
-export type NotifKind = 'request' | 'accepted' | 'declined' | 'vacancies' | 'urgent' | 'viewed' | 'saved' | 'views' | 'video';
+export type NotifKind = 'request' | 'accepted' | 'declined' | 'vacancies' | 'urgent' | 'viewed' | 'saved' | 'views' | 'video' | 'hireAsk';
 export type Notif = {
   id: string;
   kind: NotifKind;
@@ -364,6 +380,17 @@ export type Notif = {
 };
 
 const initialNotifs: Notif[] = [
+  {
+    id: 'n-hire-v3',
+    kind: 'hireAsk',
+    group: 'applications',
+    title: 'Did you get the job?',
+    text: 'Hostess, rooftop lounge at Skyline Hospitality. Tell us how it went.',
+    time: 'now',
+    day: 'today',
+    unread: true,
+    vacancyId: 'v3',
+  },
   {
     id: 'n1',
     kind: 'request',
@@ -532,6 +559,11 @@ type Store = {
   setLook: (l: { frame?: FrameStyle; header: boolean }) => void;
   /** Free plan: applications used this month, limit 10. */
   appsUsed: number;
+  /** Hire confirmation ("Did you get this job?"). */
+  answerHire: (vacancyId: string, answer: HireAnswer) => void;
+  /** The sheet was shown or postponed this session (Ask me later) — don't auto-open it again. */
+  hireAskDone: boolean;
+  setHireAskDone: () => void;
 };
 
 /** Free plan limit on applications (§12). */
@@ -578,6 +610,8 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const [saved, setSaved] = useState<string[]>(['v13', 'v10', 'v11', 'v12']);
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [notifs, setNotifs] = useState<Notif[]>(initialNotifs);
+  const [hireAskDone, setHireAskDoneState] = useState(false);
+  const setHireAskDone = useCallback(() => setHireAskDoneState(true), []);
   const [recent, setRecent] = useState<RecentSearch[]>(initialRecent);
   // Demo account (Mia) is on Max with the neon frame and a custom header, as on the canvas; new accounts start Free.
   const [planState, setPlanState] = useState<{ plan: Tier; canceled: boolean } | null>(null);
@@ -683,8 +717,21 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       look: plan === 'max' ? look : { header: false },
       setLook: setLookState,
       appsUsed: apps.length,
+      answerHire: (id, answer) => {
+        setApps((a) =>
+          a.map((x) => {
+            if (x.vacancyId !== id) return x;
+            // "Yes" = hired: it moves to Active, like jobs the employer marked hired.
+            if (answer === 'yes') return { ...x, answer, status: 'hired', note: 'You confirmed the hire', when: 'Today' };
+            return { ...x, answer, status: x.status === 'hired' ? 'accepted' : x.status };
+          }),
+        );
+        setNotifs((ns) => ns.filter((n) => !(n.kind === 'hireAsk' && n.vacancyId === id)));
+      },
+      hireAskDone,
+      setHireAskDone,
     }),
-    [profile, hidden, prefs, apps, saved, threads, notifs, recent, updateThread, plan, planState, look],
+    [profile, hidden, prefs, apps, saved, threads, notifs, recent, updateThread, plan, planState, look, hireAskDone, setHireAskDone],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

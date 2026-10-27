@@ -33,6 +33,7 @@ const tiles: Partial<Record<EmpNotifKind, { icon: IconName; bg: keyof Colors; fg
   premiumOver: { icon: 'star', bg: 'input', fg: 'textBody' },
   licenceOk: { icon: 'verified', bg: 'successBack', fg: 'successText' },
   licenceRejected: { icon: 'alert-circle', bg: 'dangerBack', fg: 'dangerText' },
+  hireAsk: { icon: 'check-double', bg: 'primarySecondary', fg: 'link' },
 };
 
 function Avatar({ n }: { n: EmpNotif }) {
@@ -86,7 +87,7 @@ export default function EmployerNotifications() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const soon = useSoon();
-  const { notifs, readNotif, readAllNotifs, vacancies, threads } = useEmployer();
+  const { notifs, readNotif, readAllNotifs, vacancies, threads, openHireSurvey } = useEmployer();
   const startVacancy = useStartVacancy();
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -126,6 +127,10 @@ export default function EmployerNotifications() {
       case 'premiumSoon':
       case 'premiumOver':
         return router.push('/company/subscription');
+      case 'hireAsk':
+        router.navigate('/hire/vacancies');
+        if (vac) openHireSurvey(vac.id);
+        return;
       case 'licenceOk':
       case 'licenceRejected':
         return router.push('/company/verification');

@@ -260,7 +260,7 @@ export const initialLicence: Licence = {
   validUntil: '14 Mar 2027',
 };
 
-export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver' | 'licenceOk' | 'licenceRejected';
+export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver' | 'licenceOk' | 'licenceRejected' | 'hireAsk';
 export type EmpNotif = {
   id: string;
   kind: EmpNotifKind;
@@ -277,7 +277,28 @@ export type EmpNotif = {
 };
 
 /** EmpNotificationCenter: New · 4, Today, Earlier. */
+/** Employer's answer about an accepted candidate (EmpHireSurvey): did the hire happen? */
+export type HireAnswer = 'hired' | 'nofit' | 'deciding';
+/** Saved answers per vacancy → candidate. mv2 (Hostess, rooftop lounge) is still unanswered: the demo asks about it. */
+export const initialHireAnswers: Record<string, Record<string, HireAnswer>> = {
+  mv1: { c13: 'hired', c37: 'deciding' },
+  mv4: { c3: 'hired', c54: 'hired', c32: 'nofit' },
+  mv5: { c35: 'hired' },
+  mv6: { c10: 'hired', c47: 'nofit' },
+};
+
 export const initialEmpNotifs: EmpNotif[] = [
+  {
+    id: 'en-hire',
+    kind: 'hireAsk',
+    group: 'vacancies',
+    title: 'Who did you hire?',
+    text: 'Hostess, rooftop lounge: how did it go with your accepted candidates? Answer in a few taps',
+    time: '1 h',
+    day: 'today',
+    unread: true,
+    action: 'Answer',
+  },
   {
     id: 'en1',
     kind: 'applicants',
@@ -537,6 +558,16 @@ type Store = {
   addMember: (m: Member) => void;
   updateMember: (id: string, u: Partial<Member>) => void;
   removeMember: (id: string) => void;
+  /** Hire confirmation (EmpHireSurvey): answers per vacancy → accepted candidate. */
+  hireAnswers: Record<string, Record<string, HireAnswer>>;
+  saveHireAnswers: (vacancyId: string, answers: Record<string, HireAnswer>) => void;
+  /** Vacancy whose "Who did you hire?" sheet is open (null = closed). */
+  hireSurveyFor: string | null;
+  openHireSurvey: (vacancyId: string) => void;
+  closeHireSurvey: () => void;
+  /** The sheet already opened itself once this session (or the employer chose "Ask me later"). */
+  hireAskSeen: boolean;
+  setHireAskSeen: () => void;
   /** Bookmarked candidates (search results). */
   savedIds: string[];
   toggleSaved: (id: string) => boolean;
@@ -579,6 +610,9 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [plan, setPlan] = useState<Plan>('premium');
   const [licence, setLicence] = useState<Licence>(initialLicence);
   const [licencePromptSeen, setPromptSeen] = useState(false);
+  const [hireAnswers, setHireAnswers] = useState(initialHireAnswers);
+  const [hireSurveyFor, setHireSurveyFor] = useState<string | null>(null);
+  const [hireAskSeen, setHireAskSeenState] = useState(false);
   const [members, setMembers] = useState(initialMembers);
   /** Demo check of a trade licence: the 919 team approves it a little after it's sent. */
   const checkLicenceLater = () =>
@@ -803,6 +837,19 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
       addMember: (m) => setMembers((ms) => [...ms, m]),
       updateMember: (id, u) => setMembers((ms) => ms.map((m) => (m.id === id ? { ...m, ...u } : m))),
       removeMember: (id) => setMembers((ms) => ms.filter((m) => m.id !== id)),
+      hireAnswers,
+      saveHireAnswers: (vid, answers) => {
+        setHireAnswers((all) => ({ ...all, [vid]: { ...all[vid], ...answers } }));
+        setNotifs((ns) => ns.map((n) => (n.kind === 'hireAsk' ? { ...n, unread: false } : n)));
+      },
+      hireSurveyFor,
+      openHireSurvey: (vid) => {
+        setHireAskSeenState(true);
+        setHireSurveyFor(vid);
+      },
+      closeHireSurvey: () => setHireSurveyFor(null),
+      hireAskSeen,
+      setHireAskSeen: () => setHireAskSeenState(true),
       savedIds,
       toggleSaved: (id) => {
         const on = !savedIds.includes(id);
@@ -810,7 +857,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
         return on;
       },
     }),
-    [threads, joinRequests, savedIds, notifs, rep, info, plan, licence, licencePromptSeen, members, vacancies, applicants],
+    [threads, joinRequests, savedIds, notifs, rep, info, plan, licence, licencePromptSeen, members, vacancies, applicants, hireAnswers, hireSurveyFor, hireAskSeen],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -819,4 +866,18 @@ export function useEmployer() {
   const v = useContext(Ctx);
   if (!v) throw new Error('useEmployer must be used inside <EmployerProvider>');
   return v;
+}
+
+/** Accepted candidates of a vacancy and how many still have no answer (Who did you hire?). */
+export function hireProgress(applicants: Applicant[] | undefined, answers: Record<string, HireAnswer> | undefined) {
+  const accepted = (applicants ?? []).filter((a) => a.status === 'accepted');
+  const a = answers ?? {};
+  const count = (k: HireAnswer) => accepted.filter((x) => a[x.candidateId] === k).length;
+  return {
+    accepted,
+    unanswered: accepted.filter((x) => !a[x.candidateId]).length,
+    hired: count('hired'),
+    deciding: count('deciding'),
+    nofit: count('nofit'),
+  };
 }

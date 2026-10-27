@@ -1,11 +1,11 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip, Icon, MaxFrame, PhotoTierBadge, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
-import { hireStats, savedLabels, useEmployer, type HireStatus } from '@/data/employer';
+import { hireProgress, hireStats, savedLabels, useEmployer, type HireStatus } from '@/data/employer';
 import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '@/data/talentPool';
 import { PageTitle } from '@/features/hire/ui';
 import { useVacancyActions } from '@/features/hire/VacancyActions';
@@ -81,6 +81,14 @@ export default function HireVacancies() {
   const savedCount = (f: SavedFilter) => savedAll.filter((t) => f === 'all' || t.sphere === f).length;
   const rows = Array.from({ length: Math.ceil(saved.length / 2) }, (_, i) => saved.slice(i * 2, i * 2 + 2));
   const loading = useFirstLoad(`hire-vacancies-${tab}`);
+  // EmpHirePush in the prototype: once per session, ask about the first live vacancy with unanswered accepted candidates.
+  const { applicants, hireAnswers, hireAskSeen, openHireSurvey, hireSurveyFor } = useEmployer();
+  const askFor = myVacancies.find((v) => v.status === 'active' && hireProgress(applicants[v.id], hireAnswers[v.id]).unanswered)?.id;
+  useEffect(() => {
+    if (loading || hireAskSeen || !askFor || hireSurveyFor) return;
+    const t = setTimeout(() => openHireSurvey(askFor), 600);
+    return () => clearTimeout(t);
+  }, [loading, hireAskSeen, askFor, hireSurveyFor, openHireSurvey]);
 
   return (
     <ScrollView
