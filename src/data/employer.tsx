@@ -260,7 +260,7 @@ export const initialLicence: Licence = {
   validUntil: '14 Mar 2027',
 };
 
-export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver' | 'licenceOk' | 'licenceRejected' | 'hireAsk';
+export type EmpNotifKind = 'applicants' | 'accepted' | 'changes' | 'urgent' | 'approved' | 'rejected' | 'expires' | 'declined' | 'premiumSoon' | 'archived' | 'applicant' | 'premiumOver' | 'licenceOk' | 'licenceRejected' | 'hireAsk' | 'availToday';
 export type EmpNotif = {
   id: string;
   kind: EmpNotifKind;
@@ -288,6 +288,17 @@ export const initialHireAnswers: Record<string, Record<string, HireAnswer>> = {
 };
 
 export const initialEmpNotifs: EmpNotif[] = [
+  {
+    id: 'en-avail',
+    kind: 'availToday',
+    group: 'applicants',
+    title: '2 hostesses are available today',
+    text: 'Hostess, rooftop lounge is urgent. See who can start today in Dubai',
+    time: '20 min',
+    day: 'today',
+    unread: true,
+    action: 'See who',
+  },
   {
     id: 'en-hire',
     kind: 'hireAsk',

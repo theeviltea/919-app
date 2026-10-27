@@ -25,9 +25,11 @@ import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
 import { openVideo } from '@/features/media/viewer';
 import { TalentSearchSkeleton } from '@/features/skeletons/TalentSearchSkeleton';
 import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
+import { useFlashColor } from '@/features/availability/Available';
+import { TodayCard } from '@/features/availability/TodayTalent';
 import { useTheme } from '@/theme';
 
-type Tab = 'profiles' | 'videos';
+type Tab = 'profiles' | 'videos' | 'today';
 type Sort = 'Best match' | 'Newest' | 'Most viewed';
 
 function parseFilters(raw?: string): TalentFilters {
@@ -47,7 +49,7 @@ export default function TalentSearchScreen() {
       key={`${params.q ?? ''}|${params.f ?? ''}|${params.tab ?? ''}`}
       initialQ={params.q ?? ''}
       initialFilters={parseFilters(params.f)}
-      initialTab={params.tab === 'videos' ? 'videos' : 'profiles'}
+      initialTab={params.tab === 'videos' || params.tab === 'today' ? params.tab : 'profiles'}
     />
   );
 }
@@ -164,7 +166,7 @@ function VideoCard({ t }: { t: Candidate }) {
   );
 }
 
-function EmptyBlock({ icon, title, text, children }: { icon: 'search' | 'video' | 'filter'; title: string; text: string; children?: React.ReactNode }) {
+function EmptyBlock({ icon, title, text, children }: { icon: 'search' | 'video' | 'filter' | 'flash'; title: string; text: string; children?: React.ReactNode }) {
   const { c } = useTheme();
   return (
     <View style={{ alignItems: 'center', paddingTop: 28, paddingHorizontal: 20, gap: 10 }}>
@@ -200,6 +202,7 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
   const [q, setQ] = useState(initialQ);
   const [filters, setFilters] = useState(initialFilters);
   const [tab, setTab] = useState<Tab>(initialTab);
+  const flash = useFlashColor();
   const [sphere, setSphere] = useState<TalentSphere | 'all'>('all');
   const [sort, setSort] = useState<Sort>('Best match');
   const [sheet, setSheet] = useState<'filters' | 'sort' | null>(null);
@@ -219,14 +222,15 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
   }, [scoped, sort]);
   const profiles = sorted;
   const videos = sorted.filter((x) => x.video);
-  const list = tab === 'profiles' ? profiles : videos;
+  const today = sorted.filter((x) => x.today);
+  const list = tab === 'profiles' ? profiles : tab === 'videos' ? videos : today;
   const paged = usePaged(list.length, `${q}|${tab}|${sphere}|${sort}|${JSON.stringify(filters)}`);
   const rows = Array.from({ length: Math.ceil(Math.min(paged.count, list.length) / 2) }, (_, i) => list.slice(i * 2, i * 2 + 2));
   const where = filters.city ? ` in ${filters.city}` : '';
-  const pool = tab === 'profiles' ? filtered : filtered.filter((x) => x.video);
+  const pool = tab === 'profiles' ? filtered : filtered.filter((x) => (tab === 'videos' ? x.video : x.today));
   const sphereCount = (s: TalentSphere) => pool.filter((x) => x.sphere === s).length;
-  const noun = tab === 'profiles' ? 'profile' : 'video';
-  const plural = (n: number) => `${n} ${noun}${n === 1 ? '' : 's'}`;
+  const noun = tab === 'profiles' ? 'profile' : tab === 'videos' ? 'video' : 'person available today';
+  const plural = (n: number) => (tab === 'today' ? `${n} ${n === 1 ? 'person' : 'people'} available today` : `${n} ${noun}${n === 1 ? '' : 's'}`);
   const loading = useFirstLoad(`hire-search-${tab}`);
 
   return (
@@ -253,6 +257,7 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
             items={[
               { key: 'profiles', label: 'Profiles', count: profiles.length, icon: 'users' },
               { key: 'videos', label: 'Videos', count: videos.length, icon: 'video' },
+              { key: 'today', label: 'Today', count: today.length, icon: 'flash', iconColor: flash },
             ]}
             value={tab}
             onChange={setTab}
@@ -323,11 +328,11 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
           <View style={{ paddingHorizontal: 16, gap: 12 }}>
             {rows.map((r, i) => (
               <View key={i} style={{ flexDirection: 'row', gap: 12 }}>
-                {r.map((t) => (tab === 'profiles' ? <ProfileCard key={t.id} t={t} /> : <VideoCard key={t.id} t={t} />))}
+                {r.map((t) => (tab === 'profiles' ? <ProfileCard key={t.id} t={t} /> : tab === 'videos' ? <VideoCard key={t.id} t={t} /> : <TodayCard key={t.id} t={t} />))}
                 {r.length === 1 ? <View style={{ flex: 1 }} /> : null}
               </View>
             ))}
-            <LoadMoreFooter loading={paged.loading} done={paged.done} total={list.length} noun={tab === 'profiles' ? 'profiles' : 'videos'} />
+            <LoadMoreFooter loading={paged.loading} done={paged.done} total={list.length} noun={tab === 'profiles' ? 'profiles' : tab === 'videos' ? 'videos' : 'people'} />
           </View>
         ) : nFilters ? (
           // TalentFilterEmpty
@@ -342,6 +347,16 @@ function TalentSearch({ initialQ, initialFilters, initialTab }: { initialQ: stri
               Try removing a filter — age range and languages narrow the list the most.
             </Text>
             <Button variant="neutral" label="Edit filters" onPress={() => setSheet('filters')} style={{ marginTop: 8, alignSelf: 'center', paddingHorizontal: 18 }} />
+          </View>
+        ) : tab === 'today' && profiles.length ? (
+          // Nobody from this search is available today
+          <View style={{ paddingHorizontal: 16 }}>
+            <EmptyBlock
+              icon="flash"
+              title={q.trim() ? `No one available today for\n“${q.trim()}”` : 'No one available today'}
+              text={`${profiles.length} profile${profiles.length === 1 ? '' : 's'}${where} match this search, but none of them turned on Available today.`}>
+              <LinkButton icon="users" label={`Show ${profiles.length} profile${profiles.length === 1 ? '' : 's'}`} onPress={() => setTab('profiles')} />
+            </EmptyBlock>
           </View>
         ) : tab === 'videos' && profiles.length ? (
           // TalentSearchVideosEmpty

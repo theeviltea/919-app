@@ -4,9 +4,11 @@ import Animated, { scrollTo, useAnimatedRef, useAnimatedScrollHandler, useShared
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CollapsingHeader, headerMetrics, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { initialsOf, useEmployer } from '@/data/employer';
+import { useFlashColor } from '@/features/availability/Available';
+import { TodayTalent } from '@/features/availability/TodayTalent';
 import { candidates, countTalentFilters, emptyTalentFilters, talentSphereLabels, talentSphereOrder, type TalentSphere } from '@/data/talentPool';
 import { tierRank } from '@/data/tiers';
 import { TalentFiltersModal } from '@/features/hire/TalentFiltersModal';
@@ -16,7 +18,7 @@ import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
 import { openVideo } from '@/features/media/viewer';
 import { useTheme } from '@/theme';
 
-type View2 = 'profiles' | 'videos';
+type View2 = 'profiles' | 'videos' | 'today';
 
 const ROW = 10;
 /** One row per field, all seven (Hospitality, F&B, Events, Modeling, Music, Beauty, Service). */
@@ -28,8 +30,16 @@ const seeAll = (sphere: TalentSphere, tab?: 'videos') =>
 /** Employer home — Find talent (TalentProfiles / TalentVideos): rows of candidates per field. */
 export default function TalentHome() {
   const { c } = useTheme();
+  const flash = useFlashColor();
   const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<View2>('profiles');
+  const params = useLocalSearchParams<{ tab?: string; at?: string }>();
+  const [tab, setTab] = useState<View2>(params.tab === 'today' ? 'today' : 'profiles');
+  // The "people available today" notification opens this tab (`at` makes every tap a new request).
+  const [opened, setOpened] = useState(params.at);
+  if (params.at !== opened) {
+    setOpened(params.at);
+    if (params.tab === 'today') setTab('today');
+  }
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { unreadNotifs: unread, info, plan } = useEmployer();
   const loading = useFirstLoad(`hire-talent-${tab}`);
@@ -60,6 +70,7 @@ export default function TalentHome() {
             items={[
               { key: 'profiles', label: 'Profiles', icon: 'users' },
               { key: 'videos', label: 'Videos', icon: 'video' },
+              { key: 'today', label: 'Today', icon: 'flash', iconColor: flash },
             ]}
             value={tab}
             onChange={setTab}
@@ -68,6 +79,8 @@ export default function TalentHome() {
 
         {loading ? (
           <TalentProfilesSkeleton videos={tab === 'videos'} />
+        ) : tab === 'today' ? (
+          <TodayTalent />
         ) : tab === 'profiles'
           ? profileRows.map((row) => (
               <View key={row.key} style={{ paddingTop: 16 }}>

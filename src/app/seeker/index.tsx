@@ -8,6 +8,7 @@ import { Chip, CollapsingHeader, EmptyState, END_THRESHOLD, headerMetrics, LoadM
 import { spheres, vacancySpheres } from '@/data/dictionaries';
 import { feedVacancies } from '@/data/mock';
 import { useSeeker } from '@/data/seeker';
+import { AvailCard } from '@/features/availability/Available';
 import type { Sphere } from '@/data/types';
 import { SeekFeedSkeleton } from '@/features/skeletons/SeekFeedSkeleton';
 import { useFirstLoad } from '@/features/skeletons/useFirstLoad';
@@ -25,7 +26,7 @@ const greeting = () => {
 export default function SeekerHome() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
-  const { profile, unreadNotifs } = useSeeker();
+  const { profile, unreadNotifs, availEligible } = useSeeker();
   const [quick, setQuick] = useState<'all' | 'urgent' | Sphere>('all');
   const [sheet, setSheet] = useState(false);
   const loading = useFirstLoad('seeker-feed');
@@ -61,6 +62,11 @@ export default function SeekerHome() {
   return (
     <View style={{ flex: 1, backgroundColor: c.back }}>
       <Animated.ScrollView ref={ref} onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingTop: expanded + 16, paddingBottom: TAB_BAR_SPACE + 16, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
+        {availEligible ? (
+          <View style={{ paddingHorizontal: 20, marginBottom: 18 }}>
+            <AvailCard onOpen={() => router.push('/seeker/profile')} />
+          </View>
+        ) : null}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
           <Chip label="All" selected={quick === 'all'} onPress={() => setQuick('all')} />
           <Chip label="Urgent" icon="fire" urgent selected={quick === 'urgent'} onPress={() => setQuick(quick === 'urgent' ? 'all' : 'urgent')} />

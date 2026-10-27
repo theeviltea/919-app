@@ -9,6 +9,7 @@ import { mockImg } from '@/data/mock';
 import { fieldByKey } from '@/data/registration';
 import { completeness, jobPeriod, linkKinds, studyPeriod, totalExperience, useSeeker } from '@/data/seeker';
 import type { FieldEntry } from '@/data/signup';
+import { AvailCard } from '@/features/availability/Available';
 import { openPhotos, openVideo } from '@/features/media/viewer';
 import { PlanChip } from '@/features/profile/seekerPlan';
 import { CodeTile, Completeness, Panel, TimelineItem } from '@/features/profile/ui';
@@ -99,6 +100,7 @@ export default function Profile() {
           <SeekerProfileSkeleton />
         ) : (
           <>
+        <AvailCard />
 
         {hidden ? (
           <Panel>

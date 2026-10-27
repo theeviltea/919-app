@@ -2,6 +2,7 @@ import { Redirect, Tabs } from 'expo-router';
 
 import { TabBar } from '@/components';
 import { useSeeker } from '@/data/seeker';
+import { AvailSheets } from '@/features/availability/Available';
 import { useSession } from '@/data/session';
 import { useTheme } from '@/theme';
 
@@ -12,6 +13,7 @@ export default function SeekerTabs() {
   const { unreadTotal } = useSeeker();
   if (!user) return <Redirect href="/guest" />;
   return (
+    <>
     <Tabs
       backBehavior="history"
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: c.back }, animation: 'fade' }}
@@ -36,5 +38,7 @@ export default function SeekerTabs() {
       {/* Search belongs to Vacancies: no tab of its own, the tab bar keeps Vacancies active. */}
       <Tabs.Screen name="search" options={{ href: null }} />
     </Tabs>
+    <AvailSheets />
+    </>
   );
 }

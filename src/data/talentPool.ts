@@ -1,7 +1,7 @@
 import type { ImageSourcePropType } from 'react-native';
 
 import { mockImg, personPhoto as p } from './mock';
-import { frameOf, tierOf, type FrameStyle, type Tier } from './tiers';
+import { frameOf, tierOf, tierRank, type FrameStyle, type Tier } from './tiers';
 
 const img = {
   ...mockImg,
@@ -60,6 +60,8 @@ export type Candidate = {
   video?: { duration: string; views: string };
   photos: boolean;
   links: boolean;
+  /** Available today (§14): when they can work, e.g. "Evening". Shown in the Today tab and on the profile. */
+  today?: string;
 };
 
 // Photos: the original people set (p0–p14), the team's second set (people2/q01–q33, Oct 2026) and people from vacancy covers.
@@ -194,6 +196,18 @@ const seed: [string, string, TalentSphere, Gender, string, string][] = [
 const langSets = [['English'], ['English', 'Arabic'], ['English', 'Russian'], ['English', 'French'], ['English', 'Arabic', 'French'], ['Arabic'], ['English', 'Spanish']];
 const durations = ['0:48', '0:36', '1:02', '0:29', '0:42', '0:51', '0:35', '0:28', '1:04', '0:38'];
 
+// Who is available today in the demo (licensed stock photos only).
+const todayByName: Record<string, string> = {
+  'Layla H.': 'Evening',
+  'Zara K.': 'Any time',
+  'Karim A.': 'Night',
+  'Nadia R.': 'Evening',
+  'Sara M.': 'Afternoon',
+  'Omar S.': 'Evening',
+  'Lina M.': 'Night',
+  'Olivia G.': 'Morning',
+};
+
 export const candidates: Candidate[] = seed.map(([name, role, sphere, gender, city, photo], i) => ({
   id: `c${i + 1}`,
   name,
@@ -214,7 +228,10 @@ export const candidates: Candidate[] = seed.map(([name, role, sphere, gender, ci
   video: i % 3 !== 2 ? { duration: durations[i % durations.length], views: `${(((i * 37) % 120) / 10 + 1).toFixed(1)}k` } : undefined,
   photos: true,
   links: i % 4 !== 1,
+  today: todayByName[name],
 }));
+/** Today tab: everyone available today, Max and Premium first. */
+export const availableToday = () => candidates.filter((c) => c.today).sort((a, b) => tierRank(b.tier) - tierRank(a.tier));
 export const findCandidate = (id: string) => candidates.find((c) => c.id === id);
 
 export type TalentFilters = {

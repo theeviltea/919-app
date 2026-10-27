@@ -34,6 +34,7 @@ const tiles: Partial<Record<EmpNotifKind, { icon: IconName; bg: keyof Colors; fg
   licenceOk: { icon: 'verified', bg: 'successBack', fg: 'successText' },
   licenceRejected: { icon: 'alert-circle', bg: 'dangerBack', fg: 'dangerText' },
   hireAsk: { icon: 'check-double', bg: 'primarySecondary', fg: 'link' },
+  availToday: { icon: 'flash', bg: 'urgent', fg: 'onUrgent' },
 };
 
 function Avatar({ n }: { n: EmpNotif }) {
@@ -134,6 +135,8 @@ export default function EmployerNotifications() {
       case 'licenceOk':
       case 'licenceRejected':
         return router.push('/company/verification');
+      case 'availToday':
+        return router.navigate({ pathname: '/hire', params: { tab: 'today', at: String(Date.now()) } });
       default:
         return soon('This notification');
     }

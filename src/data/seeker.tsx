@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 
+import { AVAIL_MS, AVAIL_REMIND_MS, availOff, type Avail, type AvailStats, type Slot } from './availability';
 import { formatPhone } from './dictionaries';
 import { ageFrom, type Field } from './registration';
 import { useSession } from './session';
@@ -360,7 +361,7 @@ const initialRecent: RecentSearch[] = [
 
 // ---------- notifications
 
-export type NotifKind = 'request' | 'accepted' | 'declined' | 'vacancies' | 'urgent' | 'viewed' | 'saved' | 'views' | 'video' | 'hireAsk';
+export type NotifKind = 'request' | 'accepted' | 'declined' | 'vacancies' | 'urgent' | 'viewed' | 'saved' | 'views' | 'video' | 'hireAsk' | 'availSoon' | 'availEnded';
 export type Notif = {
   id: string;
   kind: NotifKind;
@@ -564,6 +565,19 @@ type Store = {
   /** The sheet was shown or postponed this session (Ask me later) — don't auto-open it again. */
   hireAskDone: boolean;
   setHireAskDone: () => void;
+  /** Available today (§14). Only a visible, complete profile can turn it on. */
+  avail: Avail;
+  availEligible: boolean;
+  turnOnAvail: (slots: Slot[]) => void;
+  turnOffAvail: () => void;
+  /** Another 24 hours from now ("Still available today?" push). */
+  extendAvail: () => void;
+  /** Results of the 24 hours that just ended — the SeekAvailEnded sheet shows them once. */
+  availEnded: AvailStats | null;
+  closeAvailEnded: () => void;
+  /** The SeekAvailSheet ("Turn on for 24 hours"), opened from the feed, the profile or a notification. */
+  availSheet: boolean;
+  setAvailSheet: (v: boolean) => void;
 };
 
 /** Free plan limit on applications (§12). */
@@ -616,6 +630,9 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   // Demo account (Mia) is on Max with the neon frame and a custom header, as on the canvas; new accounts start Free.
   const [planState, setPlanState] = useState<{ plan: Tier; canceled: boolean } | null>(null);
   const [lookState, setLookState] = useState<{ frame?: FrameStyle; header: boolean } | null>(null);
+  const [avail, setAvail] = useState<Avail>(availOff);
+  const [availEnded, setAvailEnded] = useState<AvailStats | null>(null);
+  const [availSheet, setAvailSheet] = useState(false);
 
   const profile = useMemo<SeekerProfile>(() => {
     const base = draft.demo ? demoProfile : null;
@@ -648,6 +665,39 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const plan: Tier = planState?.plan ?? (draft.demo ? 'max' : 'free');
   const look = useMemo(() => lookState ?? (draft.demo ? { frame: 'neon' as FrameStyle, header: true } : { header: false }), [lookState, draft.demo]);
 
+  const availEligible = !hidden && completeness(profile).search.length === 0;
+  const availUntil = avail.on ? avail.until : 0;
+  // The 24 hours: the reminder an hour before the end, then the status turns itself off and shows the results.
+  useEffect(() => {
+    if (!availUntil) return;
+    const left = availUntil - Date.now();
+    const soon = setTimeout(
+      () =>
+        setNotifs((ns) => [
+          { id: `avail-soon-${availUntil}`, kind: 'availSoon', group: 'other', title: 'Still available today?', text: 'Your Available today ends in 1 hour. Extend it for another 24 hours?', time: 'now', day: 'today', unread: true },
+          ...ns.filter((n) => n.kind !== 'availSoon'),
+        ]),
+      Math.max(0, left - AVAIL_REMIND_MS),
+    );
+    const end = setTimeout(() => {
+      setAvail((a) => {
+        if (a.on) setAvailEnded({ views: a.views, messages: a.messages, invites: a.invites });
+        return { ...availOff };
+      });
+      setNotifs((ns) => [
+        { id: `avail-end-${availUntil}`, kind: 'availEnded', group: 'other', title: 'Available today turned off', text: 'Your 24 hours are over. Turn it on again whenever you can start the same day.', time: 'now', day: 'today', unread: true },
+        ...ns.filter((n) => n.kind !== 'availSoon' && n.kind !== 'availEnded'),
+      ]);
+    }, Math.max(0, left));
+    return () => (clearTimeout(soon), clearTimeout(end));
+  }, [availUntil]);
+  // Prototype: employers open the profile while the status is on (views come from the API later).
+  useEffect(() => {
+    if (!availUntil) return;
+    const t = setInterval(() => setAvail((a) => (a.on && a.views < 12 ? { ...a, views: a.views + 1 } : a)), 15000);
+    return () => clearInterval(t);
+  }, [availUntil]);
+
   const updateThread = useCallback((id: string, fn: (t: Thread) => Partial<Thread>) => setThreads((ts) => ts.map((t) => (t.id === id ? { ...t, ...fn(t) } : t))), []);
 
   const value = useMemo<Store>(
@@ -655,7 +705,11 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       profile,
       updateProfile: (u) => setExtra((e) => ({ ...e, ...u })),
       hidden,
-      setHidden,
+      // Hiding the profile also turns Available today off.
+      setHidden: (v) => {
+        setHidden(v);
+        if (v) setAvail({ ...availOff });
+      },
       prefs,
       setPref: (k, v) => setPrefs((x) => ({ ...x, [k]: v })),
       apps,
@@ -730,8 +784,27 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
       },
       hireAskDone,
       setHireAskDone,
+      // An incomplete profile is out of search, so it can't be available either.
+      avail: availEligible ? avail : availOff,
+      availEligible,
+      turnOnAvail: (slots) => {
+        setAvail({ on: true, until: Date.now() + AVAIL_MS, slots, views: 0, messages: 0, invites: 0 });
+        setNotifs((ns) => ns.filter((n) => n.kind !== 'availSoon' && n.kind !== 'availEnded'));
+      },
+      turnOffAvail: () => {
+        setAvail({ ...availOff });
+        setNotifs((ns) => ns.filter((n) => n.kind !== 'availSoon'));
+      },
+      extendAvail: () => {
+        setAvail((a) => (a.on ? { ...a, until: Date.now() + AVAIL_MS } : a));
+        setNotifs((ns) => ns.filter((n) => n.kind !== 'availSoon'));
+      },
+      availEnded,
+      closeAvailEnded: () => setAvailEnded(null),
+      availSheet,
+      setAvailSheet,
     }),
-    [profile, hidden, prefs, apps, saved, threads, notifs, recent, updateThread, plan, planState, look, hireAskDone, setHireAskDone],
+    [profile, hidden, prefs, apps, saved, threads, notifs, recent, updateThread, plan, planState, look, hireAskDone, setHireAskDone, avail, availEligible, availEnded, availSheet],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

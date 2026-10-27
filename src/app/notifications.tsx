@@ -27,6 +27,8 @@ const tiles: Partial<Record<NotifKind, { icon: IconName; bg: keyof Colors; fg: k
   saved: { icon: 'clock', bg: 'input', fg: 'textBody' },
   views: { icon: 'view', bg: 'primarySecondary', fg: 'primary' },
   video: { icon: 'video', bg: 'infoBack', fg: 'infoText' },
+  availSoon: { icon: 'flash', bg: 'urgent', fg: 'onUrgent' },
+  availEnded: { icon: 'flash', bg: 'input', fg: 'textBody' },
 };
 
 function Avatar({ n }: { n: Notif }) {
@@ -70,7 +72,7 @@ export default function Notifications() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { notifs, readNotif, readAllNotifs, removeNotif, acceptRequest, declineRequest } = useSeeker();
+  const { notifs, readNotif, readAllNotifs, removeNotif, acceptRequest, declineRequest, extendAvail, setAvailSheet } = useSeeker();
   const [filter, setFilter] = useState<Filter>('all');
   const loading = useFirstLoad('seeker-notifications');
 
@@ -101,6 +103,8 @@ export default function Notifications() {
       case 'saved':
         return '/seeker/applications';
       case 'views':
+      case 'availSoon':
+      case 'availEnded':
         return '/seeker/profile';
       case 'video':
         return '/profile/general';
@@ -131,6 +135,28 @@ export default function Notifications() {
         </>
       );
     if (n.kind === 'accepted') return <Action label="Open chat" primary onPress={() => open(n, target(n))} />;
+    if (n.kind === 'availSoon')
+      return (
+        <Action
+          label="Extend for 24 hours"
+          primary
+          onPress={() => {
+            extendAvail();
+            removeNotif(n.id);
+            toast({ text: 'Available today extended for 24 hours', icon: 'flash' });
+          }}
+        />
+      );
+    if (n.kind === 'availEnded')
+      return (
+        <Action
+          label="Turn on again"
+          onPress={() => {
+            readNotif(n.id);
+            setAvailSheet(true);
+          }}
+        />
+      );
     if (n.kind === 'hireAsk') return <Action label="Answer" primary onPress={() => open(n, target(n))} />;
     if (n.kind === 'vacancies') return <Action label="Show vacancies" onPress={() => open(n, target(n))} />;
     if (n.kind === 'declined') return <Action label="See similar" onPress={() => open(n, target(n))} />;

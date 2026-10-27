@@ -9,6 +9,7 @@ import { profileOf, sphereChip } from '@/data/candidateProfile';
 import { useEmployer } from '@/data/employer';
 import { mockImg } from '@/data/mock';
 import { findCandidate } from '@/data/talentPool';
+import { FlashTile } from '@/features/availability/Available';
 import { PremiumSheet } from '@/features/hire/PremiumSheet';
 import { openPhotos, openVideo } from '@/features/media/viewer';
 import { CodeTile, Panel, TimelineItem } from '@/features/profile/ui';
@@ -41,9 +42,9 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { savedIds, toggleSaved, plan, setPlan, requestContact, threads } = useEmployer();
+  const { savedIds, toggleSaved, plan, setPlan, requestContact, threads, verified } = useEmployer();
   const [more, setMore] = useState(false);
-  const [sheet, setSheet] = useState<'contact' | 'paywall' | null>(null);
+  const [sheet, setSheet] = useState<'contact' | 'paywall' | 'verify' | null>(null);
   const [msg, setMsg] = useState('');
   const cand = findCandidate(id);
   const loading = useFirstLoad(`candidate:${id}`);
@@ -70,6 +71,8 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
 
   const contact = () => {
     if (chat) return router.push({ pathname: '/hire-chat/[id]', params: { id: chat.id } });
+    // People available today can be messaged only by verified companies (§14).
+    if (cand.today && !verified) return setSheet('verify');
     setSheet(plan === 'free' ? 'paywall' : 'contact');
   };
   const send = () => {
@@ -151,6 +154,21 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
             </View>
           </View>
         </View>
+
+        {cand.today ? (
+          // EmpSeekerProfileAvail
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 20, backgroundColor: c.attentionBack }}>
+            <FlashTile />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text variant="body" weight={700} style={{ fontSize: 15 }}>
+                Available today · {cand.today}
+              </Text>
+              <Text variant="bodyS" color="attentionText" style={{ marginTop: 2, fontSize: 13 }}>
+                {seekerView ? 'Ready to start work today' : 'Ready to start work today. Message now to book.'}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         <Panel gap={12}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -444,6 +462,36 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
           </Text>
         </View>
         <Button size="l" label="Send request" onPress={send} />
+      </BottomSheet>
+
+      {/* EmpAvailGate */}
+      <BottomSheet visible={sheet === 'verify'} onClose={() => setSheet(null)}>
+        <View style={{ alignItems: 'center', paddingTop: 8 }}>
+          <View style={{ width: 72, height: 72, borderRadius: 24, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="verified" size={34} color="primary" />
+          </View>
+          <Text variant="title" align="center" style={{ marginTop: 16 }}>
+            Verify your company{'\n'}to message
+          </Text>
+          <Text variant="body" color="textBody" align="center" style={{ marginTop: 10, fontSize: 14, lineHeight: 21 }}>
+            People available today can be contacted only by companies with the verified badge. It keeps them safe. Upload your trade licence — we check it within 24 hours.
+          </Text>
+        </View>
+        <View style={{ gap: 2 }}>
+          <Button
+            size="l"
+            label="Upload trade licence"
+            onPress={() => {
+              setSheet(null);
+              router.push('/company/verification');
+            }}
+          />
+          <Pressable onPress={() => setSheet(null)} accessibilityRole="button" style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}>
+            <Text variant="body" weight={700} style={{ fontSize: 15 }}>
+              Not now
+            </Text>
+          </Pressable>
+        </View>
       </BottomSheet>
 
       {/* EmpPaywallContact */}
