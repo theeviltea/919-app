@@ -599,6 +599,7 @@ export function SeekerProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     push: true,
     newVacancies: true,
+    allVacancies: false,
     savedClosing: true,
     urgentNearby: false,
     appStatus: true,
