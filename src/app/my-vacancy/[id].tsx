@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BackButton, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text } from '@/components';
+import { BackButton, Button, EmptyState, Icon, IconButton, Pressable, StatusChip, Text, DescriptionText } from '@/components';
 import { contractTypes, formatAmount } from '@/data/dictionaries';
 import { initialsOf, useEmployer } from '@/data/employer';
 import { candidateOf } from '@/data/hiring';
@@ -310,9 +310,7 @@ export default function MyVacancyScreen() {
           </Section>
 
           <Section title="Job description">
-            <Text variant="body" color="textPrimary" numberOfLines={more ? undefined : 5} style={{ lineHeight: 22 }}>
-              {d.description}
-            </Text>
+            <DescriptionText text={d.description} lines={more ? undefined : 5} />
             <Pressable onPress={() => setMore(!more)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' }}>
               <Text variant="body" weight={700} color="link" style={{ fontSize: 14 }}>
                 {more ? 'Show less' : 'Show more'}

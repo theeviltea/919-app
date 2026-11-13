@@ -23,3 +23,4 @@ export * from './CollapsingHeader';
 export * from './TabBar';
 export * from './LoadMore';
 export * from './TierBadge';
+export * from './DescriptionText';
