@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { Pressable, Row, Text } from '@/components';
 import { useSeeker } from '@/data/seeker';
 import { DeleteAccountSheet, LogoutSheet } from '@/features/profile/AccountSheets';
-import { PlanChip, PLAN_NAME } from '@/features/profile/seekerPlan';
+import { PlanChip, PLAN_NAME, PLAN_PRICE } from '@/features/profile/seekerPlan';
 import { ThemeRow } from '@/features/profile/ThemeRow';
 import { GroupLabel, SubScreen } from '@/features/profile/ui';
 import { useTheme } from '@/theme';
@@ -35,7 +35,7 @@ export default function Settings() {
           icon="star"
           tone="premium"
           title="Subscription"
-          subtitle={plan === 'free' ? 'Premium from $2.99, Max $5.99' : planCanceled ? `${PLAN_NAME[plan]} until 9 Nov 2026` : 'Apple Pay · renews 9 Nov 2026'}
+          subtitle={plan === 'free' ? `Premium ${PLAN_PRICE.premium}, Max ${PLAN_PRICE.max}` : planCanceled ? `${PLAN_NAME[plan]} until 9 Nov 2026` : 'Apple Pay · renews 9 Nov 2026'}
           chevron
           right={<PlanChip tier={plan} />}
           onPress={() => router.push('/profile/subscription')}

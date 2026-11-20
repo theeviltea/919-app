@@ -2,21 +2,31 @@ import { router } from 'expo-router';
 import { View } from 'react-native';
 
 import { BottomSheet, Icon, Pressable, Text, TierBadge, useToast, type IconName } from '@/components';
-import { FREE_APPLY_LIMIT, useSeeker } from '@/data/seeker';
+import { applyLimitOf, useSeeker } from '@/data/seeker';
+import { PLAN_NAME, PLAN_PRICE } from '@/features/profile/seekerPlan';
 import { InverseButton } from '@/features/profile/subscriptionUi';
 import { useTheme } from '@/theme';
 
-const PERKS: [IconName | 'badge', string][] = [
-  ['check-double', 'Unlimited applications'],
-  ['camera', 'Up to 20 photos and 5 videos'],
-  ['badge', 'Blue star badge on your profile'],
-];
+const PERKS: Record<'premium' | 'max', [IconName | 'badge', string][]> = {
+  premium: [
+    ['check-double', '15 applications a month'],
+    ['arrow-right', 'Priority in search'],
+    ['badge', 'Blue star badge on your profile'],
+  ],
+  max: [
+    ['check-double', 'Unlimited applications'],
+    ['arrow-right', 'Highest priority in search'],
+    ['badge', 'Gold star badge and profile style'],
+  ],
+};
 
-/** SeekApplyLimit: the 11th application on Free. Applications already sent stay active. */
+/** SeekApplyLimit: the monthly limit is used up (Free 5, Premium 15) — offers the next plan. Applications already sent stay active. */
 export function ApplyLimitSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { c } = useTheme();
   const toast = useToast();
-  const { subscribe } = useSeeker();
+  const { subscribe, plan } = useSeeker();
+  const limit = applyLimitOf(plan);
+  const next = plan === 'free' ? 'premium' : 'max';
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={{ alignItems: 'center', gap: 8 }}>
@@ -24,28 +34,28 @@ export function ApplyLimitSheet({ visible, onClose }: { visible: boolean; onClos
           <Icon name="lock" size={28} color="primary" />
         </View>
         <Text variant="title" align="center" style={{ marginTop: 6 }}>
-          You’ve used all {FREE_APPLY_LIMIT} free applications
+          You’ve used all {limit} applications this month
         </Text>
         <Text variant="body" color="textBody" align="center" style={{ fontSize: 14, lineHeight: 21 }}>
-          Get Premium to keep applying. The applications you already sent stay active.
+          Get {PLAN_NAME[next]} to keep applying. The applications you already sent stay active.
         </Text>
       </View>
       <View style={{ padding: 14, borderRadius: 16, backgroundColor: c.input, gap: 8 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text variant="bodyS" color="textBody" style={{ fontSize: 13 }}>
-            Applications on Free
+            Applications on {PLAN_NAME[plan]}
           </Text>
           <Text variant="bodyS" weight={700} style={{ fontSize: 13 }}>
-            {FREE_APPLY_LIMIT} / {FREE_APPLY_LIMIT}
+            {limit} / {limit}
           </Text>
         </View>
         <View style={{ height: 6, borderRadius: 3, backgroundColor: c.error }} />
       </View>
       <View style={{ gap: 10 }}>
-        {PERKS.map(([icon, t]) => (
+        {PERKS[next].map(([icon, t]) => (
           <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: c.primarySecondary, alignItems: 'center', justifyContent: 'center' }}>
-              {icon === 'badge' ? <TierBadge tier="premium" size={18} /> : <Icon name={icon} size={16} color="link" />}
+              {icon === 'badge' ? <TierBadge tier={next} size={18} /> : <Icon name={icon} size={16} color="link" />}
             </View>
             <Text variant="body" style={{ fontSize: 14 }}>
               {t}
@@ -54,11 +64,11 @@ export function ApplyLimitSheet({ visible, onClose }: { visible: boolean; onClos
         ))}
       </View>
       <InverseButton
-        label="Get Premium · $2.99 / month"
+        label={`Get ${PLAN_NAME[next]} · ${PLAN_PRICE[next]} / month`}
         onPress={() => {
-          subscribe('premium');
+          subscribe(next);
           onClose();
-          toast({ text: 'Premium is active. Apply as much as you like', kind: 'paid', icon: 'star' });
+          toast({ text: next === 'max' ? 'Max is active. Apply as much as you like' : 'Premium is active. 15 applications a month', kind: 'paid', icon: 'star' });
         }}
       />
       <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 24 }}>

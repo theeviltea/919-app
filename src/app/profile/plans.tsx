@@ -14,16 +14,16 @@ import { useTheme } from '@/theme';
 type Paid = 'premium' | 'max';
 
 const BULLETS: Record<Paid, string[]> = {
-  premium: ['Unlimited applications', 'Up to 20 photos and 5 videos', 'Blue star badge on your profile'],
-  max: ['Everything in Premium', 'Always at the top for employers', 'Profile frame, 3 styles', 'Your own profile header'],
+  premium: ['15 applications a month', 'Priority in search', 'Blue star badge on your profile'],
+  max: ['Unlimited applications', 'Highest priority in search', '20 photos and 5 videos', 'Profile style: frame and header', 'Gold star badge'],
 };
 
 const COMPARE: [string, string, string, string][] = [
-  ['Photos', '10', '20', '20'],
-  ['Videos', '1', '5', '5'],
-  ['Applications', '10', 'Unlimited', 'Unlimited'],
+  ['Applications a month', '5', '15', 'Unlimited'],
+  ['Priority in search', '—', '✓', 'Highest'],
+  ['Photos', '10', '10', '20'],
+  ['Videos', '1', '1', '5'],
   ['Badge', '—', 'premium', 'max'],
-  ['Top of search for employers', '—', '—', '✓'],
   ['Profile frame', '—', '—', '3 styles'],
   ['Custom profile header', '—', '—', '✓'],
 ];

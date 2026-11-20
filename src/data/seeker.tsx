@@ -558,7 +558,7 @@ type Store = {
   /** Max profile look: frame around the photo and the custom header. */
   look: { frame?: FrameStyle; header: boolean };
   setLook: (l: { frame?: FrameStyle; header: boolean }) => void;
-  /** Free plan: applications used this month, limit 10. */
+  /** Applications used this month (limit: applyLimitOf(plan)). */
   appsUsed: number;
   /** Hire confirmation ("Did you get this job?"). */
   answerHire: (vacancyId: string, answer: HireAnswer) => void;
@@ -580,8 +580,10 @@ type Store = {
   setAvailSheet: (v: boolean) => void;
 };
 
-/** Free plan limit on applications (§12). */
-export const FREE_APPLY_LIMIT = 10;
+/** Applications a month by plan (§12): Free 5, Premium 15, Max unlimited. */
+export const FREE_APPLY_LIMIT = 5;
+export const PREMIUM_APPLY_LIMIT = 15;
+export const applyLimitOf = (plan: Tier) => (plan === 'free' ? FREE_APPLY_LIMIT : plan === 'premium' ? PREMIUM_APPLY_LIMIT : Infinity);
 
 const Ctx = createContext<Store | null>(null);
 let mid = 0;

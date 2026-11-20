@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomSheet, Button, EmptyState, FramedAvatar, Icon, IconButton, Pressable, Text, TierBadge, useToast } from '@/components';
 import { profileOf, sphereChip } from '@/data/candidateProfile';
-import { useEmployer } from '@/data/employer';
+import { planName, requestLimitOf, tierOfPlan, useEmployer, type PaidPlan } from '@/data/employer';
 import { mockImg } from '@/data/mock';
 import { findCandidate } from '@/data/talentPool';
 import { FlashTile } from '@/features/availability/Available';
@@ -27,8 +27,8 @@ const CROPS = [
   { scale: 1.6, pos: { top: '60%', left: '40%' } },
 ] as const;
 
-/** Plan limits drive what a profile can show (product rules §12): Free 10 photos / 1 video, Premium and Max 20 / 5. */
-const mediaOf = (tier: string | undefined, base: number) => (tier === 'max' ? { photos: 14, videos: 3 } : tier === 'premium' ? { photos: 9, videos: 2 } : { photos: base, videos: 1 });
+/** Plan limits drive what a profile can show (product rules §12): Free and Premium 10 photos / 1 video, Max 20 / 5. */
+const mediaOf = (tier: string | undefined, base: number) => (tier === 'max' ? { photos: 14, videos: 3 } : { photos: base, videos: 1 });
 const VIDEO_TITLES = ['Video presentation', 'At work', 'Behind the scenes'];
 
 /**
@@ -42,7 +42,9 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { savedIds, toggleSaved, plan, setPlan, requestContact, threads, verified } = useEmployer();
+  const { savedIds, toggleSaved, plan, setPlan, requestContact, threads, verified, requestsUsed } = useEmployer();
+  const tier = tierOfPlan(plan);
+  const upsell: PaidPlan = tier === 'free' ? 'premium' : 'super';
   const [more, setMore] = useState(false);
   const [sheet, setSheet] = useState<'contact' | 'paywall' | 'verify' | null>(null);
   const [msg, setMsg] = useState('');
@@ -73,13 +75,14 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
     if (chat) return router.push({ pathname: '/hire-chat/[id]', params: { id: chat.id } });
     // People available today can be messaged only by verified companies (§14).
     if (cand.today && !verified) return setSheet('verify');
-    setSheet(plan === 'free' ? 'paywall' : 'contact');
+    // Free: chats only via applications; Premium: 10 chat requests a month; Super Premium: direct messages, no limit.
+    setSheet(requestsUsed >= requestLimitOf(plan) ? 'paywall' : 'contact');
   };
   const send = () => {
     const id = requestContact(cand.id, msg);
     setSheet(null);
     setMsg('');
-    toast({ text: `Request sent. You can chat once ${first} accepts it`, icon: 'message' });
+    toast({ text: tier === 'super' ? `Message sent to ${first}` : `Request sent. You can chat once ${first} accepts it`, icon: 'message' });
     router.push({ pathname: '/hire-chat/[id]', params: { id } });
   };
 
@@ -437,7 +440,7 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
           <View style={{ height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.labelOrangeBack, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Icon name="star" size={12} color="labelOrangeText" />
             <Text variant="caption" weight={700} color="labelOrangeText">
-              Premium
+              {planName(plan)}
             </Text>
           </View>
         </View>
@@ -458,10 +461,12 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
         <View style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: 16, backgroundColor: c.primarySecondary }}>
           <Icon name="lock" size={18} color="textHeadline" />
           <Text variant="bodyS" color="textPrimary" style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>
-            {first} gets a contact request. You can chat once {cand.gender === 'female' ? 'she' : 'he'} accepts it.
+            {tier === 'super'
+              ? `Your message goes straight to ${first}’s chats.`
+              : `${first} gets a contact request. You can chat once ${cand.gender === 'female' ? 'she' : 'he'} accepts it. ${requestLimitOf(plan) - requestsUsed} of ${requestLimitOf(plan)} requests left this month.`}
           </Text>
         </View>
-        <Button size="l" label="Send request" onPress={send} />
+        <Button size="l" label={tier === 'super' ? 'Send message' : 'Send request'} onPress={send} />
       </BottomSheet>
 
       {/* EmpAvailGate */}
@@ -497,12 +502,17 @@ export function CandidateProfile({ viewer = 'employer' }: { viewer?: 'employer' 
       {/* EmpPaywallContact */}
       <PremiumSheet
         visible={sheet === 'paywall'}
-        title={`Write to ${first} directly`}
-        text="On the Free plan you can chat only with candidates who applied to your vacancy."
+        plan={upsell}
+        title={upsell === 'premium' ? `Write to ${first} directly` : 'All 10 chat requests used'}
+        text={
+          upsell === 'premium'
+            ? 'On the Free plan you can chat only with candidates who applied to your vacancy.'
+            : 'Premium includes 10 chat requests a month. With Super Premium you message anyone directly, without limits.'
+        }
         onClose={() => setSheet(null)}
         onSubscribe={() => {
-          setPlan('premium');
-          toast({ text: 'Premium is active. Welcome!', kind: 'paid', icon: 'star' });
+          setPlan(upsell);
+          toast({ text: upsell === 'premium' ? 'Premium is active. Your first month is free' : 'Super Premium is active. Welcome!', kind: 'paid', icon: 'star' });
           setSheet('contact');
         }}
       />

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { BottomSheet, Button, Icon, Pressable, Row, Text, useToast } from '@/components';
-import { EMPLOYER_LOSSES, useEmployer } from '@/data/employer';
+import { EMPLOYER_LOSSES, useEmployer, planName } from '@/data/employer';
 import { DeleteAccountSheet, LogoutSheet } from '@/features/profile/AccountSheets';
 import { VerificationRow } from '@/features/employer/VerificationRow';
 import { ThemeRow } from '@/features/profile/ThemeRow';
@@ -46,14 +46,14 @@ export default function EmployerSettings() {
           icon="star"
           tone="premium"
           title="Subscription"
-          subtitle={plan === 'premium' ? 'Apple Pay · renews 9 Nov 2026' : plan === 'canceled' ? 'Premium until 9 Nov 2026' : 'Free plan · 1 active vacancy'}
+          subtitle={plan === 'premium' || plan === 'super' ? 'Apple Pay · renews 9 Nov 2026' : plan === 'canceled' ? 'Premium until 9 Nov 2026' : 'Free plan · 1 active vacancy'}
           chevron
           right={
             plan !== 'free' ? (
               <View style={{ height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.labelOrangeBack, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Icon name="star" size={12} color="labelOrangeText" />
                 <Text variant="caption" weight={700} color="labelOrangeText">
-                  Premium
+                  {planName(plan)}
                 </Text>
               </View>
             ) : (

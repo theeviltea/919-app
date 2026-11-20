@@ -73,7 +73,7 @@ export default function SeekerSubscription() {
                   {PLAN_NAME[t]}
                 </Text>
                 <Text variant="bodyS" color="textBody" style={{ fontSize: 13 }}>
-                  {t === 'premium' ? 'Unlimited applications, 20 photos, 5 videos' : 'Everything in Premium, top of search, frame, header'}
+                  {t === 'premium' ? '15 applications a month, priority in search' : 'Unlimited applications, top of search, profile style'}
                 </Text>
               </View>
               <Text variant="body" weight={700} style={{ fontSize: 14 }}>
@@ -85,7 +85,7 @@ export default function SeekerSubscription() {
           <Panel title="Only with Max" gap={16}>
             <PlanPerks perks={MAX_PERKS.slice(0, 3)} />
           </Panel>
-          <InverseButton label="Get Max for $5.99 / month" onPress={() => (subscribe('max'), toast({ text: 'Max is active. You’re at the top for employers', kind: 'paid', icon: 'star' }))} />
+          <InverseButton label={`Get Max for ${PLAN_PRICE.max} / month`} onPress={() => (subscribe('max'), toast({ text: 'Max is active. You’re at the top for employers', kind: 'paid', icon: 'star' }))} />
           <Pressable onPress={() => router.push('/profile/plans')} accessibilityRole="button" style={{ alignSelf: 'center', paddingVertical: 6 }}>
             <Text variant="body" weight={700} color="link">
               Compare plans
@@ -95,7 +95,7 @@ export default function SeekerSubscription() {
         </>
       ) : !planCanceled ? (
         <>
-          {head('Subscription active', true, <PlanChip tier={plan} />, plan === 'max' ? 'You’re at the top for employers, with your frame, header and unlimited applications.' : 'You can apply without limits and show 20 photos and 5 videos.')}
+          {head('Subscription active', true, <PlanChip tier={plan} />, plan === 'max' ? 'You’re at the top for employers, with unlimited applications, your frame and header.' : 'You have 15 applications a month and priority in search.')}
           <Panel title="Subscription status" gap={0}>
             <View style={{ marginTop: 4 }}>
               <Line label="Plan" value={`${PLAN_NAME[plan]} · monthly`} />
@@ -113,7 +113,7 @@ export default function SeekerSubscription() {
             <Row
               icon="star"
               title="Change plan"
-              subtitle={plan === 'max' ? 'Switch to Premium for $2.99 / month' : 'Upgrade to Max for $5.99 / month'}
+              subtitle={plan === 'max' ? `Switch to Premium for ${PLAN_PRICE.premium} / month` : `Upgrade to Max for ${PLAN_PRICE.max} / month`}
               onPress={() => router.push('/profile/plans')}
               last
             />
@@ -129,7 +129,7 @@ export default function SeekerSubscription() {
             'Subscription canceled',
             false,
             <Status label="Canceled" ok={false} />,
-            `${PLAN_NAME[plan]} features stay available until 9 Nov 2026. Renew any time to keep ${plan === 'max' ? 'your top placement, frame and header' : 'unlimited applications'}.`,
+            `${PLAN_NAME[plan]} features stay available until 9 Nov 2026. Renew any time to keep ${plan === 'max' ? 'unlimited applications and your top placement' : '15 applications a month'}.`,
           )}
           <Panel title="Subscription status" gap={0}>
             <View style={{ marginTop: 4 }}>
@@ -154,7 +154,7 @@ export default function SeekerSubscription() {
           </Text>
           <Text variant="body" color="textBody" align="center" style={{ fontSize: 14, lineHeight: 21 }}>
             You’ll keep {PLAN_NAME[plan]} until the end of the paid period — 9 Nov 2026. After that you’ll be on the Free plan:{' '}
-            {plan === 'max' ? 'no top placement, frame or header, ' : ''}
+            {plan === 'max' ? 'no top placement or profile style, ' : ''}
             {FREE_APPLY_LIMIT} applications a month.
           </Text>
         </View>

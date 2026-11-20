@@ -1,18 +1,15 @@
 import { View } from 'react-native';
 
 import { BottomSheet, Icon, Pressable, Text } from '@/components';
+import { EMP_PLANS, type PaidPlan } from '@/data/employer';
 import { useTheme } from '@/theme';
 
-const PERKS = [
-  ['Message any candidate directly', 'From their profile, video or search — without waiting for an application'],
-  ['Unlimited active vacancies', 'Free plan includes 1 active vacancy at a time'],
-] as const;
+type Props = { visible: boolean; title: string; text: string; onSubscribe: () => void; onClose: () => void; plan?: PaidPlan };
 
-type Props = { visible: boolean; title: string; text: string; onSubscribe: () => void; onClose: () => void };
-
-/** Employer Premium paywall (EmpPaywallContact / EmpPaywallVacancy): same perks and price, different headline. */
-export function PremiumSheet({ visible, title, text, onSubscribe, onClose }: Props) {
+/** Employer paywall (EmpPaywallContact / EmpPaywallVacancy): Premium from Free, Super Premium once Premium's limits are used. */
+export function PremiumSheet({ visible, title, text, onSubscribe, onClose, plan = 'premium' }: Props) {
   const { c } = useTheme();
+  const p = EMP_PLANS[plan];
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={{ alignItems: 'center', gap: 10 }}>
@@ -21,7 +18,7 @@ export function PremiumSheet({ visible, title, text, onSubscribe, onClose }: Pro
         </View>
         <View style={{ height: 26, paddingHorizontal: 10, borderRadius: 999, backgroundColor: c.labelOrangeBack, justifyContent: 'center' }}>
           <Text variant="caption" weight={700} color="labelOrangeText">
-            919 Premium
+            919 {p.name}
           </Text>
         </View>
         <Text variant="title" align="center">
@@ -31,7 +28,7 @@ export function PremiumSheet({ visible, title, text, onSubscribe, onClose }: Pro
           {text}
         </Text>
       </View>
-      {PERKS.map(([t, d]) => (
+      {p.perks.slice(0, 2).map(([t, d]) => (
         <View key={t} style={{ flexDirection: 'row', gap: 12 }}>
           <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: c.labelOrangeBack, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="check" size={14} color="labelOrangeText" />
@@ -49,14 +46,14 @@ export function PremiumSheet({ visible, title, text, onSubscribe, onClose }: Pro
       <View style={{ padding: 14, borderRadius: 16, backgroundColor: c.input, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <View style={{ flex: 1 }}>
           <Text variant="body" weight={700} style={{ fontSize: 15 }}>
-            Monthly
+            {plan === 'premium' ? 'First month free' : 'Monthly'}
           </Text>
           <Text variant="caption" weight={400} color="textBody" style={{ fontSize: 12 }}>
-            Renews automatically · cancel any time
+            {plan === 'premium' ? 'Then monthly · cancel any time' : `${p.note} · cancel any time`}
           </Text>
         </View>
         <Text variant="displayM" style={{ fontSize: 20 }}>
-          $3.99
+          {p.price}
         </Text>
         <Text variant="bodyS" weight={600} color="textBody" style={{ fontSize: 13 }}>
           / month
@@ -64,7 +61,7 @@ export function PremiumSheet({ visible, title, text, onSubscribe, onClose }: Pro
       </View>
       <Pressable onPress={onSubscribe} accessibilityRole="button" style={{ height: 56, borderRadius: 18, backgroundColor: c.inverse, alignItems: 'center', justifyContent: 'center' }}>
         <Text variant="bodyL" weight={700} color="onInverse" style={{ fontSize: 16 }}>
-          Subscribe with Apple Pay
+          {plan === 'premium' ? 'Start free month' : 'Subscribe with Apple Pay'}
         </Text>
       </Pressable>
       <Pressable onPress={onClose} accessibilityRole="button" style={{ alignSelf: 'center', paddingVertical: 8 }}>

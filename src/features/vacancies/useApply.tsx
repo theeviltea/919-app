@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useToast } from '@/components';
 import { findVacancy } from '@/data/mock';
 import { fieldByKey } from '@/data/registration';
-import { completeness, FREE_APPLY_LIMIT, missingForApply, sphereToField, useSeeker, type GateItem } from '@/data/seeker';
+import { applyLimitOf, completeness, missingForApply, sphereToField, useSeeker, type GateItem } from '@/data/seeker';
 
 import { ApplyGate } from './ApplyGate';
 import { ApplyLimitSheet } from './ApplyLimitSheet';
@@ -24,8 +24,8 @@ export function useApply({ aboveTabBar }: { aboveTabBar?: boolean } = {}) {
   const respond = (id: string) => {
     const vac = findVacancy(id);
     if (!vac) return;
-    // Free plan: 10 applications, then the limit sheet offers Premium or Max (§12).
-    if (seeker.plan === 'free' && seeker.appsUsed >= FREE_APPLY_LIMIT) return setState({ id, sheet: 'limit' });
+    // Free: 5 applications a month, Premium: 15, then the limit sheet offers the next plan (§12). Max has no limit.
+    if (seeker.appsUsed >= applyLimitOf(seeker.plan)) return setState({ id, sheet: 'limit' });
     const gaps = missingForApply(seeker.profile, vac, fieldByKey(sphereToField[vac.sphere]).label);
     setState({ id, sheet: gaps.length ? 'gate' : 'apply' });
   };

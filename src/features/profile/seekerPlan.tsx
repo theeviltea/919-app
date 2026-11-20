@@ -4,21 +4,21 @@ import { Icon, Text, TierBadge, type IconName } from '@/components';
 import type { Tier } from '@/data/tiers';
 import { useTheme } from '@/theme';
 
-// Seeker plans (product rules §12): Premium $2.99 and Max $5.99 a month.
-export const PLAN_PRICE: Record<Exclude<Tier, 'free'>, string> = { premium: '$2.99', max: '$5.99' };
+// Seeker plans (product rules §12): Free 5 applications a month; Premium $14.99 — 15 applications and priority in search;
+// Max $24.99 — unlimited applications, more photos and videos, profile style, the gold badge, top priority in search.
+export const PLAN_PRICE: Record<Exclude<Tier, 'free'>, string> = { premium: '$14.99', max: '$24.99' };
 export const PLAN_NAME: Record<Tier, string> = { free: 'Free', premium: 'Premium', max: 'Max' };
 
 export const MAX_PERKS: [IconName | 'badge', string, string][] = [
-  ['arrow-right', 'Always at the top for employers', 'First in Talents, search and recommendations'],
-  ['sparkles', 'Profile frame', 'Choose one of 3 gradient frames'],
-  ['image', 'Custom profile header', 'Your own cover photo at the top of the profile'],
+  ['arrow-right', 'Highest priority in search', 'First in Talents, search and recommendations'],
   ['check-double', 'Unlimited applications', 'Apply to as many jobs as you want'],
   ['camera', '20 photos and 5 videos', 'Show more of your work in the profile'],
+  ['sparkles', 'Profile style', 'A gradient frame and your own cover photo at the top'],
   ['badge', 'Gold star badge', 'On your photo and next to your name everywhere in 919'],
 ];
 export const PREMIUM_PERKS: [IconName | 'badge', string, string][] = [
-  ['check-double', 'Unlimited applications', 'Apply to as many jobs as you want'],
-  ['camera', '20 photos and 5 videos', 'Show more of your work in the profile'],
+  ['check-double', '15 applications a month', 'Three times more than on Free'],
+  ['arrow-right', 'Priority in search', 'Employers see you above Free profiles'],
   ['badge', 'Blue star badge', 'On your photo and next to your name everywhere in 919'],
 ];
 

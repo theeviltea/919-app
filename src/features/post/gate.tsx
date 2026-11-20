@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { View } from 'react-native';
 
 import { BottomSheet, Button, Icon, Pressable, Text, useToast } from '@/components';
-import { useEmployer } from '@/data/employer';
+import { tierOfPlan, useEmployer, vacancyLimitOf, type PaidPlan } from '@/data/employer';
 import { useSession } from '@/data/session';
 import { PremiumSheet } from '@/features/hire/PremiumSheet';
 import { useTheme } from '@/theme';
@@ -19,6 +19,9 @@ export function PostGateProvider({ children }: { children: ReactNode }) {
   const toast = useToast();
   const { user } = useSession();
   const { plan, setPlan, vacancies, info } = useEmployer();
+  const liveCount = vacancies.filter((v) => v.status === 'active' || v.status === 'review').length;
+  const limit = vacancyLimitOf(plan);
+  const upsell: PaidPlan = tierOfPlan(plan) === 'free' ? 'premium' : 'super';
   const [gate, setGate] = useState<Gate>(null);
   const pending = user?.company?.status === 'pending';
   const live = vacancies.find((v) => v.status === 'active') ?? vacancies.find((v) => v.status === 'review');
@@ -26,10 +29,11 @@ export function PostGateProvider({ children }: { children: ReactNode }) {
   const start = useMemo(
     () => () => {
       if (pending) return setGate('pending');
-      if (plan === 'free' && live) return setGate('paywall');
+      // Free: 1 active vacancy, Premium: 10, Super Premium: no limit (§12).
+      if (liveCount >= limit) return setGate('paywall');
       router.push('/post/category');
     },
-    [pending, plan, live],
+    [pending, liveCount, limit],
   );
   const until = live?.note.split('until ')[1];
 
@@ -93,13 +97,18 @@ export function PostGateProvider({ children }: { children: ReactNode }) {
       {/* EmpPaywallVacancy */}
       <PremiumSheet
         visible={gate === 'paywall'}
-        title="Post more than one vacancy"
-        text={`Free plan includes 1 active vacancy. “${live?.title ?? ''}” ${live?.status === 'review' ? 'is on review now' : until ? `is live until ${until}` : 'is live now'}.`}
+        plan={upsell}
+        title={upsell === 'premium' ? 'Post more than one vacancy' : 'Post more than 10 vacancies'}
+        text={
+          upsell === 'premium'
+            ? `Free plan includes 1 active vacancy. “${live?.title ?? ''}” ${live?.status === 'review' ? 'is on review now' : until ? `is live until ${until}` : 'is live now'}.`
+            : 'Premium includes 10 active vacancies at a time. Super Premium has no limit.'
+        }
         onClose={() => setGate(null)}
         onSubscribe={() => {
-          setPlan('premium');
+          setPlan(upsell);
           setGate(null);
-          toast({ text: 'Premium is active. Welcome!', kind: 'paid', icon: 'star' });
+          toast({ text: upsell === 'premium' ? 'Premium is active. Your first month is free' : 'Super Premium is active. Welcome!', kind: 'paid', icon: 'star' });
           router.push('/post/category');
         }}
       />

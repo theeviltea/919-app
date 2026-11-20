@@ -141,7 +141,7 @@ export function AnalyticsLocked() {
       </View>
       <InverseButton label="Get Premium" onPress={() => router.push('/company/subscription')} />
       <Text variant="caption" weight={400} color="textBody" style={{ textAlign: 'center', fontSize: 12 }}>
-        From $3.99 a month · cancel any time
+        Premium: first month free · cancel any time
       </Text>
     </View>
   );

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Icon, PatternHeader, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text, useToast } from '@/components';
 import { formatAmount } from '@/data/dictionaries';
-import { initialsOf, useEmployer } from '@/data/employer';
+import { initialsOf, planName, useEmployer } from '@/data/employer';
 import { LicenceAlert } from '@/features/employer/LicencePrompt';
 import { useStartVacancy } from '@/features/post/gate';
 import { useSession } from '@/data/session';
@@ -314,7 +314,7 @@ export default function HireCompany() {
               <Pill label={licence.status === 'review' ? 'Licence on review' : 'Not verified'} bg={c.surface} fg={c.textBody} h={26} />
             </Pressable>
           ) : plan !== 'free' ? (
-            <Pill label="Premium" icon="star" bg={c.labelOrangeBack} fg={c.labelOrangeText} h={26} />
+            <Pill label={planName(plan)} icon="star" bg={c.labelOrangeBack} fg={c.labelOrangeText} h={26} />
           ) : verified ? (
             <Pill label="Verified" icon="verified" bg={c.successBack} fg={c.successText} h={26} />
           ) : null}

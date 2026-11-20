@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CollapsingHeader, headerMetrics, Icon, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
 import { router, useLocalSearchParams } from 'expo-router';
 
-import { initialsOf, useEmployer } from '@/data/employer';
+import { initialsOf, planName, useEmployer } from '@/data/employer';
 import { useFlashColor } from '@/features/availability/Available';
 import { TodayTalent } from '@/features/availability/TodayTalent';
 import { candidates, countTalentFilters, emptyTalentFilters, talentSphereLabels, talentSphereOrder, type TalentSphere } from '@/data/talentPool';
@@ -138,11 +138,11 @@ export default function TalentHome() {
               <Pressable
                 onPress={() => router.push('/company/subscription')}
                 accessibilityRole="button"
-                accessibilityLabel="Premium plan"
+                accessibilityLabel={`${planName(plan)} plan`}
                 style={{ height: 24, paddingLeft: 7, paddingRight: 9, borderRadius: 999, backgroundColor: c.labelOrangeText, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Icon name="star" size={12} color="#FFFFFF" />
                 <Text variant="caption" weight={700} color="#FFFFFF" style={{ fontSize: 11 }}>
-                  Premium
+                  {planName(plan)}
                 </Text>
               </Pressable>
             ) : null}
