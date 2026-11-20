@@ -609,6 +609,16 @@ const preview = (msg: NewEmpMsg) =>
 const Ctx = createContext<Store | null>(null);
 
 /** Employer-side state for the prototype: chats and join requests. */
+/** The demo starts on Premium; on web, `sessionStorage['919-demo-plan'] = 'free'` starts it on the Free plan (QA and design captures). */
+function demoPlan(): Plan {
+  try {
+    const v = (globalThis as { sessionStorage?: Storage }).sessionStorage?.getItem('919-demo-plan');
+    return v === 'free' || v === 'canceled' ? v : 'premium';
+  } catch {
+    return 'premium';
+  }
+}
+
 export function EmployerProvider({ children }: { children: ReactNode }) {
   const [threads, setThreads] = useState(initialEmpThreads);
   const [joinRequests, setJoin] = useState(initialJoinRequests);
@@ -618,7 +628,7 @@ export function EmployerProvider({ children }: { children: ReactNode }) {
   const [applicants, setApplicants] = useState(initialApplicants);
   const [rep, setRepState] = useState(initialRep);
   const [info, setInfoState] = useState(initialInfo);
-  const [plan, setPlan] = useState<Plan>('premium');
+  const [plan, setPlan] = useState<Plan>(demoPlan);
   const [licence, setLicence] = useState<Licence>(initialLicence);
   const [licencePromptSeen, setPromptSeen] = useState(false);
   const [hireAnswers, setHireAnswers] = useState(initialHireAnswers);

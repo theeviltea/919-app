@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chip, Icon, MaxFrame, PhotoTierBadge, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
 import { hireProgress, hireStats, savedLabels, useEmployer, type HireStatus } from '@/data/employer';
 import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '@/data/talentPool';
+import { AnalyticsWidget } from '@/features/hire/analytics';
 import { PageTitle } from '@/features/hire/ui';
 import { useVacancyActions } from '@/features/hire/VacancyActions';
 import { VacancyCard } from '@/features/hire/VacancyHubCard';
@@ -112,6 +113,7 @@ export default function HireVacancies() {
         )
       ) : tab === 'mine' ? (
         <>
+          <AnalyticsWidget />
           <View style={{ backgroundColor: c.surface, borderRadius: 20, padding: 16, flexDirection: 'row', gap: 12 }}>
             <Stat n={count('active')} label={'Active\nvacancies'} />
             <View style={{ width: 1, backgroundColor: c.divider }} />
