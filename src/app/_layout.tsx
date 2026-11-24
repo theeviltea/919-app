@@ -11,6 +11,7 @@ import { EmployerProvider } from '@/data/employer';
 import { SessionProvider } from '@/data/session';
 import { SeekerProvider } from '@/data/seeker';
 import { SignupProvider } from '@/data/signup';
+import { AccountSwitcherProvider } from '@/features/accounts/ui';
 import { PostGateProvider } from '@/features/post/gate';
 import { fontAssets, ThemeProvider, useTheme } from '@/theme';
 
@@ -22,7 +23,9 @@ function Root() {
     <ToastProvider>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <PostGateProvider>
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.back } }} />
+        <AccountSwitcherProvider>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.back } }} />
+        </AccountSwitcherProvider>
       </PostGateProvider>
     </ToastProvider>
   );

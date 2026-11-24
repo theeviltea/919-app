@@ -23,6 +23,7 @@ export default function EmployerReview() {
       role: 'employer',
       firstName: employer.firstName,
       company: { name: isPrivate ? `${employer.firstName} ${employer.lastName}`.trim() : employer.company.name, status: 'pending' },
+      created: true,
     });
   };
 

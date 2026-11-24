@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { Pressable, Row, Text } from '@/components';
 import { useSeeker } from '@/data/seeker';
+import { AccountsGroup } from '@/features/accounts/ui';
 import { DeleteAccountSheet, LogoutSheet } from '@/features/profile/AccountSheets';
 import { PlanChip, PLAN_NAME, PLAN_PRICE } from '@/features/profile/seekerPlan';
 import { ThemeRow } from '@/features/profile/ThemeRow';
@@ -22,6 +23,9 @@ export default function Settings() {
 
   return (
     <SubScreen title="Settings">
+      <GroupLabel>Accounts</GroupLabel>
+      <AccountsGroup />
+
       <GroupLabel>Account</GroupLabel>
       <Group>
         <Row icon="notification" title="Notifications" onPress={() => router.push('/profile/notifications')} />

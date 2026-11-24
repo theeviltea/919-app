@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chip, Icon, MaxFrame, PhotoTierBadge, Pressable, SegmentedTabs, TAB_BAR_SPACE, Text } from '@/components';
 import { hireProgress, hireStats, savedLabels, useEmployer, type HireStatus } from '@/data/employer';
 import { findCandidate, talentSphereLabels, talentSphereOrder, type Candidate, type TalentSphere } from '@/data/talentPool';
+import { AccountChip } from '@/features/accounts/ui';
 import { AnalyticsWidget } from '@/features/hire/analytics';
 import { PageTitle } from '@/features/hire/ui';
 import { useVacancyActions } from '@/features/hire/VacancyActions';
@@ -95,7 +96,7 @@ export default function HireVacancies() {
     <ScrollView
       style={{ flex: 1, backgroundColor: c.back }}
       contentContainerStyle={{ paddingTop: insets.top + 20, paddingHorizontal: 16, paddingBottom: TAB_BAR_SPACE + 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
-      <PageTitle title="Vacancies" action={{ icon: 'search', label: 'Search vacancies', onPress: () => router.push('/hire/vacancy-search') }} />
+      <PageTitle title="Vacancies" extra={<AccountChip />} action={{ icon: 'search', label: 'Search vacancies', onPress: () => router.push('/hire/vacancy-search') }} />
       <SegmentedTabs<Tab>
         items={[
           { key: 'mine', label: 'My vacancies', count: myVacancies.length },

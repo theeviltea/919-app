@@ -145,7 +145,7 @@ export default function JoinCompany() {
                 {sel.name} confirmed you as their recruiter. You can post vacancies and invite candidates now.
               </Text>
             </View>
-            <Button label="Start hiring" onPress={() => finish({ role: 'employer', firstName: employer.firstName, company: { name: sel.name, status: 'approved' } })} />
+            <Button label="Start hiring" onPress={() => finish({ role: 'employer', firstName: employer.firstName, company: { name: sel.name, status: 'approved' }, created: true })} />
           </BottomSheet>
 
           <BottomSheet visible={stage === 'declined'} onClose={() => setStage('pick')}>

@@ -28,13 +28,14 @@ export function GlassButton({ icon, label, onPress, dot }: { icon: IconName; lab
 }
 
 /** Page title row on `back` (Vacancies, Messages) with a bordered square action. */
-export function PageTitle({ title, action }: { title: string; action?: { icon: IconName; label: string; onPress: () => void } }) {
+export function PageTitle({ title, action, extra }: { title: string; action?: { icon: IconName; label: string; onPress: () => void }; extra?: React.ReactNode }) {
   const { c } = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
       <Text variant="displayL" accessibilityRole="header" style={{ flex: 1, fontSize: 24, lineHeight: 30 }}>
         {title}
       </Text>
+      {extra}
       {action ? (
         <Pressable
           onPress={action.onPress}

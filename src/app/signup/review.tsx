@@ -74,7 +74,7 @@ export default function Review() {
       top={<StepProgress step={5} of={5} />}
       title="Check your profile"
       subtitle="This is what employers will see. You can edit it any time."
-      footer={<Button size="l" label="Finish" onPress={() => finish({ role: 'seeker', firstName: s.firstName })} />}>
+      footer={<Button size="l" label="Finish" onPress={() => finish({ role: 'seeker', firstName: `${s.firstName} ${s.lastName}`.trim(), created: true })} />}>
       <View style={{ backgroundColor: c.surface, borderRadius: 24, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ width: 56, height: 56, borderRadius: 28, overflow: 'hidden', backgroundColor: c.avatar1 }}>
           {s.photo ? <Image source={s.photo} contentFit="cover" style={{ width: 56, height: 56 }} /> : null}

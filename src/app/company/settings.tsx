@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { BottomSheet, Button, Icon, Pressable, Row, Text, useToast } from '@/components';
 import { EMPLOYER_LOSSES, useEmployer, planName } from '@/data/employer';
+import { AccountsGroup } from '@/features/accounts/ui';
 import { DeleteAccountSheet, LogoutSheet } from '@/features/profile/AccountSheets';
 import { VerificationRow } from '@/features/employer/VerificationRow';
 import { ThemeRow } from '@/features/profile/ThemeRow';
@@ -26,6 +27,9 @@ export default function EmployerSettings() {
 
   return (
     <SubScreen title="Settings">
+      <GroupLabel>Accounts</GroupLabel>
+      <AccountsGroup />
+
       <GroupLabel>Account</GroupLabel>
       <Group>
         <Row icon="notification" title="Notifications" subtitle="New applicants, messages, join requests" onPress={() => router.push('/profile/notifications')} />
